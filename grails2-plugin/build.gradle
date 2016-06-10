@@ -66,6 +66,11 @@ dependencies {
 project.tasks.withType(PublishToMavenLocal) { task ->
     task.dependsOn("assemble")
 }
+project.tasks.withType(PublishToMavenRepository) { task ->
+    task.dependsOn("assemble")
+}
+
+
 class GrailsPluginComponent implements SoftwareComponentInternal {
 
     private final PublishArtifact artifact
