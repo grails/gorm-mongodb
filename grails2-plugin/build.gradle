@@ -1,0 +1,93 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        maven { url "https://repo.grails.org/grails/core" }
+    }
+    dependencies {
+        classpath "org.grails:grails-gradle-plugin:2.2.0.RC1"
+    }
+}
+
+import org.gradle.api.internal.component.*
+import org.gradle.api.internal.artifacts.publish.*
+
+apply plugin: "grails"
+
+grails {
+    grailsVersion = "2.5.1"
+    groovyVersion = "2.4.6"
+}
+
+configurations.all { Configuration c ->
+    c.exclude(group:'org.grails',module:'grails-datastore-gorm-support')
+
+    resolutionStrategy {
+        eachDependency { DependencyResolveDetails details ->
+            if(details.requested.group == 'org.grails' && !details.requested.name.startsWith('grails-datastore')) {
+                details.useVersion(grailsVersion)
+            }
+        }
+    }
+    resolutionStrategy.dependencySubstitution {
+        // Substitute project and module dependencies
+        substitute project(':grails-datastore-gorm-support') with project(':grails-datastore-gorm-grails2-support')
+    }
+}
+
+def projectName = project.name.substring(project.name.indexOf('/') + 1)
+def component = new GrailsPluginComponent(
+    project.file("grails-mongodb-${project.version}.zip"), 
+    project.configurations.runtime.allDependencies,
+    project.tasks.findByName('grails-package-plugin')
+)
+project.getComponents().add(component)
+
+dependencies {
+    compile "org.grails:grails-datastore-simple:$gormVersion"
+
+    compile "org.grails:grails-datastore-core:$gormVersion"
+    compile "org.grails:grails-datastore-gorm:$gormVersion"
+    compile "org.grails:grails-datastore-simple:$gormVersion"
+    compile "org.grails:grails-datastore-gorm-grails2-support:$gormVersion"
+    compile project(":grails-datastore-gorm-mongodb-ext"), {
+        exclude group:'org.grails', module:'grails-datastore-gorm-mongodb'
+    }    
+    compile project(":grails-datastore-gorm-mongodb"), {
+        exclude group:'org.grails',module:'grails-datastore-gorm-support'
+        exclude group:'org.grails',module:'grails-core'
+        exclude group:'org.grails',module:'grails-bootstrap'
+        exclude group:'org.grails',module:'grails-async'
+    }
+
+    test "org.spockframework:spock-core:1.0-groovy-2.4"
+    provided 'javax.servlet:javax.servlet-api:3.1.0'
+}
+
+project.tasks.withType(PublishToMavenLocal) { task ->
+    task.dependsOn("assemble")
+}
+class GrailsPluginComponent implements SoftwareComponentInternal {
+
+    private final PublishArtifact artifact
+    private final DependencySet runtimeDependencies;
+
+    GrailsPluginComponent(File file, DependencySet runtimeDependencies, Object...tasks) {
+        artifact = new DefaultPublishArtifact(name, "zip", "zip", null, new Date(), file, tasks)
+        this.runtimeDependencies = runtimeDependencies
+    }
+
+    String getName() { "java" }
+    Set<Usage> getUsages() {
+        Collections.singleton new Usage() {
+            String getName() { "runtime" }            
+            Set<PublishArtifact> getArtifacts() {
+                return Collections.singleton(GrailsPluginComponent.this.artifact);
+            }
+            
+            Set<ModuleDependency> getDependencies() {
+                return GrailsPluginComponent.this.runtimeDependencies.withType(ModuleDependency.class);
+            }        
+
+        }
+    }
+}

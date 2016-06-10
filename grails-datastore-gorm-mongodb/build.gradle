@@ -1,0 +1,34 @@
+dependencies {
+    compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
+    compile "org.grails:grails-datastore-gorm-validation:$gormVersion"
+    compile "org.grails:grails-datastore-gorm:$gormVersion"
+
+    compile("org.grails:grails-datastore-gorm-support:$gormVersion") {
+        exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
+    }
+
+
+    testCompile "org.grails:grails-datastore-gorm-tck:$gormVersion"
+
+    testRuntime "org.springframework:spring-aop:$springVersion"
+
+    compileOnly "javax.servlet:javax.servlet-api:$servletApiVersion"
+
+}
+
+tasks.withType(GroovyCompile) {
+    configure(groovyOptions.forkOptions) {
+        memoryMaximumSize = '1g'
+        jvmArgs = ['-XX:MaxPermSize=512m', '-Xms512m', '-Xmx1g']
+    }
+}
+
+test {
+    maxParallelForks = 1
+    if (!isTravisBuild) {
+        forkEvery = 30
+    }
+    else {
+        forkEvery = 10
+    }
+}
