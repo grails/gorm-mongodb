@@ -19,5 +19,5 @@ For the current development version see the following links:
 RxGORM for MongoDB is a new implementation of GORM based on RxJava and the MongoDB Rx Drivers. See the following links for more information:
 
 * [Beta Documentation](http://gorm.grails.org/snapshot/rx/manual)
-* [Beta API](http://gorm.grails.org/snapshot/rx/manual)
+* [Beta API](http://gorm.grails.org/snapshot/rx/api)
 
