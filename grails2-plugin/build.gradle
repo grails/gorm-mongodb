@@ -36,7 +36,7 @@ configurations.all { Configuration c ->
 
 def projectName = project.name.substring(project.name.indexOf('/') + 1)
 def component = new GrailsPluginComponent(
-    project.file("grails-mongodb-${project.version}.zip"), 
+    project.file("grails-${projectInfo.projectArtifactId}-${project.version}.zip")
     project.configurations.runtime.allDependencies,
     project.tasks.findByName('grails-package-plugin')
 )

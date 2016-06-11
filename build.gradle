@@ -183,19 +183,16 @@ subprojects { project ->
         publications {
             maven(MavenPublication) {
                 artifactId projectInfo.projectArtifactId
-                
+                from components.java
 
                 if(!isGrails2PluginProject) {                    
-                    from components.java
+                    
                     artifact sourcesJar {
                         classifier "sources"
                     }
                     artifact javadocJar {
                         classifier "javadoc"
                     }                    
-                }
-                else {
-                    artifact project.file("grails-mongodb-${project.version}.zip")                    
                 }
 
                 if(isGrails3PluginProject) {
