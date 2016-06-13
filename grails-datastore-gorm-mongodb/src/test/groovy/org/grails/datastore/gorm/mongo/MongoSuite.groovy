@@ -14,6 +14,7 @@ import grails.gorm.tests.OneToOneSpec
 import grails.gorm.tests.OptimisticLockingSpec
 import grails.gorm.tests.ProxyLoadingSpec
 import grails.gorm.tests.SizeQuerySpec
+import grails.gorm.tests.ValidationSpec
 import org.junit.runner.RunWith
 import org.junit.runners.Suite
 import org.junit.runners.Suite.SuiteClasses
@@ -27,7 +28,7 @@ import grails.gorm.tests.OneToManySpec
  */
 @RunWith(Suite)
 @SuiteClasses([
-    OneToManySpec
+    ValidationSpec
 ])
 class MongoSuite {
 }

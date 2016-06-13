@@ -16,8 +16,7 @@ class SwitchDatabaseAtRuntimeSpec extends GormDatastoreSpec {
     }
 
     void setup() {
-        final mongo = ((MongoDatastore) session.getDatastore()).getMongo()
-        mongo.getDB('thesimpsons').dropDatabase()
+        mongoClient.getDB('thesimpsons').dropDatabase()
     }
 
 

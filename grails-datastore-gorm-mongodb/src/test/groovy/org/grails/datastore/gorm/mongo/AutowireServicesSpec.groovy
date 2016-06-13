@@ -9,8 +9,11 @@ class AutowireServicesSpec extends GormDatastoreSpec {
 
     void "Test that services can be autowired"() {
         given:"A service registered in the application context"
-            GenericApplicationContext context = session.datastore.applicationContext
+            GenericApplicationContext context = new GenericApplicationContext()
+
+            session.datastore.applicationContext = context
             context.beanFactory.registerSingleton("orderService", new OrderService())
+            context.refresh()
 
         when:"An instance is created and saved"
             OrderService orderService = context.getBean("orderService")

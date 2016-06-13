@@ -16,7 +16,7 @@ class CustomMongoEventListenerSpec extends GormDatastoreSpec{
     void "Test corrects are triggered for persistence life cycle"() {
         given:"A registered event listener"
             def listener = new MyPersistenceListener(session.datastore)
-            session.datastore.applicationContext.addApplicationListener(listener)
+            session.datastore.applicationEventPublisher.addApplicationListener(listener)
 
         when:"An entity is saved"
             def p = new Listener(name:"Cabbage")

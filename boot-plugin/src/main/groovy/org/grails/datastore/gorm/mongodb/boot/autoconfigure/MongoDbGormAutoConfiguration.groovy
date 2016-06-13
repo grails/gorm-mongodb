@@ -14,38 +14,30 @@
  */
 package org.grails.datastore.gorm.mongodb.boot.autoconfigure
 
-import com.mongodb.Mongo
+import com.mongodb.MongoClient
 import com.mongodb.MongoClientOptions
-import com.mongodb.MongoOptions
 import grails.mongodb.bootstrap.MongoDbDataStoreSpringInitializer
 import groovy.transform.CompileStatic
-import org.grails.config.PropertySourcesConfig
-import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.reflect.AstUtils
-import org.springframework.beans.BeansException
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.BeanFactoryAware
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
-import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
 import org.springframework.boot.autoconfigure.mongo.MongoProperties
 import org.springframework.boot.bind.RelaxedPropertyResolver
-import org.springframework.context.*
+import org.springframework.context.EnvironmentAware
+import org.springframework.context.ResourceLoaderAware
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar
 import org.springframework.core.env.Environment
-import org.springframework.core.env.MutablePropertySources
-import org.springframework.core.env.PropertiesPropertySource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.type.AnnotationMetadata
-
 /**
  *
  * Auto configurer that configures GORM for MongoDB for use in Spring Boot
@@ -63,7 +55,7 @@ class MongoDbGormAutoConfiguration implements BeanFactoryAware, ResourceLoaderAw
     private MongoProperties properties;
 
     @Autowired(required = false)
-    Mongo mongo
+    MongoClient mongo
 
     @Autowired(required = false)
     MongoClientOptions mongoOptions
@@ -100,14 +92,14 @@ class MongoDbGormAutoConfiguration implements BeanFactoryAware, ResourceLoaderAw
         initializer.resourceLoader = resourceLoader
 
         initializer.setConfiguration(environment)
-        initializer.setMongo(mongo)
+        initializer.setMongoClient(mongo)
         initializer.setMongoOptions(mongoOptions)
 
 
         if(this.properties != null) {
             initializer.setDatabaseName(this.properties.database)
             if(mongo == null && mongoOptions != null) {
-                initializer.setMongo(
+                initializer.setMongoClient(
                         properties.createMongoClient(mongoOptions, environment)
                 )
             }

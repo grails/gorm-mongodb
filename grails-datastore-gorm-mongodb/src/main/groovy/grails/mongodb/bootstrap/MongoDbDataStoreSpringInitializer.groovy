@@ -14,24 +14,26 @@
  */
 package grails.mongodb.bootstrap
 
-import com.mongodb.DBAddress
-import com.mongodb.Mongo
+import com.mongodb.MongoClient
 import com.mongodb.MongoClientOptions
-import com.mongodb.MongoClientURI
 import grails.mongodb.MongoEntity
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import org.grails.datastore.gorm.bootstrap.AbstractDatastoreInitializer
-import org.grails.datastore.gorm.bootstrap.support.InstanceFactoryBean
-import org.grails.datastore.gorm.mongo.MongoGormEnhancer
-import org.grails.datastore.gorm.mongo.bean.factory.*
+import org.grails.datastore.gorm.events.ConfigurableApplicationContextEventPublisher
+import org.grails.datastore.gorm.events.DefaultApplicationEventPublisher
+import org.grails.datastore.gorm.plugin.support.PersistenceContextInterceptorAggregator
 import org.grails.datastore.gorm.support.AbstractDatastorePersistenceContextInterceptor
 import org.grails.datastore.gorm.support.DatastorePersistenceContextInterceptor
-import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition
+import org.grails.datastore.mapping.mongo.MongoDatastore
+import org.grails.datastore.mapping.validation.BeanFactoryValidatorRegistry
+import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.support.GenericApplicationContext
-import static org.grails.datastore.mapping.mongo.MongoDatastore.*
+import org.springframework.util.ClassUtils
 /**
  * Used to initialize GORM for MongoDB outside of Grails
  *
@@ -43,13 +45,13 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
 
     public static final String DEFAULT_DATABASE_NAME = "test"
 
-
+    public static final String DATASTORE_TYPE = "mongo"
     protected String mongoBeanName = "mongo"
     protected String mongoOptionsBeanName = "mongoOptions"
     protected String databaseName = DEFAULT_DATABASE_NAME
     protected Closure defaultMapping
     protected MongoClientOptions mongoOptions
-    protected Mongo mongo
+    protected MongoClient mongo
 
     @Override
     protected Class<AbstractDatastorePersistenceContextInterceptor> getPersistenceInterceptorClass() {
@@ -78,121 +80,43 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
     @Override
     Closure getBeanDefinitions(BeanDefinitionRegistry beanDefinitionRegistry) {
         return {
-            final config = configuration
-            String connectionString = config.getProperty(SETTING_CONNECTION_STRING,config.getProperty(SETTING_URL,'')) ?: null
-            databaseName = config.getProperty(SETTING_DATABASE_NAME, databaseName)
-            Closure defaultMapping = config.getProperty(SETTING_DEFAULT_MAPPING,Closure, this.defaultMapping)
-            Map mongoOptions = config.getProperty(SETTING_OPTIONS, Map, null)
-            String hostSetting = config.getProperty(SETTING_HOST, '')
-            Integer mongoPort = config.getProperty(SETTING_PORT, Integer, null)
-            String username = config.getProperty(SETTING_USERNAME, '')
-            String password= config.getProperty(SETTING_PASSWORD, '')
-            Collection<String> replicaSetSetting = config.getProperty(SETTING_REPLICA_SET, Collection, [])
-            Collection<String> replicaPairSetting = config.getProperty(SETTING_REPLICA_PAIR, Collection, [])
-
-            MongoClientURI mongoClientURI = null
-            if(connectionString) {
-                mongoClientURI = new MongoClientURI(connectionString)
-                databaseName = mongoClientURI.database
-            }
-
             def callable = getCommonConfiguration(beanDefinitionRegistry, "mongo")
             callable.delegate = delegate
             callable.call()
+            ApplicationEventPublisher eventPublisher
+            if(beanDefinitionRegistry instanceof ConfigurableApplicationContext){
+                eventPublisher = new ConfigurableApplicationContextEventPublisher((ConfigurableApplicationContext)beanDefinitionRegistry)
+            }
+            else {
+                eventPublisher = new DefaultApplicationEventPublisher()
+            }
+            if(mongo == null) {
+                mongoDatastore(MongoDatastore, configuration, eventPublisher, collectMappedClasses(DATASTORE_TYPE))
+                mongo(mongoDatastore:"getMongoClient")
+            }
+            else {
+                mongoDatastore(MongoDatastore, mongo, configuration, eventPublisher, collectMappedClasses(DATASTORE_TYPE))
+            }
 
-            gormMongoMappingContext(MongoMappingContextFactoryBean) {
-                defaultDatabaseName = databaseName
-                grailsApplication = ref("grailsApplication")
-                if (defaultMapping) {
-                    delegate.defaultMapping = new DefaultMappingHolder(defaultMapping)
+            mongoMappingContext(mongoDatastore:"getMappingContext") {
+                if(isGrailsPresent()) {
+                    validatorRegistry = new BeanFactoryValidatorRegistry((BeanFactory)beanDefinitionRegistry)
                 }
-                defaultExternal = secondaryDatastore
+            }
+            mongoTransactionManager(mongoDatastore:"getTransactionManager")
+            mongoPersistenceInterceptor(getPersistenceInterceptorClass(), ref("mongoDatastore"))
+            mongoPersistenceContextInterceptorAggregator(PersistenceContextInterceptorAggregator)
+            def transactionManagerBeanName = TRANSACTION_MANAGER_BEAN
+            if (!containsRegisteredBean(delegate, beanDefinitionRegistry, transactionManagerBeanName)) {
+                beanDefinitionRegistry.registerAlias("mongoTransactionManager", transactionManagerBeanName)
             }
 
-            if(this.mongoOptions) {
-                "$mongoOptionsBeanName"(InstanceFactoryBean, this.mongoOptions, MongoClientOptions)
-            }
-            else if(!beanDefinitionRegistry.containsBeanDefinition(mongoOptionsBeanName)) {
-                "$mongoOptionsBeanName"(MongoClientOptionsFactoryBean) {
-                    if(mongoOptions) {
-                        delegate.mongoOptions = mongoOptions
-                    }
+            def classLoader = getClass().getClassLoader()
+            if (beanDefinitionRegistry.containsBeanDefinition('dispatcherServlet') && ClassUtils.isPresent(OSIV_CLASS_NAME, classLoader)) {
+                String interceptorName = "mongoOpenSessionInViewInterceptor"
+                "${interceptorName}"(ClassUtils.forName(OSIV_CLASS_NAME, classLoader)) {
+                    datastore = ref("mongoDatastore")
                 }
-            }
-
-            if(mongo) {
-                "$mongoBeanName"(InstanceFactoryBean, mongo)
-            }
-            else  {
-
-                def existingBean = beanDefinitionRegistry.containsBeanDefinition(mongoBeanName) ? beanDefinitionRegistry.getBeanDefinition(mongoBeanName) : null
-                boolean registerMongoBean = false
-                if(existingBean instanceof AnnotatedBeanDefinition) {
-                    AnnotatedBeanDefinition annotatedBeanDefinition = (AnnotatedBeanDefinition)existingBean
-                    if(annotatedBeanDefinition.metadata.className == 'org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration') {
-                        registerMongoBean = true
-                    }
-                }
-                else if(existingBean == null) {
-                    registerMongoBean = true
-                }
-
-                if(registerMongoBean) {
-                    "$mongoBeanName"(MongoClientFactoryBean) {
-                        delegate.mongoOptions = ref("$mongoOptionsBeanName")
-                        delegate.database = databaseName
-                        if(username && password) {
-                            delegate.username = username
-                            delegate.password = password
-                        }
-
-                        if(mongoClientURI) {
-                            clientURI = mongoClientURI
-                        }
-                        else if (replicaSetSetting) {
-                            def set = []
-                            for (server in replicaSetSetting) {
-                                set << new DBAddress(server.indexOf("/") > 0 ? server : "$server/$databaseName")
-                            }
-
-                            replicaSetSeeds = set
-                        }
-                        else if (replicaPairSetting) {
-                            def pair = []
-                            for (server in replicaPairSetting) {
-                                pair << new DBAddress(server.indexOf("/") > 0 ? server : "$server/$databaseName")
-                            }
-                            replicaPair = pair
-                        }
-                        else if (hostSetting) {
-                            host = hostSetting
-                            if (mongoPort) {
-                                port = mongoPort
-                            }
-                        }
-                        else {
-                            host = "localhost"
-                        }
-                    }
-
-                }
-
-            }
-            mongoDatastore(MongoDatastoreFactoryBean) {
-                delegate.mongo = ref(mongoBeanName)
-                mappingContext = gormMongoMappingContext
-                delegate.config = config
-            }
-
-            callable = getAdditionalBeansConfiguration(beanDefinitionRegistry, "mongo")
-            callable.delegate = delegate
-            callable.call()
-
-            "org.grails.gorm.mongodb.internal.GORM_ENHANCER_BEAN-${mongoBeanName}"(MongoGormEnhancer, ref("mongoDatastore"), ref("mongoTransactionManager")) { bean ->
-                bean.initMethod = 'enhance'
-                bean.destroyMethod = 'close'
-                bean.lazyInit = false
-                includeExternal = !secondaryDatastore
             }
         }
     }
@@ -202,6 +126,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
     /**
      * Sets the name of the Mongo bean to use
      */
+    @Deprecated
     void setMongoBeanName(String mongoBeanName) {
         this.mongoBeanName = mongoBeanName
     }
@@ -210,6 +135,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
      *
      * @param mongoOptionsBeanName The mongo options bean name
      */
+    @Deprecated
     void setMongoOptionsBeanName(String mongoOptionsBeanName) {
         this.mongoOptionsBeanName = mongoOptionsBeanName
     }
@@ -221,10 +147,10 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
     }
     /**
      * Sets a pre-existing Mongo instance to configure for
-     * @param mongo The Mongo instance
+     * @param mongoClient The Mongo instance
      */
-    void setMongo(Mongo mongo) {
-        this.mongo = mongo
+    void setMongoClient(MongoClient mongoClient) {
+        this.mongo = mongoClient
     }
     /**
      * Sets the name of the MongoDB database to use
@@ -236,6 +162,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
     /**
      * Sets the default MongoDB GORM mapping configuration
      */
+    @Deprecated
     void setDefaultMapping(Closure defaultMapping) {
         this.defaultMapping = defaultMapping
     }

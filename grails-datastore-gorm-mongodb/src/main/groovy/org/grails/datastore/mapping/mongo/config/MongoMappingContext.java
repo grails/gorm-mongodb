@@ -16,6 +16,7 @@ package org.grails.datastore.mapping.mongo.config;
 
 import com.mongodb.DBObject;
 
+import com.mongodb.MongoClientURI;
 import groovy.lang.Closure;
 
 import java.util.Arrays;
@@ -39,6 +40,7 @@ import org.grails.datastore.mapping.config.AbstractGormMappingFactory;
 import org.grails.datastore.mapping.config.Property;
 import org.grails.datastore.mapping.document.config.Collection;
 import org.grails.datastore.mapping.document.config.DocumentMappingContext;
+import org.grails.datastore.mapping.document.config.GormDocumentMappingFactory;
 import org.grails.datastore.mapping.model.AbstractClassMapping;
 import org.grails.datastore.mapping.model.ClassMapping;
 import org.grails.datastore.mapping.model.EmbeddedPersistentEntity;
@@ -47,7 +49,10 @@ import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.datastore.mapping.model.MappingFactory;
 import org.grails.datastore.mapping.model.PersistentEntity;
 
+import org.grails.datastore.mapping.mongo.MongoConstants;
+import org.grails.datastore.mapping.mongo.MongoDatastore;
 import org.grails.datastore.mapping.reflect.FieldEntityAccess;
+import org.springframework.core.env.PropertyResolver;
 
 /**
  * Models a {@link org.grails.datastore.mapping.model.MappingContext} for Mongo.
@@ -81,6 +86,39 @@ public class MongoMappingContext extends DocumentMappingContext {
             Byte.class.getName()
     )));
 
+    public MongoMappingContext(String defaultDatabaseName) {
+        this(defaultDatabaseName, null);
+    }
+
+    public MongoMappingContext(String defaultDatabaseName, Closure defaultMapping) {
+        this(defaultDatabaseName, defaultMapping, new Class[0]);
+    }
+
+    /**
+     * Constructs a new {@link MongoMappingContext} for the given arguments
+     *
+     * @param defaultDatabaseName The default database name
+     * @param defaultMapping The default database mapping configuration
+     * @param classes The persistent classes
+     */
+    public MongoMappingContext(String defaultDatabaseName, Closure defaultMapping, Class...classes) {
+        super(defaultDatabaseName, defaultMapping);
+        registerMongoTypes();
+        addPersistentEntities(classes);
+    }
+
+    /**
+     * Constructs a new {@link MongoMappingContext} for the given arguments
+     *
+     * @param configuration The configuration
+     * @param classes The persistent classes
+     */
+    public MongoMappingContext(PropertyResolver configuration, Class...classes) {
+        super(getDefaultDatabaseName(configuration), configuration.getProperty(MongoConstants.SETTING_DEFAULT_MAPPING, Closure.class, null));
+        registerMongoTypes();
+        addPersistentEntities(classes);
+    }
+
     /**
      * Check whether a type is a native mongo type that can be stored by the mongo driver without conversion.
      * @param clazz The class to check.
@@ -89,6 +127,19 @@ public class MongoMappingContext extends DocumentMappingContext {
     public static boolean isMongoNativeType(Class clazz) {
         return MongoMappingContext.MONGO_NATIVE_TYPES.contains(clazz.getName()) ||
                 Bson.class.isAssignableFrom(clazz.getClass()) ;
+    }
+
+    public static String getDefaultDatabaseName(PropertyResolver configuration) {
+        String connectionString = configuration.getProperty(MongoDatastore.SETTING_CONNECTION_STRING, String.class, null);
+
+        if(connectionString != null) {
+            MongoClientURI mongoClientURI = new MongoClientURI(connectionString);
+            String database = mongoClientURI.getDatabase();
+            if(database != null) {
+                return database;
+            }
+        }
+        return configuration.getProperty(MongoDatastore.SETTING_DATABASE_NAME, "test");
     }
 
     private final class MongoDocumentMappingFactory extends
@@ -137,15 +188,7 @@ public class MongoMappingContext extends DocumentMappingContext {
         }
     }
 
-    public MongoMappingContext(String defaultDatabaseName) {
-        super(defaultDatabaseName);
-        registerMongoTypes();
-    }
 
-    public MongoMappingContext(String defaultDatabaseName, Closure defaultMapping) {
-        super(defaultDatabaseName, defaultMapping);
-        registerMongoTypes();
-    }
 
     protected void registerMongoTypes() {
         MappingFactory.registerCustomType(new GeometryCollectionType());

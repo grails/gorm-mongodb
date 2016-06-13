@@ -7,6 +7,10 @@ dependencies {
         exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
     }
 
+    runtime("org.grails:grails-validation:$grailsVersion") {
+        exclude group:'org.grails',module:'grails-core'
+    }
+
 
     testCompile "org.grails:grails-datastore-gorm-tck:$gormVersion"
 

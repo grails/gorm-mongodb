@@ -10,7 +10,7 @@ class ClearCollectionSpec extends GormDatastoreSpec{
 
     void "Test clear embedded mongo collection"() {
         given:"An entity with an embedded collection"
-            Building  b = new Building(buildingName: "WTC", rooms: [new Room(roomNo: 1),new Room(roomNo: 1)]).save(flush:true)
+            Building  b = new Building(buildingName: "WTC", rooms: [new Room(roomNo: 1),new Room(roomNo: 1)]).save(flush:true, validate:false)
             session.clear()
 
         when:"The entity is queried"

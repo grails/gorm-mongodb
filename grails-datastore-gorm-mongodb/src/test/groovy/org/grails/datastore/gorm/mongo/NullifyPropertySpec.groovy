@@ -19,7 +19,7 @@ class NullifyPropertySpec extends GormDatastoreSpec {
 
         when:"A property is nulled"
             pet.name = null
-            pet.save flush:true
+            pet.save flush:true, validate:false
             session.clear()
             pet = Pet.get(pet.id)
 

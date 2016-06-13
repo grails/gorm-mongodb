@@ -36,16 +36,13 @@ class Setup {
     static destroy() {
         session.nativeInterface.dropDatabase( session.defaultDatabase )
         session.disconnect()
-        mongo.destroy()
+        mongo.close()
     }
 
     static Session setup(classes) {
-        mongo = new MongoDatastore(new MongoMappingContext(System.getProperty(GormDatastoreSpec.CURRENT_TEST_NAME) ?: 'test'), Collections.emptyMap(), null)
-        def ctx = new GenericApplicationContext()
-        ctx.refresh()
-        mongo.applicationContext = ctx
-        mongo.afterPropertiesSet()
+        def databaseName = System.getProperty(GormDatastoreSpec.CURRENT_TEST_NAME) ?: 'test'
 
+        mongo = new MongoDatastore([(MongoDatastore.SETTING_DATABASE_NAME): databaseName], classes as Class[])
         mongo.mappingContext.mappingFactory.registerCustomType(new AbstractMappingAwareCustomTypeMarshaller<Birthday, Document, Document>(Birthday) {
             @Override
             protected Object writeInternal(PersistentProperty property, String key, Birthday value, Document nativeTarget) {
@@ -77,9 +74,6 @@ class Setup {
             }
         })
 
-        for (cls in classes) {
-            mongo.mappingContext.addPersistentEntity(cls)
-        }
 
         PersistentEntity entity = mongo.mappingContext.persistentEntities.find { PersistentEntity e -> e.name.contains("TestEntity")}
 
@@ -92,15 +86,7 @@ class Setup {
             }
         ] as Validator)
 
-        def txMgr = new DatastoreTransactionManager(datastore: mongo)
 
-        def enhancer = new MongoGormEnhancer(mongo, txMgr)
-        mongo.mappingContext.addMappingContextListener({ e ->
-            enhancer.enhance e
-        } as MappingContext.Listener)
-
-        mongo.applicationContext.addApplicationListener new DomainEventListener(mongo)
-        mongo.applicationContext.addApplicationListener new AutoTimestampEventListener(mongo)
 
         session = mongo.connect()
 
