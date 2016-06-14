@@ -6,6 +6,8 @@ dependencies {
         exclude group:'org.mongodb', module:'mongodb-driver'
         exclude group:'org.grails', module:'grails-datastore-gorm-support'
     }
+    compile(project(":grails-datastore-gorm-bson"))
+
     compileOnly "org.mongodb:mongodb-driver:$mongodbDriverVersion"
     compile 'org.mongodb:mongodb-driver-rx:1.2.0'
 }

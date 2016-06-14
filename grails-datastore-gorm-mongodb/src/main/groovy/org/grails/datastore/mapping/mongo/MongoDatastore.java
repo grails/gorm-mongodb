@@ -47,7 +47,7 @@ import org.grails.datastore.mapping.mongo.config.MongoAttribute;
 import org.grails.datastore.mapping.mongo.config.MongoClientOptionsBuilder;
 import org.grails.datastore.mapping.mongo.config.MongoCollection;
 import org.grails.datastore.mapping.mongo.config.MongoMappingContext;
-import org.grails.datastore.mapping.mongo.engine.codecs.AdditionalCodecs;
+import org.grails.datastore.bson.codecs.CodecExtensions;
 import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec;
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,13 +139,13 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             }
         });
 
-        for (Converter converter : AdditionalCodecs.getBsonConverters()) {
+        for (Converter converter : CodecExtensions.getBsonConverters()) {
             converterRegistry.addConverter(converter);
         }
 
         codecRegistry = CodecRegistries.fromRegistries(
                 MongoClient.getDefaultCodecRegistry(),
-                CodecRegistries.fromProviders(new AdditionalCodecs(), new PersistentEntityCodeRegistry())
+                CodecRegistries.fromProviders(new CodecExtensions(), new PersistentEntityCodeRegistry())
         );
 
         DatastoreTransactionManager datastoreTransactionManager = new DatastoreTransactionManager();

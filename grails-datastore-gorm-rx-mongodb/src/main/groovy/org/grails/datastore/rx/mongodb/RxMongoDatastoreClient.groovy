@@ -38,7 +38,7 @@ import org.grails.datastore.mapping.mongo.MongoConstants
 import org.grails.datastore.mapping.mongo.config.MongoAttribute
 import org.grails.datastore.mapping.mongo.config.MongoCollection
 import org.grails.datastore.mapping.mongo.config.MongoMappingContext
-import org.grails.datastore.mapping.mongo.engine.codecs.AdditionalCodecs
+import org.grails.datastore.bson.codecs.CodecExtensions
 import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec
 import org.grails.datastore.mapping.mongo.query.MongoQuery
 import org.grails.datastore.mapping.query.Query
@@ -294,7 +294,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     protected CodecRegistry createCodeRegistry() {
         CodecRegistries.fromRegistries(
                 com.mongodb.async.client.MongoClients.getDefaultCodecRegistry(),
-                CodecRegistries.fromProviders(new AdditionalCodecs(), this)
+                CodecRegistries.fromProviders(new CodecExtensions(), this)
         )
     }
 
@@ -336,7 +336,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
             }
         });
 
-        for (Converter converter : AdditionalCodecs.getBsonConverters()) {
+        for (Converter converter : CodecExtensions.getBsonConverters()) {
             converterRegistry.addConverter(converter);
         }
     }

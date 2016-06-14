@@ -1,4 +1,4 @@
-package org.grails.datastore.mapping.mongo.engine.codecs
+package org.grails.datastore.bson.codecs
 
 import org.bson.codecs.configuration.CodecRegistry
 

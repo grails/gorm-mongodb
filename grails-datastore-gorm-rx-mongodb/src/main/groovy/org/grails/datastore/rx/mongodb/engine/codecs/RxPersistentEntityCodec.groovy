@@ -1,6 +1,5 @@
 package org.grails.datastore.rx.mongodb.engine.codecs
 
-import com.mongodb.DBRef
 import groovy.transform.CompileStatic
 import org.bson.BsonReader
 import org.bson.BsonWriter
@@ -8,9 +7,6 @@ import org.bson.codecs.DecoderContext
 import org.bson.codecs.EncoderContext
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.types.ObjectId
-import org.grails.datastore.mapping.collection.PersistentList
-import org.grails.datastore.mapping.collection.PersistentSet
-import org.grails.datastore.mapping.collection.PersistentSortedSet
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckableCollection
@@ -28,12 +24,9 @@ import org.grails.datastore.mapping.model.types.OneToMany
 import org.grails.datastore.mapping.model.types.OneToOne
 import org.grails.datastore.mapping.model.types.ToMany
 import org.grails.datastore.mapping.model.types.ToOne
-import org.grails.datastore.mapping.mongo.AbstractMongoSession
-import org.grails.datastore.mapping.mongo.config.MongoAttribute
 import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec
-import org.grails.datastore.mapping.mongo.engine.codecs.PropertyDecoder
-import org.grails.datastore.mapping.mongo.engine.codecs.PropertyEncoder
-import org.grails.datastore.mapping.query.Query
+import org.grails.datastore.bson.codecs.PropertyDecoder
+import org.grails.datastore.bson.codecs.PropertyEncoder
 import org.grails.datastore.mapping.reflect.FieldEntityAccess
 import org.grails.datastore.rx.RxDatastoreClient
 import org.grails.datastore.rx.collection.RxPersistentList
@@ -43,7 +36,6 @@ import org.grails.datastore.rx.internal.RxDatastoreClientImplementor
 import org.grails.datastore.rx.mongodb.RxMongoDatastoreClient
 import org.grails.datastore.rx.query.QueryState
 import org.grails.gorm.rx.api.RxGormEnhancer
-import org.grails.gorm.rx.api.RxGormStaticApi
 
 import javax.persistence.FetchType
 
@@ -155,28 +147,28 @@ class RxPersistentEntityCodec extends PersistentEntityCodec {
         return localDecoders.get(type) ?: RX_DECODERS.get(type) ?: super.getPropertyDecoder(type)
     }
 
-    static class EmbeddedEncoder extends PersistentEntityCodec.EmbeddedEncoder {
+    static class EmbeddedEncoder extends org.grails.datastore.bson.codecs.encoders.EmbeddedEncoder {
         @Override
         protected PersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
             return new RxPersistentEntityCodec(associatedEntity, (RxMongoDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())
         }
     }
 
-    static class EmbeddedDecoder extends PersistentEntityCodec.EmbeddedDecoder {
+    static class EmbeddedDecoder extends org.grails.datastore.bson.codecs.decoders.EmbeddedDecoder {
         @Override
         protected PersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
             return new RxPersistentEntityCodec(associatedEntity, (RxMongoDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())
         }
     }
 
-    static class EmbeddedCollectionEncoder extends PersistentEntityCodec.EmbeddedCollectionEncoder {
+    static class EmbeddedCollectionEncoder extends org.grails.datastore.bson.codecs.encoders.EmbeddedCollectionEncoder {
         @Override
         protected PersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
             return new RxPersistentEntityCodec(associatedEntity, (RxMongoDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())
         }
     }
 
-    static class EmbeddedCollectionDecoder extends PersistentEntityCodec.EmbeddedCollectionDecoder {
+    static class EmbeddedCollectionDecoder extends org.grails.datastore.bson.codecs.decoders.EmbeddedCollectionDecoder {
         @Override
         protected PersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
             return new RxPersistentEntityCodec(associatedEntity, (RxMongoDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())

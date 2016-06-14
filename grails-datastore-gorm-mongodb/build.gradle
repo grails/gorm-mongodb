@@ -7,6 +7,8 @@ dependencies {
         exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
     }
 
+    compile(project(":grails-datastore-gorm-bson"))
+
     testCompile "org.grails:grails-datastore-gorm-tck:$gormVersion"
 
     testRuntime "org.springframework:spring-aop:$springVersion"

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.datastore.mapping.mongo.engine.codecs
+package org.grails.datastore.bson.codecs
 
 import groovy.transform.CompileStatic
 import org.bson.BsonArray
@@ -55,13 +55,13 @@ import org.springframework.core.convert.converter.Converter
 import java.util.regex.Pattern
 
 /**
- * Additional codecs
+ * Additional {@link Codec} extensions. This class implements {@CodecProvider} and integrates with the {@CodecRegistry} to make it easier to convert objects to and from BSON documents
  *
  * @author Graeme Rocher
  * @since 4.1
  */
 @CompileStatic
-class AdditionalCodecs implements CodecProvider{
+class CodecExtensions implements CodecProvider {
     private static final Map<Class, Codec> ADDITIONAL_CODECS = [:]
     private static final Map<Class<? extends BsonValue>, List<Converter>> BSON_VALUE_CONVERTERS = new LinkedHashMap<Class<? extends BsonValue>, List<Converter>>().withDefault { Class<? extends BsonValue> cls ->
         new ArrayList<Converter>()
