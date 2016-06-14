@@ -26,6 +26,7 @@ import org.bson.conversions.Bson
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.GormEntity
 import org.grails.datastore.gorm.mongo.MongoCriteriaBuilder
+import org.grails.datastore.gorm.schemaless.DynamicAttributes
 import org.grails.datastore.mapping.core.AbstractDatastore
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.core.SessionImplementor
@@ -46,7 +47,7 @@ import org.grails.datastore.mapping.mongo.query.MongoQuery
  * @since 5.0
  */
 @CompileStatic
-trait MongoEntity<D> extends GormEntity<D> {
+trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
 
 
     /**
@@ -71,75 +72,7 @@ trait MongoEntity<D> extends GormEntity<D> {
         putAt(name, val)
     }
 
-    /**
-     * Allows subscript access to schemaless attributes.
-     *
-     * @param instance The instance
-     * @param name The name of the field
-     */
-    void putAt(String name, value) {
-        if (hasProperty(name)) {
-            ((GroovyObject)this).setProperty(name, value)
-        }
-        else {
-            AbstractMongoSession session = (AbstractMongoSession)AbstractDatastore.retrieveSession(MongoDatastore)
-            def persistentEntity = session.mappingContext.getPersistentEntity(getClass().name)
-            SessionImplementor si = (SessionImplementor)session
 
-            if (si.isStateless(persistentEntity)) {
-                def coll = session.getCollection(persistentEntity)
-                MongoEntityPersister persister = (MongoEntityPersister)session.getPersister(this)
-                def id = persister.getObjectIdentifier(this)
-                final updateObject = new Document('$set', new Document(name, value))
-                coll.updateOne((Bson)new Document(AbstractMongoObectEntityPersister.MONGO_ID_FIELD,id), updateObject)
-            }
-            else {
-                final dbo = getDboInternal(this)
-                dbo?.put name, value
-                markDirty()
-            }
-
-        }
-    }
-
-
-    /**
-     * Allows subscript access to schemaless attributes.
-     *
-     * @param instance The instance
-     * @param name The name of the field
-     * @return the value
-     */
-    @CompileStatic
-    def getAt(String name) {
-        if (hasProperty(name)) {
-            return ((GroovyObject)this).getProperty(name)
-        }
-
-        Document dbo = getDboInternal(this)
-        if (dbo != null && dbo.containsKey(name)) {
-            return dbo.get(name)
-        }
-        return null
-    }
-
-
-    @CompileStatic
-    private Document getDboInternal(D instance) {
-        AbstractMongoSession session = (AbstractMongoSession)AbstractDatastore.retrieveSession(MongoDatastore)
-
-        if(session instanceof MongoCodecSession) {
-            Document schemaless = (Document)session.getAttribute(instance, PersistentEntityCodec.SCHEMALESS_ATTRIBUTES)
-            if(schemaless == null) {
-                schemaless = new Document()
-                session.setAttribute(instance, PersistentEntityCodec.SCHEMALESS_ATTRIBUTES, schemaless)
-            }
-            return schemaless
-        }
-        else {
-            return getDbo()
-        }
-    }
     /**
      * Return the DBObject instance for the entity
      *

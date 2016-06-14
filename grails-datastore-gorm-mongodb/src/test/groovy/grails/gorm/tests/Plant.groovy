@@ -1,5 +1,6 @@
 package grails.gorm.tests
 
+import grails.mongodb.MongoEntity
 import grails.persistence.Entity
 
 /*
@@ -20,7 +21,7 @@ import grails.persistence.Entity
 
 
 @Entity
-class Plant implements Serializable {
+class Plant implements Serializable, MongoEntity<Plant> {
     Long id
     Long version
     boolean goesInPatch
