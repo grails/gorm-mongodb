@@ -33,7 +33,7 @@ class BsonPersistentEntityCodecSpec extends Specification {
 
 
         then:"The result is encoded JSON"
-        sw.toString() == '{"age":12,"dateOfBirth":"1973-07-08T23:00+0000","name":"Fred"}'
+        sw.toString() == '{"age":12,"dateOfBirth":"1973-07-09T00:00+0000","name":"Fred"}'
 
     }
 }
