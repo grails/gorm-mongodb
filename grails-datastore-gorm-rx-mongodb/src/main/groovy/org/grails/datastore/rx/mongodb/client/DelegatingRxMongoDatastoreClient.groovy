@@ -12,7 +12,7 @@ import org.grails.datastore.rx.mongodb.query.RxMongoQuery
 import org.grails.datastore.rx.query.QueryState
 
 /**
- * overrides the default client and provides the ability to customize the target database name, collection name or client connection
+ * overrides the default client and provides the ability to customize the writer database name, collection name or client connection
  *
  * @author Graeme Rocher
  * @since 6.0

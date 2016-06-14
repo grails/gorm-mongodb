@@ -57,7 +57,7 @@ class MongoExtensions {
             return cls.newInstance( document )
         }
         else {
-            throw new IllegalArgumentException("Cannot convert DBOject [$document] to target type $cls. Type is not a persistent entity")
+            throw new IllegalArgumentException("Cannot convert DBOject [$document] to writer type $cls. Type is not a persistent entity")
         }
     }
 
@@ -69,7 +69,7 @@ class MongoExtensions {
             return session.decode(cls, iterable)
         }
         else {
-            throw new IllegalArgumentException("Cannot convert DBOject [$iterable] to target type $cls. Type is not a persistent entity")
+            throw new IllegalArgumentException("Cannot convert DBOject [$iterable] to writer type $cls. Type is not a persistent entity")
         }
     }
 
@@ -81,7 +81,7 @@ class MongoExtensions {
         if (p)
             return new MongoQuery.MongoResultList(((FindIterable<Document>)iterable).iterator(),0,p)
         else {
-            throw new IllegalArgumentException("Cannot convert DBCursor [$iterable] to target type $cls. Type is not a persistent entity")
+            throw new IllegalArgumentException("Cannot convert DBCursor [$iterable] to writer type $cls. Type is not a persistent entity")
         }
     }
 

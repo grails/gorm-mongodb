@@ -146,7 +146,7 @@ class BsonPersistentEntityCodec implements Codec {
 
 
     @Override
-    void encode(BsonWriter writer, Object value, EncoderContext encoderContext) {
+    void encode(BsonWriter writer, Object value, EncoderContext encoderContext = DEFAULT_ENCODER_CONTEXT) {
         encode(writer, value, encoderContext, true)
     }
 
@@ -164,7 +164,9 @@ class BsonPersistentEntityCodec implements Codec {
 
         if (includeIdentifier) {
             def id = access.getIdentifier()
-            getPropertyEncoder(Identity).encode writer, (Identity)entity.identity, id, access, encoderContext, codecRegistry
+            if(id != null) {
+                getPropertyEncoder(Identity).encode writer, (Identity)entity.identity, id, access, encoderContext, codecRegistry
+            }
         }
 
         for (PersistentProperty prop in entity.persistentProperties) {
