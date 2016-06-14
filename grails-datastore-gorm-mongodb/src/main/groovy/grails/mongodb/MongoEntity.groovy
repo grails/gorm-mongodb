@@ -59,7 +59,7 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      */
     @Override
     def propertyMissing(String name) {
-        getAt(name)
+        DynamicAttributes.super.getAt(name)
     }
 
     /**
@@ -69,7 +69,7 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @param val The value
      */
     def propertyMissing(String name, val) {
-        putAt(name, val)
+        DynamicAttributes.super.putAt(name, val)
     }
 
 
