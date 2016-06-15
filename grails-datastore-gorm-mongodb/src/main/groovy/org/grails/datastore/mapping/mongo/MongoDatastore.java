@@ -205,7 +205,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * @param classes The persistent classes
      */
     public MongoDatastore(MongoClient mongoClient, Class...classes) {
-        this(mongoClient, createPropertyResolver(null), createMappingContext(createPropertyResolver(null), classes), new DefaultApplicationEventPublisher());
+        this(mongoClient, mapToPropertyResolver(null), createMappingContext(mapToPropertyResolver(null), classes), new DefaultApplicationEventPublisher());
     }
 
     /**
@@ -272,7 +272,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * @param classes The persistent classes
      */
     public MongoDatastore(Map<String, Object> configuration, ConfigurableApplicationEventPublisher eventPublisher, Class...classes) {
-        this(createPropertyResolver(configuration),eventPublisher, classes);
+        this(mapToPropertyResolver(configuration),eventPublisher, classes);
     }
 
     /**
@@ -282,7 +282,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * @param classes The persistent classes
      */
     public MongoDatastore(Map<String, Object> configuration, Class...classes) {
-        this(createPropertyResolver(configuration),new DefaultApplicationEventPublisher(), classes);
+        this(mapToPropertyResolver(configuration),new DefaultApplicationEventPublisher(), classes);
     }
 
     /**
@@ -293,7 +293,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      */
 
     public MongoDatastore(Map<String, Object> configuration, MongoMappingContext mappingContext) {
-        this(createPropertyResolver(configuration), mappingContext, new DefaultApplicationEventPublisher());
+        this(mapToPropertyResolver(configuration), mappingContext, new DefaultApplicationEventPublisher());
     }
 
     /**
@@ -302,7 +302,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * @param mappingContext The {@link MongoMappingContext}
      */
     public MongoDatastore(MongoMappingContext mappingContext) {
-        this(createPropertyResolver(null), mappingContext, new DefaultApplicationEventPublisher());
+        this(mapToPropertyResolver(null), mappingContext, new DefaultApplicationEventPublisher());
     }
 
     /**
@@ -311,7 +311,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * @param classes The persistent classes
      */
     public MongoDatastore(Class...classes) {
-        this(createMappingContext(createPropertyResolver(null), classes));
+        this(createMappingContext(mapToPropertyResolver(null), classes));
     }
 
     /**
@@ -346,7 +346,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             String password = configuration.getProperty(SETTING_PASSWORD, (String)null);
             String databaseName = mappingContext.getDefaultDatabaseName();
 
-            List<MongoCredential> credentials = new ArrayList<MongoCredential>();
+            List<MongoCredential> credentials = new ArrayList<>();
             if (username != null && password != null) {
                 credentials.add(MongoCredential.createCredential(username, databaseName, password.toCharArray()));
             }
@@ -358,7 +358,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             if (mongoOptions != null) {
                 mongo = new MongoClient(serverAddress, credentials, mongoOptions.build());
             } else {
-                mongo = new MongoClient(serverAddress, credentials, mongoOptions.build());
+                mongo = new MongoClient(serverAddress, credentials);
             }
             return mongo;
         }
@@ -376,20 +376,6 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
                 defaultValidatorRegistry
         );
         return mongoMappingContext;
-    }
-
-    protected static PropertyResolver createPropertyResolver(Map<String,Object> configuration) {
-        StandardEnvironment env = new StandardEnvironment();
-        if(configuration == null) {
-            // create defaults
-            Map defaultConfig = new LinkedHashMap();
-            defaultConfig.put(SETTING_HOST, "mongodb://localhost");
-            defaultConfig.put(SETTING_DATABASE_NAME, "test");
-        }
-        else {
-            env.getPropertySources().addFirst(new MapPropertySource("mongodb", configuration));
-        }
-        return env;
     }
 
     protected void registerEventListeners(ConfigurableApplicationEventPublisher eventPublisher) {
