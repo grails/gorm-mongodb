@@ -28,6 +28,7 @@ import org.grails.datastore.mapping.model.types.*
 @CompileStatic
 class BsonPersistentEntityCodec implements Codec {
     public static final EncoderContext DEFAULT_ENCODER_CONTEXT = EncoderContext.builder().build()
+    public static final DecoderContext DEFAULT_DECODER_CONTEXT = DecoderContext.builder().build()
     private static final Map<Class<? extends PersistentProperty>, PropertyEncoder> ENCODERS = [:]
     private static final Map<Class<? extends PersistentProperty>, PropertyDecoder> DECODERS = [:]
 
@@ -67,7 +68,7 @@ class BsonPersistentEntityCodec implements Codec {
     }
 
     @Override
-    Object decode(BsonReader bsonReader, DecoderContext decoderContext) {
+    Object decode(BsonReader bsonReader, DecoderContext decoderContext = DEFAULT_DECODER_CONTEXT) {
         bsonReader.readStartDocument()
         def persistentEntity = entity
         def instance = persistentEntity.javaClass.newInstance()

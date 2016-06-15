@@ -1,4 +1,20 @@
-package org.grails.datastore.bson;
+/*
+ * Copyright (c) 2008-2014 MongoDB, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.grails.datastore.bson.json;
 
 import org.bson.*;
 import org.bson.json.JsonWriterSettings;
@@ -13,28 +29,15 @@ import java.util.Date;
 import java.util.TimeZone;
 
 /**
- * A more limited {@link org.bson.json.JsonWriter} implementation that ignores behaviour specific to MongoDB and produces more compat output
+ * Simplified fork of {@link org.bson.json.JsonWriter} that ignores behaviour specific to MongoDB and produces more compat output
  *
  * @author Graeme Rocher
  * @since 6.0
  */
 public class JsonWriter extends AbstractBsonWriter {
 
-    static final char OPEN_BRACKET = '[';
-    static final char CLOSE_BRACKET = ']';
-    static final char OPEN_BRACE = '{';
-    static final char CLOSE_BRACE = '}';
-    static final char COLON = ':';
-    static final char COMMA = ',';
-    static final char SPACE = ' ';
-    static final char NEW_LINE = '\n';
-    static final char QUOTE = '"';
-    public static final String BOOLEAN_TRUE = "true";
-    public static final String BOOLEAN_FALSE = "false";
-    public static final String NULL = "null";
     public static final String ISO_8601 = "yyyy-MM-dd'T'HH:mmZ";
     public static final TimeZone UTC = TimeZone.getTimeZone("UTC");
-    public static final char FORWARD_SLASH = '/';
 
     protected final Writer writer;
     protected final JsonWriterSettings settings;
@@ -59,7 +62,7 @@ public class JsonWriter extends AbstractBsonWriter {
             BsonContextType contextType = (getState() == State.SCOPE_DOCUMENT) ? BsonContextType.SCOPE_DOCUMENT : BsonContextType.DOCUMENT;
             setContext(new Context(getContext(), contextType, settings.getIndentCharacters()));
 
-            writer.write(OPEN_BRACE);
+            writer.write(JsonToken.OPEN_BRACE);
         } catch (IOException e) {
             throwBsonException(e);
         }
@@ -68,7 +71,7 @@ public class JsonWriter extends AbstractBsonWriter {
     @Override
     protected void doWriteEndDocument() {
         try {
-            writer.write(CLOSE_BRACE);
+            writer.write(JsonToken.CLOSE_BRACE);
             if (getContext().getContextType() == BsonContextType.SCOPE_DOCUMENT) {
                 setContext(getContext().getParentContext());
                 writeEndDocument();
@@ -84,7 +87,7 @@ public class JsonWriter extends AbstractBsonWriter {
     protected void doWriteStartArray() {
         try {
             writeNameHelper(getName());
-            writer.write(OPEN_BRACKET);
+            writer.write(JsonToken.OPEN_BRACKET);
             setContext(new Context(getContext(), BsonContextType.ARRAY, settings.getIndentCharacters()));
         } catch (IOException e) {
             throwBsonException(e);
@@ -94,7 +97,7 @@ public class JsonWriter extends AbstractBsonWriter {
     @Override
     protected void doWriteEndArray() {
         try {
-            writer.write(CLOSE_BRACKET);
+            writer.write(JsonToken.CLOSE_BRACKET);
         } catch (IOException e) {
             throwBsonException(e);
         }
@@ -118,7 +121,7 @@ public class JsonWriter extends AbstractBsonWriter {
     protected void doWriteBoolean(boolean value) {
         try {
             writeNameHelper(getName());
-            writer.write(value ? BOOLEAN_TRUE : BOOLEAN_FALSE);
+            writer.write(value ? JsonToken.BOOLEAN_TRUE : JsonToken.BOOLEAN_FALSE);
             setState(getNextState());
         } catch (IOException e) {
             throwBsonException(e);
@@ -131,10 +134,10 @@ public class JsonWriter extends AbstractBsonWriter {
         df.setTimeZone(UTC);
         try {
             writeNameHelper(getName());
-            writer.write(QUOTE);
+            writer.write(JsonToken.QUOTE);
             Date date = new Date(value);
             writer.write( df.format(date) );
-            writer.write(QUOTE);
+            writer.write(JsonToken.QUOTE);
             setState(getNextState());
         } catch (IOException e) {
             throwBsonException(e);
@@ -176,9 +179,9 @@ public class JsonWriter extends AbstractBsonWriter {
                 writer.write(Long.toString(value));
             }
             else {
-                writer.write(QUOTE);
+                writer.write(JsonToken.QUOTE);
                 writer.write(Long.toString(value));
-                writer.write(QUOTE);
+                writer.write(JsonToken.QUOTE);
             }
         } catch (IOException e) {
             throwBsonException(e);
@@ -209,7 +212,7 @@ public class JsonWriter extends AbstractBsonWriter {
     protected void doWriteNull() {
         try {
             writeNameHelper(getName());
-            writer.write(NULL);
+            writer.write(JsonToken.NULL);
         } catch (IOException e) {
             throwBsonException(e);
         }
@@ -238,11 +241,11 @@ public class JsonWriter extends AbstractBsonWriter {
                     break;
                 default:
                     writeNameHelper(getName());
-                    writer.write(FORWARD_SLASH);
+                    writer.write(JsonToken.FORWARD_SLASH);
                     String escaped = (regularExpression.getPattern().equals("")) ? "(?:)" : regularExpression.getPattern()
                             .replace("/", "\\/");
                     writer.write(escaped);
-                    writer.write(FORWARD_SLASH);
+                    writer.write(JsonToken.FORWARD_SLASH);
                     writer.write(regularExpression.getOptions());
                 break;
             }
@@ -296,20 +299,20 @@ public class JsonWriter extends AbstractBsonWriter {
             case ARRAY:
                 // don't write Array element names in JSON
                 if (getContext().hasElements) {
-                    writer.write(COMMA);
+                    writer.write(JsonToken.COMMA);
                 }
                 break;
             case DOCUMENT:
             case SCOPE_DOCUMENT:
                 if (getContext().hasElements) {
-                    writer.write(COMMA);
+                    writer.write(JsonToken.COMMA);
                 }
                 if (settings.isIndent()) {
                     writer.write(settings.getNewLineCharacters());
                     writer.write(getContext().indentation);
                 }
                 writeStringHelper(name);
-                writer.write(COLON);
+                writer.write(JsonToken.COLON);
                 break;
             case TOP_LEVEL:
                 break;

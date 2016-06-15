@@ -2,6 +2,7 @@ package org.grails.datastore.bson.codecs.decoders
 
 import groovy.transform.CompileStatic
 import org.bson.BsonReader
+import org.bson.BsonType
 import org.bson.codecs.DecoderContext
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.types.Binary
@@ -18,11 +19,23 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
     public static final Map<Class, TypeDecoder> SIMPLE_TYPE_DECODERS
     public static final TypeDecoder DEFAULT_DECODER = new TypeDecoder() {
         @Override
+        BsonType bsonType() {
+            BsonType.STRING
+        }
+
+        @Override
         void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
             entityAccess.setProperty( property.name, reader.readString())
         }
     }
+    public static final Map<BsonType, TypeDecoder> DEFAULT_ENCODERS = new HashMap<BsonType, TypeDecoder>().withDefault { Class ->
+        DEFAULT_DECODER
+    }
+
     static interface TypeDecoder {
+
+        BsonType bsonType()
+
         void decode(BsonReader reader, Simple property, EntityAccess entityAccess)
     }
 
@@ -31,64 +44,153 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             DEFAULT_DECODER
         }
 
-        def convertingIntReader = new TypeDecoder() {
+
+
+        def convertingIntReader =  new TypeDecoder() {
             @Override
             void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
                 entityAccess.setProperty( property.name, reader.readInt32() )
             }
+
+            @Override
+            BsonType bsonType() {
+                BsonType.INT32
+            }
         }
+
+        DEFAULT_ENCODERS.put(convertingIntReader.bsonType(), convertingIntReader)
+
         SIMPLE_TYPE_DECODERS[Short] = convertingIntReader
         SIMPLE_TYPE_DECODERS[short.class] = convertingIntReader
         SIMPLE_TYPE_DECODERS[Byte] = convertingIntReader
         SIMPLE_TYPE_DECODERS[byte.class] = convertingIntReader
+
+
         def intDecoder = new TypeDecoder() {
             @Override
             void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
                 entityAccess.setPropertyNoConversion( property.name, reader.readInt32() )
             }
+
+            @Override
+            BsonType bsonType() {
+                BsonType.INT32
+            }
         }
+
         SIMPLE_TYPE_DECODERS[Integer] = intDecoder
         SIMPLE_TYPE_DECODERS[int.class] = intDecoder
+
         def longDecoder = new TypeDecoder() {
             @Override
             void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
                 entityAccess.setPropertyNoConversion( property.name, reader.readInt64() )
             }
+
+            @Override
+            BsonType bsonType() {
+                BsonType.INT64
+            }
         }
+
+        def convertingLongDecoder = new TypeDecoder() {
+            @Override
+            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+                entityAccess.setProperty( property.name, reader.readInt64() )
+            }
+
+            @Override
+            BsonType bsonType() {
+                BsonType.INT64
+            }
+        }
+
+        DEFAULT_ENCODERS.put(convertingLongDecoder.bsonType(), convertingLongDecoder)
+
         SIMPLE_TYPE_DECODERS[Long] = longDecoder
         SIMPLE_TYPE_DECODERS[long.class] = longDecoder
+
         def doubleDecoder = new TypeDecoder() {
             @Override
             void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
                 entityAccess.setPropertyNoConversion( property.name, reader.readDouble() )
             }
+
+            @Override
+            BsonType bsonType() {
+                BsonType.DOUBLE
+            }
         }
+
+        def convertingDoubleDecoder = new TypeDecoder() {
+            @Override
+            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+                entityAccess.setPropertyNoConversion( property.name, reader.readDouble() )
+            }
+
+            @Override
+            BsonType bsonType() {
+                BsonType.DOUBLE
+            }
+        }
+
+        DEFAULT_ENCODERS.put(convertingDoubleDecoder.bsonType(), convertingDoubleDecoder)
+
         SIMPLE_TYPE_DECODERS[Double] = doubleDecoder
         SIMPLE_TYPE_DECODERS[double.class] = doubleDecoder
+
         def booleanDecoder = new TypeDecoder() {
             @Override
             void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
                 entityAccess.setPropertyNoConversion( property.name, reader.readBoolean() )
             }
+
+            @Override
+            BsonType bsonType() {
+                BsonType.BOOLEAN
+            }
         }
+
+        DEFAULT_ENCODERS.put(booleanDecoder.bsonType(), booleanDecoder)
         SIMPLE_TYPE_DECODERS[Boolean] = booleanDecoder
         SIMPLE_TYPE_DECODERS[boolean.class] = booleanDecoder
 
-        SIMPLE_TYPE_DECODERS[([] as byte[]).getClass()] = new TypeDecoder() {
+
+        def binaryDecoder = new TypeDecoder() {
             @Override
             void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
                 def binary = reader.readBinaryData()
-                entityAccess.setPropertyNoConversion( property.name, binary.data )
+                entityAccess.setPropertyNoConversion(property.name, binary.data)
+            }
+
+            @Override
+            BsonType bsonType() {
+                BsonType.BINARY
             }
         }
+
+        DEFAULT_ENCODERS.put(binaryDecoder.bsonType(), binaryDecoder)
+        SIMPLE_TYPE_DECODERS[([] as byte[]).getClass()] = binaryDecoder
+
         SIMPLE_TYPE_DECODERS[Date] = new TypeDecoder() {
             @Override
             void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
                 def time = reader.readDateTime()
                 entityAccess.setPropertyNoConversion( property.name, new Date(time))
             }
+
+            @Override
+            BsonType bsonType() {
+                BsonType.DATE_TIME
+            }
         }
+
         SIMPLE_TYPE_DECODERS[Calendar] = new TypeDecoder() {
+            @Override
+            BsonType bsonType() {
+                BsonType.DATE_TIME
+            }
+
             @Override
             void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
                 def time = reader.readDateTime()
@@ -107,8 +209,19 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
                         new Binary(reader.readBinaryData().data)
                 )
             }
+
+            @Override
+            BsonType bsonType() {
+                BsonType.BINARY
+            }
         }
+
         SIMPLE_TYPE_DECODERS[ObjectId] = new TypeDecoder() {
+            @Override
+            BsonType bsonType() {
+                BsonType.OBJECT_ID
+            }
+
             @Override
             void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
 
@@ -116,6 +229,8 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
                         property.name,
                         reader.readObjectId()
                 )
+
+
             }
         }
     }
@@ -123,7 +238,9 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
     @Override
     void decode(BsonReader reader, Simple property, EntityAccess entityAccess, DecoderContext decoderContext, CodecRegistry codecRegistry) {
         def type = property.type
-        def decoder = SIMPLE_TYPE_DECODERS[type]
+
+        TypeDecoder decoder = SIMPLE_TYPE_DECODERS[type]
+
         if(type.isArray()) {
             if(!decoder.is(DEFAULT_DECODER)) {
                 decoder.decode reader, property, entityAccess
@@ -135,7 +252,13 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             }
         }
         else {
-            decoder.decode reader, property, entityAccess
+            BsonType bsonType = reader.currentBsonType
+            if(bsonType != decoder.bsonType()) {
+                DEFAULT_ENCODERS.get(bsonType).decode(reader, property, entityAccess)
+            }
+            else {
+                decoder.decode reader, property, entityAccess
+            }
         }
     }
 }
