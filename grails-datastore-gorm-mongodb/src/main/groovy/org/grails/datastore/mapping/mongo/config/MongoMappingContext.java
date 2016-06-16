@@ -155,30 +155,6 @@ public class MongoMappingContext extends DocumentMappingContext {
         }
 
         @Override
-        protected IdentityMapping getIdentityMappedForm(final ClassMapping classMapping, final MongoAttribute property) {
-            if (property == null) {
-                return super.getIdentityMappedForm(classMapping, property);
-            }
-
-            return new IdentityMapping() {
-                public String[] getIdentifierName() {
-                    if (property.getName() == null) {
-                        return new String[] { MappingFactory.IDENTITY_PROPERTY };
-                    }
-                    return new String[] { property.getName()};
-                }
-
-                public ClassMapping getClassMapping() {
-                    return classMapping;
-                }
-
-                public Property getMappedForm() {
-                    return property;
-                }
-            };
-        }
-
-        @Override
         public boolean isSimpleType(Class propType) {
             if (propType == null) return false;
             if (propType.isArray()) {
