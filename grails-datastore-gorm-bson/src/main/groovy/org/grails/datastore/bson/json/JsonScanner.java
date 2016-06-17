@@ -89,7 +89,7 @@ class JsonScanner {
                 if (c == JsonToken.MINUS || Character.isDigit(c)) {
                     return scanNumber((char) c);
                 } else if (c == '$' || c == '_' || Character.isLetter(c)) {
-                    return scanUnquotedString();
+                    return scanUnquotedString((char)c);
                 } else {
                     reader.unread(c);
                     throw new JsonParseException("Invalid JSON input. Position: %d. Character: '%c'.", position, c);
@@ -186,13 +186,15 @@ class JsonScanner {
      * Reads {@code StringToken} from source.
      *
      * @return The string token.
+     * @param startChar
      */
-    private JsonToken scanUnquotedString() throws IOException {
+    private JsonToken scanUnquotedString(char startChar) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        builder.append(startChar);
         int c = readCharacter();
-        StringBuilder builder = new StringBuilder(c);
         while (c == '$' || c == '_' || Character.isLetterOrDigit(c)) {
-            c = readCharacter();
             builder.append((char)c);
+            c = readCharacter();
         }
         reader.unread(c);
         String lexeme = builder.toString();

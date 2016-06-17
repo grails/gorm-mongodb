@@ -72,6 +72,71 @@ class BsonPersistentEntityCodecSpec extends Specification {
         person.age == 12
 
     }
+
+    void "Test read entity from JSON with null values"() {
+        given:"A mapping context"
+        MappingContext mappingContext = new KeyValueMappingContext("test")
+        def format = new SimpleDateFormat(JsonWriter.ISO_8601)
+        TimeZone UTC = TimeZone.getTimeZone("UTC");
+        format.setTimeZone(UTC)
+        mappingContext.converterRegistry.addConverter(new Converter<String, Date>() {
+            @Override
+            Date convert(String source) {
+
+                return format.parse(source)
+            }
+        })
+        PersistentEntity entity = mappingContext.addPersistentEntity(Person)
+
+        CodecRegistry codecRegistry = CodecRegistries.fromProviders(new CodecExtensions())
+
+        when:"An entity is is marshaled"
+
+        BsonPersistentEntityCodec codec = new BsonPersistentEntityCodec(codecRegistry, entity)
+
+        Person person = codec.decode(new JsonReader('{"age":12,"dateOfBirth":null,"name":"Fred"}'))
+
+
+        then:"The result is encoded JSON"
+        person != null
+        person.name == "Fred"
+        person.dateOfBirth == null
+        person.age == 12
+
+    }
+
+
+    void "Test read entity from JSON with regex values"() {
+        given:"A mapping context"
+        MappingContext mappingContext = new KeyValueMappingContext("test")
+        def format = new SimpleDateFormat(JsonWriter.ISO_8601)
+        TimeZone UTC = TimeZone.getTimeZone("UTC");
+        format.setTimeZone(UTC)
+        mappingContext.converterRegistry.addConverter(new Converter<String, Date>() {
+            @Override
+            Date convert(String source) {
+
+                return format.parse(source)
+            }
+        })
+        PersistentEntity entity = mappingContext.addPersistentEntity(Person)
+
+        CodecRegistry codecRegistry = CodecRegistries.fromProviders(new CodecExtensions())
+
+        when:"An entity is is marshaled"
+
+        BsonPersistentEntityCodec codec = new BsonPersistentEntityCodec(codecRegistry, entity)
+
+        Person person = codec.decode(new JsonReader('{"age":12,"dateOfBirth":null,"name":"Fred", pattern:/\\sfoo+/}'))
+
+
+        then:"The result is encoded JSON"
+        person != null
+        person.name == "Fred"
+        person.dateOfBirth == null
+        person.age == 12
+        person.pattern == /\sfoo+/
+    }
 }
 
 

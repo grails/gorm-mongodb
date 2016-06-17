@@ -11,4 +11,5 @@ class Person {
     String name
     Integer age
     Date dateOfBirth
+    String pattern
 }

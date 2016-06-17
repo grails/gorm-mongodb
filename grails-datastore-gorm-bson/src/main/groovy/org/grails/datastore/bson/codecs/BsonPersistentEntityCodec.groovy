@@ -111,12 +111,12 @@ class BsonPersistentEntityCodec implements Codec {
                     def property = persistentEntity.getPropertyByName(name)
                     if(property && bsonType != BsonType.NULL) {
                         def propKind = property.getClass().superclass
-                        switch(property.type) {
-                            case CharSequence:
-                                access.setPropertyNoConversion(property.name, bsonReader.readString())
-                                break
-                            default:
-                                getPropertyDecoder(propKind)?.decode(bsonReader, property, access, decoderContext, codecRegistry)
+
+                        if(CharSequence.isAssignableFrom(property.type) && bsonType == BsonType.STRING) {
+                            access.setPropertyNoConversion(property.name, bsonReader.readString())
+                        }
+                        else {
+                            getPropertyDecoder(propKind)?.decode(bsonReader, property, access, decoderContext, codecRegistry)
                         }
 
                     }

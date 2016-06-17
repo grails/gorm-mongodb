@@ -2,6 +2,7 @@ package org.grails.datastore.bson.codecs.decoders
 
 import groovy.transform.CompileStatic
 import org.bson.BsonReader
+import org.bson.BsonRegularExpression
 import org.bson.BsonType
 import org.bson.codecs.DecoderContext
 import org.bson.codecs.configuration.CodecRegistry
@@ -28,7 +29,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             entityAccess.setProperty( property.name, reader.readString())
         }
     }
-    public static final Map<BsonType, TypeDecoder> DEFAULT_ENCODERS = new HashMap<BsonType, TypeDecoder>().withDefault { Class ->
+    public static final Map<BsonType, TypeDecoder> DEFAULT_DECODERS = new HashMap<BsonType, TypeDecoder>().withDefault { Class ->
         DEFAULT_DECODER
     }
 
@@ -44,8 +45,19 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             DEFAULT_DECODER
         }
 
+        DEFAULT_DECODERS.put(BsonType.REGULAR_EXPRESSION, new TypeDecoder() {
+            @Override
+            BsonType bsonType() {
+                BsonType.REGULAR_EXPRESSION
+            }
 
+            @Override
+            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
 
+                BsonRegularExpression regularExpression = reader.readRegularExpression()
+                entityAccess.setProperty( property.name, regularExpression.pattern )
+            }
+        })
         def convertingIntReader =  new TypeDecoder() {
             @Override
             void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
@@ -58,7 +70,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             }
         }
 
-        DEFAULT_ENCODERS.put(convertingIntReader.bsonType(), convertingIntReader)
+        DEFAULT_DECODERS.put(convertingIntReader.bsonType(), convertingIntReader)
 
         SIMPLE_TYPE_DECODERS[Short] = convertingIntReader
         SIMPLE_TYPE_DECODERS[short.class] = convertingIntReader
@@ -105,7 +117,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             }
         }
 
-        DEFAULT_ENCODERS.put(convertingLongDecoder.bsonType(), convertingLongDecoder)
+        DEFAULT_DECODERS.put(convertingLongDecoder.bsonType(), convertingLongDecoder)
 
         SIMPLE_TYPE_DECODERS[Long] = longDecoder
         SIMPLE_TYPE_DECODERS[long.class] = longDecoder
@@ -134,7 +146,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             }
         }
 
-        DEFAULT_ENCODERS.put(convertingDoubleDecoder.bsonType(), convertingDoubleDecoder)
+        DEFAULT_DECODERS.put(convertingDoubleDecoder.bsonType(), convertingDoubleDecoder)
 
         SIMPLE_TYPE_DECODERS[Double] = doubleDecoder
         SIMPLE_TYPE_DECODERS[double.class] = doubleDecoder
@@ -151,7 +163,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             }
         }
 
-        DEFAULT_ENCODERS.put(booleanDecoder.bsonType(), booleanDecoder)
+        DEFAULT_DECODERS.put(booleanDecoder.bsonType(), booleanDecoder)
         SIMPLE_TYPE_DECODERS[Boolean] = booleanDecoder
         SIMPLE_TYPE_DECODERS[boolean.class] = booleanDecoder
 
@@ -169,7 +181,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             }
         }
 
-        DEFAULT_ENCODERS.put(binaryDecoder.bsonType(), binaryDecoder)
+        DEFAULT_DECODERS.put(binaryDecoder.bsonType(), binaryDecoder)
         SIMPLE_TYPE_DECODERS[([] as byte[]).getClass()] = binaryDecoder
 
         SIMPLE_TYPE_DECODERS[Date] = new TypeDecoder() {
@@ -254,7 +266,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
         else {
             BsonType bsonType = reader.currentBsonType
             if(bsonType != decoder.bsonType()) {
-                DEFAULT_ENCODERS.get(bsonType).decode(reader, property, entityAccess)
+                DEFAULT_DECODERS.get(bsonType).decode(reader, property, entityAccess)
             }
             else {
                 decoder.decode reader, property, entityAccess
