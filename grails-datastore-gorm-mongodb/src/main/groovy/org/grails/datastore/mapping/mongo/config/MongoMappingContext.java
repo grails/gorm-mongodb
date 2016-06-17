@@ -38,6 +38,7 @@ import org.grails.datastore.gorm.mongo.geo.*;
 import org.grails.datastore.gorm.mongo.simple.EnumType;
 import org.grails.datastore.mapping.config.AbstractGormMappingFactory;
 import org.grails.datastore.mapping.config.Property;
+import org.grails.datastore.mapping.document.config.Attribute;
 import org.grails.datastore.mapping.document.config.Collection;
 import org.grails.datastore.mapping.document.config.DocumentMappingContext;
 import org.grails.datastore.mapping.document.config.GormDocumentMappingFactory;
@@ -167,17 +168,18 @@ public class MongoMappingContext extends DocumentMappingContext {
 
 
     protected void registerMongoTypes() {
-        MappingFactory.registerCustomType(new GeometryCollectionType());
-        MappingFactory.registerCustomType(new PointType());
-        MappingFactory.registerCustomType(new PolygonType());
-        MappingFactory.registerCustomType(new LineStringType());
-        MappingFactory.registerCustomType(new MultiLineStringType());
-        MappingFactory.registerCustomType(new MultiPointType());
-        MappingFactory.registerCustomType(new MultiPolygonType());
-        MappingFactory.registerCustomType(new ShapeType());
-        MappingFactory.registerCustomType(new BoxType());
-        MappingFactory.registerCustomType(new CircleType());
-        MappingFactory.registerCustomType(new EnumType());
+        MappingFactory<Collection, Attribute> mappingFactory = getMappingFactory();
+        mappingFactory.registerCustomType(new GeometryCollectionType());
+        mappingFactory.registerCustomType(new PointType());
+        mappingFactory.registerCustomType(new PolygonType());
+        mappingFactory.registerCustomType(new LineStringType());
+        mappingFactory.registerCustomType(new MultiLineStringType());
+        mappingFactory.registerCustomType(new MultiPointType());
+        mappingFactory.registerCustomType(new MultiPolygonType());
+        mappingFactory.registerCustomType(new ShapeType());
+        mappingFactory.registerCustomType(new BoxType());
+        mappingFactory.registerCustomType(new CircleType());
+        mappingFactory.registerCustomType(new EnumType());
     }
 
     @Override
