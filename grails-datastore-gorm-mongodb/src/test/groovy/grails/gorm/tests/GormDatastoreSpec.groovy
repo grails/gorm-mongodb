@@ -51,9 +51,14 @@ abstract class GormDatastoreSpec extends Specification {
         ctx.refresh()
 
         def databaseName = System.getProperty(GormDatastoreSpec.CURRENT_TEST_NAME) ?: 'test'
-        MappingFactory.registerCustomType(new AbstractMappingAwareCustomTypeMarshaller<Birthday, Document, Document>(Birthday) {
+
+
+        mongoDatastore = new MongoDatastore([(MongoDatastore.SETTING_DATABASE_NAME): databaseName])
+        mappingContext = mongoDatastore.mappingContext
+        mappingContext.mappingFactory.registerCustomType(new AbstractMappingAwareCustomTypeMarshaller<Birthday, Document, Document>(Birthday) {
             @Override
             protected Object writeInternal(PersistentProperty property, String key, Birthday value, Document nativeTarget) {
+
                 final converted = value.date.time
                 nativeTarget.put(key, converted)
                 return converted
@@ -81,10 +86,7 @@ abstract class GormDatastoreSpec extends Specification {
                 return null
             }
         })
-
-        mongoDatastore = new MongoDatastore([(MongoDatastore.SETTING_DATABASE_NAME): databaseName], allClasses as Class[])
-        mappingContext = mongoDatastore.mappingContext
-
+        mappingContext.addPersistentEntities(allClasses as Class[])
         mongoClient = mongoDatastore.getMongoClient()
 
         grailsApplication = new DefaultGrailsApplication(allClasses, getClass().getClassLoader())
