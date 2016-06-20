@@ -1,0 +1,4 @@
+dependencies {
+    compile "org.grails:grails-datastore-gorm-rx:$gormVersion"
+    compile project(":grails-datastore-gorm-bson")
+}

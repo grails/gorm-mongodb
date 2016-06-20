@@ -154,6 +154,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
 
         gormEnhancer = new MongoGormEnhancer(this, transactionManager);
 
+
         registerEventListeners(eventPublisher);
 
         mappingContext.addMappingContextListener(new MappingContext.Listener() {

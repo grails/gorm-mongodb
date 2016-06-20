@@ -1801,7 +1801,7 @@ public class MongoQuery extends Query implements QueryArgumentsAware {
 
 
 
-    protected static class ProjectedProperty {
+    public static class ProjectedProperty {
         public Projection projection;
         public String projectionKey;
         public PersistentProperty property;

@@ -18,7 +18,6 @@ import com.mongodb.rx.client.ObservableAdapter
 import groovy.transform.CompileStatic
 import org.bson.Document
 import org.bson.codecs.Codec
-import org.bson.codecs.configuration.CodecProvider
 import org.bson.codecs.configuration.CodecRegistries
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.types.Binary
@@ -46,6 +45,7 @@ import org.grails.datastore.mapping.reflect.EntityReflector
 import org.grails.datastore.rx.AbstractRxDatastoreClient
 import org.grails.datastore.rx.RxDatastoreClient
 import org.grails.datastore.rx.batch.BatchOperation
+import org.grails.datastore.rx.bson.CodecsRxDatastoreClient
 import org.grails.datastore.rx.mongodb.api.RxMongoStaticApi
 import org.grails.datastore.rx.mongodb.config.MongoClientSettingsBuilder
 import org.grails.datastore.rx.mongodb.engine.codecs.RxPersistentEntityCodec
@@ -66,7 +66,7 @@ import rx.Observable
  * @author Graeme Rocher
  */
 @CompileStatic
-class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> implements CodecProvider {
+class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> implements CodecsRxDatastoreClient {
     private static final String INDEX_ATTRIBUTES = "indexAttributes"
 
     protected MongoClient mongoClient

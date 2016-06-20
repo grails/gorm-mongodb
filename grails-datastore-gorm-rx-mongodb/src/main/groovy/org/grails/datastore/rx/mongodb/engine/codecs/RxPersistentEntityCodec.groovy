@@ -2,38 +2,23 @@ package org.grails.datastore.rx.mongodb.engine.codecs
 
 import groovy.transform.CompileStatic
 import org.bson.BsonReader
-import org.bson.BsonWriter
 import org.bson.codecs.DecoderContext
-import org.bson.codecs.EncoderContext
 import org.bson.codecs.configuration.CodecRegistry
-import org.bson.types.ObjectId
-import org.grails.datastore.mapping.core.Session
-import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
-import org.grails.datastore.mapping.dirty.checking.DirtyCheckableCollection
-import org.grails.datastore.mapping.engine.EntityAccess
-import org.grails.datastore.mapping.engine.internal.MappingUtils
-import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.datastore.mapping.model.PersistentProperty
-import org.grails.datastore.mapping.model.types.Association
-import org.grails.datastore.mapping.model.types.Embedded
-import org.grails.datastore.mapping.model.types.EmbeddedCollection
-import org.grails.datastore.mapping.model.types.Identity
-import org.grails.datastore.mapping.model.types.ManyToMany
-import org.grails.datastore.mapping.model.types.ManyToOne
-import org.grails.datastore.mapping.model.types.OneToMany
-import org.grails.datastore.mapping.model.types.OneToOne
-import org.grails.datastore.mapping.model.types.ToMany
-import org.grails.datastore.mapping.model.types.ToOne
-import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec
 import org.grails.datastore.bson.codecs.PropertyDecoder
 import org.grails.datastore.bson.codecs.PropertyEncoder
-import org.grails.datastore.mapping.reflect.FieldEntityAccess
+import org.grails.datastore.mapping.core.Session
+import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
+import org.grails.datastore.mapping.engine.EntityAccess
+import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.model.PersistentProperty
+import org.grails.datastore.mapping.model.types.*
+import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec
 import org.grails.datastore.rx.RxDatastoreClient
+import org.grails.datastore.rx.bson.CodecsRxDatastoreClient
+import org.grails.datastore.rx.bson.codecs.decoders.IdentityDecoder
 import org.grails.datastore.rx.collection.RxPersistentList
 import org.grails.datastore.rx.collection.RxPersistentSet
 import org.grails.datastore.rx.collection.RxPersistentSortedSet
-import org.grails.datastore.rx.internal.RxDatastoreClientImplementor
-import org.grails.datastore.rx.mongodb.RxMongoDatastoreClient
 import org.grails.datastore.rx.query.QueryState
 import org.grails.gorm.rx.api.RxGormEnhancer
 
@@ -52,16 +37,16 @@ class RxPersistentEntityCodec extends PersistentEntityCodec {
     private static final Map<Class, PropertyDecoder> RX_DECODERS = [:]
 
     static {
-        RX_ENCODERS[OneToMany] = new OneToManyEncoder()
-        RX_DECODERS[OneToMany] = new OneToManyDecoder()
-        RX_ENCODERS[ManyToMany] = new OneToManyEncoder()
-        RX_DECODERS[ManyToMany] = new OneToManyDecoder()
+        RX_ENCODERS[OneToMany] = new org.grails.datastore.rx.bson.codecs.encoders.OneToManyEncoder()
+        RX_DECODERS[OneToMany] = new org.grails.datastore.rx.bson.codecs.decoders.OneToManyDecoder()
+        RX_ENCODERS[ManyToMany] = new org.grails.datastore.rx.bson.codecs.encoders.OneToManyEncoder()
+        RX_DECODERS[ManyToMany] = new org.grails.datastore.rx.bson.codecs.decoders.OneToManyDecoder()
         RX_ENCODERS[Embedded] = new EmbeddedEncoder()
         RX_DECODERS[Embedded] = new EmbeddedDecoder()
         RX_ENCODERS[EmbeddedCollection] = new EmbeddedCollectionEncoder()
         RX_DECODERS[EmbeddedCollection] = new EmbeddedCollectionDecoder()
-        RX_DECODERS[OneToOne] = new ToOneDecoder()
-        RX_DECODERS[ManyToOne] = new ToOneDecoder()
+        RX_DECODERS[OneToOne] = new org.grails.datastore.rx.bson.codecs.decoders.ToOneDecoder()
+        RX_DECODERS[ManyToOne] = new org.grails.datastore.rx.bson.codecs.decoders.ToOneDecoder()
     }
 
     final RxDatastoreClient datastoreClient
@@ -71,16 +56,16 @@ class RxPersistentEntityCodec extends PersistentEntityCodec {
     private final QueryState queryState
 
 
-    RxPersistentEntityCodec(PersistentEntity entity, RxMongoDatastoreClient datastoreClient, QueryState queryState = null) {
+    RxPersistentEntityCodec(PersistentEntity entity, CodecsRxDatastoreClient datastoreClient, QueryState queryState = null) {
         super(datastoreClient.codecRegistry, entity, false)
         this.datastoreClient = datastoreClient
         this.queryState = queryState
         if(queryState != null) {
-            def toOneDecoder = new ToOneDecoder(queryState)
+            def toOneDecoder = new org.grails.datastore.rx.bson.codecs.decoders.ToOneDecoder(queryState)
             localDecoders.put(OneToOne, toOneDecoder)
             localDecoders.put(ManyToOne, toOneDecoder)
             localDecoders.put(Identity, new IdentityDecoder(queryState))
-            def oneToManyDecoder = new OneToManyDecoder(queryState)
+            def oneToManyDecoder = new org.grails.datastore.rx.bson.codecs.decoders.OneToManyDecoder(queryState)
             localDecoders.put OneToMany, oneToManyDecoder
             localDecoders.put ManyToMany, oneToManyDecoder
         }
@@ -150,193 +135,30 @@ class RxPersistentEntityCodec extends PersistentEntityCodec {
     static class EmbeddedEncoder extends org.grails.datastore.bson.codecs.encoders.EmbeddedEncoder {
         @Override
         protected PersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
-            return new RxPersistentEntityCodec(associatedEntity, (RxMongoDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())
+            return new RxPersistentEntityCodec(associatedEntity, (CodecsRxDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())
         }
     }
 
     static class EmbeddedDecoder extends org.grails.datastore.bson.codecs.decoders.EmbeddedDecoder {
         @Override
         protected PersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
-            return new RxPersistentEntityCodec(associatedEntity, (RxMongoDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())
+            return new RxPersistentEntityCodec(associatedEntity, (CodecsRxDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())
         }
     }
 
     static class EmbeddedCollectionEncoder extends org.grails.datastore.bson.codecs.encoders.EmbeddedCollectionEncoder {
         @Override
         protected PersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
-            return new RxPersistentEntityCodec(associatedEntity, (RxMongoDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())
+            return new RxPersistentEntityCodec(associatedEntity, (CodecsRxDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())
         }
     }
 
     static class EmbeddedCollectionDecoder extends org.grails.datastore.bson.codecs.decoders.EmbeddedCollectionDecoder {
         @Override
         protected PersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
-            return new RxPersistentEntityCodec(associatedEntity, (RxMongoDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())
+            return new RxPersistentEntityCodec(associatedEntity, (CodecsRxDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient())
         }
     }
 
-    static class IdentityDecoder implements PropertyDecoder<Identity> {
-        final QueryState queryState
 
-        IdentityDecoder(QueryState queryState) {
-            this.queryState = queryState
-        }
-
-        @Override
-        void decode(BsonReader bsonReader, Identity property, EntityAccess access, DecoderContext decoderContext, CodecRegistry codecRegistry) {
-            def objectId
-            switch(property.type) {
-                case ObjectId:
-                    objectId = bsonReader.readObjectId()
-                    break
-                case Long:
-                    objectId = bsonReader.readInt64()
-                    break
-                case Integer:
-                    objectId = bsonReader.readInt32()
-                    break
-                default:
-                    objectId =  bsonReader.readString()
-            }
-            access.setIdentifierNoConversion(objectId)
-            queryState.addLoadedEntity(access.persistentEntity.javaClass,(Serializable) objectId, access.entity)
-        }
-    }
-
-    static class OneToManyDecoder implements PropertyDecoder<ToMany> {
-        final QueryState queryState
-
-        OneToManyDecoder(QueryState queryState) {
-            this.queryState = queryState
-        }
-
-        OneToManyDecoder() {
-            this.queryState = null
-        }
-
-        protected Collection createConcreteCollection(Association association, Serializable foreignKey) {
-            switch(association.type) {
-                case SortedSet:
-                    return new RxPersistentSortedSet(RxGormEnhancer.findInstanceApi(association.associatedEntity.javaClass).datastoreClient, association, foreignKey, queryState)
-                case List:
-                    return new RxPersistentList(RxGormEnhancer.findInstanceApi(association.associatedEntity.javaClass).datastoreClient, association, foreignKey, queryState)
-                default:
-                    return new RxPersistentSet(RxGormEnhancer.findInstanceApi(association.associatedEntity.javaClass).datastoreClient, association, foreignKey, queryState)
-            }
-        }
-
-        @Override
-        void decode(BsonReader reader, ToMany property, EntityAccess entityAccess, DecoderContext decoderContext, CodecRegistry codecRegistry) {
-            if(property.isBidirectional() && !(property instanceof ManyToMany)) {
-                def foreignKey = (Serializable) entityAccess.getIdentifier()
-                entityAccess.setPropertyNoConversion(property.name, createConcreteCollection(property, foreignKey))
-            }
-            else {
-                def type = property.type
-                def propertyName = property.name
-
-                def listCodec = codecRegistry.get(List)
-                def identifiers = listCodec.decode(reader, decoderContext)
-                def associatedType = property.associatedEntity.javaClass
-                def datastoreClient = RxGormEnhancer.findStaticApi(associatedType).datastoreClient
-                if(SortedSet.isAssignableFrom(type)) {
-                    entityAccess.setPropertyNoConversion(
-                            propertyName,
-                            new RxPersistentSortedSet( datastoreClient, property, identifiers, queryState)
-                    )
-                }
-                else if(Set.isAssignableFrom(type)) {
-                    entityAccess.setPropertyNoConversion(
-                            propertyName,
-                            new RxPersistentSet( datastoreClient, property, identifiers, queryState)
-                    )
-                }
-                else {
-                    entityAccess.setPropertyNoConversion(
-                            propertyName,
-                            new RxPersistentList( datastoreClient, property, identifiers, queryState )
-                    )
-                }
-            }
-        }
-    }
-
-    static class ToOneDecoder implements PropertyDecoder<ToOne> {
-
-        final QueryState queryState
-
-        ToOneDecoder(QueryState queryState) {
-            this.queryState = queryState
-        }
-
-        ToOneDecoder() {
-            this.queryState = null
-        }
-
-        @Override
-        void decode(BsonReader bsonReader, ToOne property, EntityAccess entityAccess, DecoderContext decoderContext, CodecRegistry codecRegistry) {
-            def associatedEntity = property.associatedEntity
-            Serializable associationId
-            switch(associatedEntity.identity.type) {
-                case ObjectId:
-                    associationId = bsonReader.readObjectId()
-                    break
-                case Long:
-                    associationId = (Long)bsonReader.readInt64()
-                    break
-                case Integer:
-                    associationId =  (Integer)bsonReader.readInt32()
-                    break
-                default:
-                    associationId = bsonReader.readString()
-            }
-
-
-            def associationType = associatedEntity.javaClass
-            def loadedEntity = queryState?.getLoadedEntity(associationType, associationId)
-            if(loadedEntity != null) {
-                entityAccess.setPropertyNoConversion(property.name, loadedEntity)
-            }
-            else {
-                RxDatastoreClientImplementor datastoreClient = (RxDatastoreClientImplementor)RxGormEnhancer.findStaticApi(associationType).datastoreClient
-                entityAccess.setPropertyNoConversion(property.name, datastoreClient.proxy(associationType, associationId, queryState))
-            }
-        }
-    }
-    @CompileStatic
-    static class OneToManyEncoder implements PropertyEncoder<OneToMany> {
-
-        @Override
-        void encode(BsonWriter writer, OneToMany property, Object value, EntityAccess parentAccess, EncoderContext encoderContext, CodecRegistry codecRegistry) {
-            boolean shouldEncodeIds = !property.isBidirectional() || (property instanceof ManyToMany)
-            if(shouldEncodeIds) {
-                if(value instanceof Collection) {
-                    boolean updateCollection = false
-                    if((value instanceof DirtyCheckableCollection)) {
-                        def persistentCollection = (DirtyCheckableCollection) value
-                        updateCollection = persistentCollection.hasChanged()
-                    }
-                    else {
-                        // write new collection
-                        updateCollection = true
-                    }
-
-                    if(updateCollection) {
-                        // update existing collection
-                        Collection identifiers
-                        def entityReflector = FieldEntityAccess.getOrIntializeReflector(property.associatedEntity)
-                        identifiers = ((Collection)value).collect() {
-                            entityReflector.getIdentifier(it)
-                        }.findAll() { it != null }
-
-                        writer.writeName MappingUtils.getTargetKey((PersistentProperty)property)
-                        def listCodec = codecRegistry.get(List)
-
-                        def identifierList = identifiers.toList()
-                        listCodec.encode writer, identifierList, encoderContext
-                    }
-                }
-            }
-        }
-    }
 }

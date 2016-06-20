@@ -1,7 +1,8 @@
 dependencies {
     documentation 'org.mongodb:mongodb-driver:3.2.1'
 
-    compile "org.grails:grails-datastore-gorm-rx:$gormVersion"  
+    compile "org.grails:grails-datastore-gorm-rx:$gormVersion"
+    compile project(":grails-datastore-gorm-rx-bson")
     compile project(":grails-datastore-gorm-mongodb"), {
         exclude group:'org.mongodb', module:'mongodb-driver'
         exclude group:'org.grails', module:'grails-datastore-gorm-support'

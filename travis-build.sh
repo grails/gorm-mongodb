@@ -4,7 +4,7 @@ EXIT_STATUS=0
 ./gradlew --stop
 
 
-./gradlew test -i -no-daemon -x grails2-plugin:test -x gorm-mongodb-spring-boot:test  || EXIT_STATUS=$?
+./gradlew test -no-daemon -x grails2-plugin:test -x gorm-mongodb-spring-boot:test  || EXIT_STATUS=$?
 if [[ $EXIT_STATUS -eq 0 ]]; then
     ./gradlew grails2-plugin:test -no-daemon || EXIT_STATUS=$?
 fi

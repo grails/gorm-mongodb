@@ -5,10 +5,8 @@ import org.bson.BsonDocument
 import org.bson.BsonDocumentWriter
 import org.bson.codecs.configuration.CodecRegistry
 import org.grails.datastore.mapping.model.types.Embedded
-import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec
 import org.grails.datastore.mapping.mongo.query.EmbeddedQueryEncoder
 import org.grails.datastore.mapping.mongo.query.MongoQuery
-import org.grails.datastore.rx.RxDatastoreClient
 import org.grails.datastore.rx.mongodb.RxMongoDatastoreClient
 import org.grails.datastore.rx.mongodb.engine.codecs.RxPersistentEntityCodec
 

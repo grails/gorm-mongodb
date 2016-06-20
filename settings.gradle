@@ -1,6 +1,7 @@
 include "grails-datastore-gorm-bson",
         "grails-datastore-gorm-mongodb",
-        "grails-datastore-gorm-mongodb-ext", 
+        "grails-datastore-gorm-mongodb-ext",
+        "grails-datastore-gorm-rx-bson",
         "grails-datastore-gorm-rx-mongodb",
         "boot-plugin", 
         'grails2-plugin', 
