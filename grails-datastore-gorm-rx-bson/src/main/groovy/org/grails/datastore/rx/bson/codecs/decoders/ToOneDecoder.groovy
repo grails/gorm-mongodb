@@ -74,12 +74,8 @@ class ToOneDecoder implements PropertyDecoder<ToOne> {
 
     final QueryState queryState
 
-    ToOneDecoder(QueryState queryState) {
+    ToOneDecoder(QueryState queryState = new QueryState()) {
         this.queryState = queryState
-    }
-
-    ToOneDecoder() {
-        this.queryState = null
     }
 
     @Override
