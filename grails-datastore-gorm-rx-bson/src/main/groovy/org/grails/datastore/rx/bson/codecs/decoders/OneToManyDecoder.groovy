@@ -2,13 +2,21 @@ package org.grails.datastore.rx.bson.codecs.decoders
 
 import groovy.transform.CompileStatic
 import org.bson.BsonReader
+import org.bson.BsonType
+import org.bson.codecs.Codec
 import org.bson.codecs.DecoderContext
 import org.bson.codecs.configuration.CodecRegistry
+import org.grails.datastore.bson.codecs.BsonPersistentEntityCodec
 import org.grails.datastore.bson.codecs.PropertyDecoder
+import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
+import org.grails.datastore.mapping.dirty.checking.DirtyCheckingSupport
 import org.grails.datastore.mapping.engine.EntityAccess
+import org.grails.datastore.mapping.engine.internal.MappingUtils
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.ManyToMany
 import org.grails.datastore.mapping.model.types.ToMany
+import org.grails.datastore.mapping.reflect.EntityReflector
 import org.grails.datastore.rx.collection.RxCollectionUtils
 import org.grails.datastore.rx.collection.RxPersistentList
 import org.grails.datastore.rx.collection.RxPersistentSet
@@ -41,8 +49,34 @@ class OneToManyDecoder implements PropertyDecoder<ToMany> {
     @Override
     void decode(BsonReader reader, ToMany property, EntityAccess entityAccess, DecoderContext decoderContext, CodecRegistry codecRegistry) {
         if(property.isBidirectional() && !(property instanceof ManyToMany)) {
-            def foreignKey = (Serializable) entityAccess.getIdentifier()
-            entityAccess.setPropertyNoConversion(property.name, createConcreteCollection(property, foreignKey))
+            BsonType bsonType = reader.currentBsonType
+            def parent = entityAccess.entity
+            if(bsonType == BsonType.ARRAY) {
+                reader.readStartArray()
+                Collection allDecoded = MappingUtils.createConcreteCollection(property.type)
+
+                PersistentEntity associatedEntity = property.getAssociatedEntity()
+                Codec codec = codecRegistry.get(associatedEntity.javaClass)
+                EntityReflector associationReflector = associatedEntity.reflector
+                Association inverseSide = property.inverseSide
+                while (bsonType != BsonType.END_OF_DOCUMENT) {
+                    def decoded = codec.decode(reader, BsonPersistentEntityCodec.DEFAULT_DECODER_CONTEXT)
+
+                    if(inverseSide != null) {
+                        associationReflector.setProperty(decoded, inverseSide.name, parent)
+                    }
+                    allDecoded.add(decoded)
+                    bsonType = reader.readBsonType()
+                }
+
+                reader.readEndArray()
+                entityAccess.setPropertyNoConversion(property.name, DirtyCheckingSupport.wrap(allDecoded, (DirtyCheckable) parent, property.name))
+            }
+            else {
+                reader.skipValue()
+                def foreignKey = (Serializable) entityAccess.getIdentifier()
+                entityAccess.setPropertyNoConversion(property.name, createConcreteCollection(property, foreignKey))
+            }
         }
         else {
             def type = property.type
