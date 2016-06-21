@@ -3,6 +3,7 @@ package org.grails.datastore.rx.bson.codecs
 import groovy.transform.CompileStatic
 import org.bson.codecs.Codec
 import org.bson.codecs.configuration.CodecRegistry
+import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.rx.bson.CodecsRxDatastoreClient
 import org.grails.datastore.rx.query.QueryState
@@ -13,22 +14,22 @@ import org.grails.datastore.rx.query.QueryState
  * @since 6.0
  */
 @CompileStatic
-class QueryStateAwareCodeRegistry implements CodecRegistry {
+class QueryStateAwareCodecRegistry implements CodecRegistry {
 
     final CodecRegistry parent
     final QueryState queryState
-    final CodecsRxDatastoreClient datastoreClient
+    final MappingContext mappingContext
 
-    QueryStateAwareCodeRegistry(CodecRegistry parent, QueryState queryState, CodecsRxDatastoreClient datastoreClient) {
+    QueryStateAwareCodecRegistry(CodecRegistry parent, QueryState queryState, MappingContext mappingContext) {
         this.parent = parent
         this.queryState = queryState
-        this.datastoreClient = datastoreClient
+        this.mappingContext = mappingContext
     }
 
     @Override
     def <T> Codec<T> get(Class<T> aClass) {
 
-        def entity = datastoreClient.getMappingContext().getPersistentEntity(aClass.name)
+        def entity = mappingContext.getPersistentEntity(aClass.name)
         if(entity != null) {
             return createEntityCodec(entity)
         }
@@ -38,7 +39,7 @@ class QueryStateAwareCodeRegistry implements CodecRegistry {
     }
 
     protected RxBsonPersistentEntityCodec createEntityCodec(PersistentEntity entity) {
-        new RxBsonPersistentEntityCodec(entity, datastoreClient.codecRegistry, queryState)
+        new RxBsonPersistentEntityCodec(entity, parent, queryState)
     }
 
 }

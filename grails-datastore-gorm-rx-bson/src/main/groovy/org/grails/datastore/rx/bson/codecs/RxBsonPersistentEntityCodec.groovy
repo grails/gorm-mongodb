@@ -11,13 +11,11 @@ import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.model.types.*
-import org.grails.datastore.rx.bson.CodecsRxDatastoreClient
 import org.grails.datastore.rx.bson.codecs.decoders.IdentityDecoder
 import org.grails.datastore.rx.bson.codecs.decoders.OneToManyDecoder
 import org.grails.datastore.rx.bson.codecs.decoders.ToOneDecoder
 import org.grails.datastore.rx.bson.codecs.encoders.OneToManyEncoder
 import org.grails.datastore.rx.query.QueryState
-import org.grails.gorm.rx.api.RxGormEnhancer
 
 /**
  * Overrides the default PersistentEntity codecs for associations with reactive implementation for RxGORM
@@ -49,7 +47,7 @@ class RxBsonPersistentEntityCodec extends BsonPersistentEntityCodec {
 
 
     RxBsonPersistentEntityCodec(PersistentEntity entity, CodecRegistry codecRegistry, QueryState queryState = null) {
-        super(codecRegistry, entity, false)
+        super(queryState != null ? new QueryStateAwareCodecRegistry(codecRegistry, queryState, entity.mappingContext) : codecRegistry , entity, false)
         this.queryState = queryState
         if(queryState != null) {
             def toOneDecoder = new org.grails.datastore.rx.bson.codecs.decoders.ToOneDecoder(queryState)
@@ -59,6 +57,9 @@ class RxBsonPersistentEntityCodec extends BsonPersistentEntityCodec {
             def oneToManyDecoder = new org.grails.datastore.rx.bson.codecs.decoders.OneToManyDecoder(queryState)
             localDecoders.put OneToMany, oneToManyDecoder
             localDecoders.put ManyToMany, oneToManyDecoder
+
+            localDecoders[Embedded] = new EmbeddedDecoder(queryState)
+            localDecoders[EmbeddedCollection] = new EmbeddedCollectionDecoder(queryState)
         }
     }
 
@@ -84,28 +85,38 @@ class RxBsonPersistentEntityCodec extends BsonPersistentEntityCodec {
     static class EmbeddedEncoder extends org.grails.datastore.bson.codecs.encoders.EmbeddedEncoder {
         @Override
         protected RxBsonPersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
-            return new RxBsonPersistentEntityCodec(associatedEntity, ((CodecsRxDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient()).getCodecRegistry())
+            return new RxBsonPersistentEntityCodec(associatedEntity, codecRegistry)
         }
     }
 
     static class EmbeddedDecoder extends org.grails.datastore.bson.codecs.decoders.EmbeddedDecoder {
+        final QueryState queryState
+        EmbeddedDecoder(QueryState queryState = new QueryState()) {
+            this.queryState = queryState
+        }
+
         @Override
         protected RxBsonPersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
-            return new RxBsonPersistentEntityCodec(associatedEntity, ((CodecsRxDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient()).getCodecRegistry())
+            return new RxBsonPersistentEntityCodec(associatedEntity, codecRegistry, queryState)
         }
     }
 
     static class EmbeddedCollectionEncoder extends org.grails.datastore.bson.codecs.encoders.EmbeddedCollectionEncoder {
         @Override
         protected RxBsonPersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
-            return new RxBsonPersistentEntityCodec(associatedEntity, ((CodecsRxDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient()).getCodecRegistry())
+            return new RxBsonPersistentEntityCodec(associatedEntity, codecRegistry)
         }
     }
 
     static class EmbeddedCollectionDecoder extends org.grails.datastore.bson.codecs.decoders.EmbeddedCollectionDecoder {
+        final QueryState queryState
+        EmbeddedCollectionDecoder(QueryState queryState = new QueryState()) {
+            this.queryState = queryState
+        }
+
         @Override
         protected RxBsonPersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
-            return new RxBsonPersistentEntityCodec(associatedEntity, ((CodecsRxDatastoreClient)RxGormEnhancer.findStaticApi(associatedEntity.javaClass).getDatastoreClient()).getCodecRegistry())
+            return new RxBsonPersistentEntityCodec(associatedEntity, codecRegistry, queryState)
         }
     }
 
