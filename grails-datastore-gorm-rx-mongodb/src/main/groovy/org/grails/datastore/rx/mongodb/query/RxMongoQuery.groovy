@@ -59,7 +59,7 @@ class RxMongoQuery extends MongoQuery implements RxQuery {
     }
 
     @Override
-    Observable findAll() {
+    Observable findAll(Map<String,Object> queryArguments = Collections.emptyMap()) {
         firePreQueryEvent()
         final List<Query.Projection> projectionList = projections().getProjectionList()
         Observable observable
@@ -188,11 +188,11 @@ class RxMongoQuery extends MongoQuery implements RxQuery {
     }
 
     @Override
-    Observable singleResult() {
+    Observable singleResult(Map<String,Object> queryArguments = Collections.emptyMap()) {
         if(projections.isEmpty()) {
             max(1)
         }
-        return findAll()
+        return findAll(queryArguments)
     }
 
     @Override
