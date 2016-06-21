@@ -57,6 +57,7 @@ import org.grails.gorm.rx.api.RxGormStaticApi
 import org.springframework.core.convert.converter.Converter
 import org.springframework.core.convert.converter.ConverterRegistry
 import org.springframework.core.env.PropertyResolver
+import org.springframework.core.env.StandardEnvironment
 import rx.Observable
 
 /**
@@ -76,6 +77,8 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     protected final Map<String, String> mongoDatabases= [:]
     protected final String defaultDatabase
     protected final MongoMappingContext mappingContext
+    protected final PropertyResolver configuration
+    protected final boolean allowBlockingOperations
 
     /**
      * Creates a new RxMongoDatastoreClient for the given mapping context and {@link MongoClient}
@@ -83,13 +86,14 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param mongoClient The mongo client
      * @param mappingContext The mapping context
      */
-    RxMongoDatastoreClient(MongoClient mongoClient, MongoMappingContext mappingContext) {
+    RxMongoDatastoreClient(MongoClient mongoClient, MongoMappingContext mappingContext, PropertyResolver configuration = new StandardEnvironment()) {
         super(mappingContext)
         this.mongoClient = mongoClient
         this.defaultDatabase = mappingContext.defaultDatabaseName
         this.mappingContext = mappingContext
         this.codecRegistry = createCodeRegistry()
-
+        this.configuration = configuration
+        this.allowBlockingOperations = configuration.getProperty(SETTING_ALLOW_BLOCKING, Boolean, true)
         initialize(mappingContext)
     }
 
@@ -101,8 +105,8 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param databaseName The default database name
      * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
      */
-    RxMongoDatastoreClient(MongoClient mongoClient, String databaseName, Closure defaultMapping, Class...classes) {
-        this(mongoClient, initializeMappingContext(databaseName, defaultMapping,classes))
+    RxMongoDatastoreClient(MongoClient mongoClient, String databaseName, PropertyResolver configuration, Class...classes) {
+        this(mongoClient, initializeMappingContext(configuration,databaseName, classes), configuration)
     }
 
     /**
@@ -113,19 +117,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
      */
     RxMongoDatastoreClient(MongoClient mongoClient, String databaseName, Class...classes) {
-        this(mongoClient, databaseName, null, classes)
-    }
-
-    /**
-     * Creates a new RxMongoDatastoreClient for the given connection string, default database name and classes
-     *
-     * @param connectionString The connection string
-     * @param mongoClient The mongo client
-     * @param databaseName The default database name
-     * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
-     */
-    RxMongoDatastoreClient(ConnectionString connectionString, String databaseName, ObservableAdapter observableAdapter, Closure defaultMapping, Class...classes) {
-        this(createMongoClient(connectionString, observableAdapter), databaseName, defaultMapping, classes)
+        this(mongoClient, databaseName, new StandardEnvironment(), classes)
     }
 
     /**
@@ -137,7 +129,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
      */
     RxMongoDatastoreClient(ConnectionString connectionString, String databaseName, ObservableAdapter observableAdapter, Class...classes) {
-        this(createMongoClient(connectionString, observableAdapter), databaseName, classes)
+        this(createMongoClient(connectionString, observableAdapter), databaseName,  classes)
     }
 
     /**
@@ -148,8 +140,8 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param databaseName The default database name
      * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
      */
-    RxMongoDatastoreClient(MongoClientSettings clientSettings, String databaseName, ObservableAdapter observableAdapter, Closure defaultMapping, Class...classes) {
-        this(createMongoClient(clientSettings, observableAdapter), databaseName, defaultMapping, classes)
+    RxMongoDatastoreClient(ConnectionString connectionString, String databaseName, ObservableAdapter observableAdapter, PropertyResolver configuration, Class...classes) {
+        this(createMongoClient(connectionString, observableAdapter), databaseName,  configuration, classes)
     }
 
     /**
@@ -160,9 +152,10 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param databaseName The default database name
      * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
      */
-    RxMongoDatastoreClient(MongoClientSettings clientSettings, String databaseName, ObservableAdapter observableAdapter, Class...classes) {
-        this(createMongoClient(clientSettings, observableAdapter), databaseName, classes)
+    RxMongoDatastoreClient(ConnectionString connectionString, ObservableAdapter observableAdapter, PropertyResolver configuration, Class...classes) {
+        this(createMongoClient(connectionString, observableAdapter), connectionString.database ?: 'test',  configuration, classes)
     }
+
 
 
     /**
@@ -174,7 +167,80 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
      */
     RxMongoDatastoreClient(ConnectionString connectionString, String databaseName, Class...classes) {
-        this(MongoClients.create(connectionString), databaseName, classes)
+        this(createMongoClient(connectionString, null), databaseName, classes)
+    }
+
+    /**
+     * Creates a new RxMongoDatastoreClient for the given connection string, default database name and classes
+     *
+     * @param connectionString The connection string
+     * @param mongoClient The mongo client
+     * @param databaseName The default database name
+     * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
+     */
+    RxMongoDatastoreClient(ConnectionString connectionString, Class...classes) {
+        this(createMongoClient(connectionString, null), connectionString.database ?: 'test', classes)
+    }
+
+    /**
+     * Creates a new RxMongoDatastoreClient for the given connection string, default database name and classes
+     *
+     * @param connectionString The connection string
+     * @param mongoClient The mongo client
+     * @param databaseName The default database name
+     * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
+     */
+    RxMongoDatastoreClient(ConnectionString connectionString, PropertyResolver configuration, Class...classes) {
+        this(createMongoClient(connectionString, null), connectionString.database, configuration,  classes)
+    }
+
+    /**
+     * Creates a new RxMongoDatastoreClient for the given connection string, default database name and classes
+     *
+     * @param connectionString The connection string
+     * @param mongoClient The mongo client
+     * @param databaseName The default database name
+     * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
+     */
+    RxMongoDatastoreClient(MongoClientSettings clientSettings, String databaseName, ObservableAdapter observableAdapter, PropertyResolver configuration,  Class...classes) {
+        this(createMongoClient(clientSettings, observableAdapter), initializeMappingContext(configuration, databaseName, classes), configuration)
+    }
+
+    /**
+     * Creates a new RxMongoDatastoreClient for the given connection string, default database name and classes
+     *
+     * @param connectionString The connection string
+     * @param mongoClient The mongo client
+     * @param databaseName The default database name
+     * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
+     */
+    RxMongoDatastoreClient(MongoClientSettings clientSettings, String databaseName, ObservableAdapter observableAdapter, Class...classes) {
+        this(clientSettings, databaseName, observableAdapter, new StandardEnvironment(), classes)
+    }
+
+
+    /**
+     * Creates a new RxMongoDatastoreClient for the given connection string, default database name and classes
+     *
+     * @param connectionString The connection string
+     * @param mongoClient The mongo client
+     * @param databaseName The default database name
+     * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
+     */
+    RxMongoDatastoreClient(MongoClientSettings clientSettings, String databaseName, Class...classes) {
+        this(clientSettings, databaseName, null, new StandardEnvironment(), classes)
+    }
+
+    /**
+     * Creates a new RxMongoDatastoreClient for the given connection string, default database name and classes
+     *
+     * @param connectionString The connection string
+     * @param mongoClient The mongo client
+     * @param databaseName The default database name
+     * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
+     */
+    RxMongoDatastoreClient(MongoClientSettings clientSettings, String databaseName, PropertyResolver configuration, Class...classes) {
+        this(clientSettings, databaseName, null, configuration, classes)
     }
 
 
@@ -208,7 +274,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
      */
     RxMongoDatastoreClient(PropertyResolver configuration, String databaseName, ObservableAdapter observableAdapter, Class...classes) {
-        this(new MongoClientSettingsBuilder(configuration).build(), databaseName, observableAdapter, configuration.getProperty(MongoConstants.SETTING_DEFAULT_MAPPING, Closure, null), classes)
+        this(new MongoClientSettingsBuilder(configuration).build(), databaseName, observableAdapter, configuration, classes)
     }
 
     /**
@@ -254,8 +320,11 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
         observableAdapter != null ? MongoClients.create(clientSettings, observableAdapter) : MongoClients.create(clientSettings)
     }
 
-    protected static MongoMappingContext initializeMappingContext(String database, Closure defaultMapping, Class... classes) {
-        MongoMappingContext mongoMappingContext = new MongoMappingContext(database,defaultMapping)
+    protected static MongoMappingContext initializeMappingContext(PropertyResolver configuration, String defaultDatabaseName, Class... classes) {
+        MongoMappingContext mongoMappingContext = new MongoMappingContext(
+                configuration.getProperty(MongoConstants.SETTING_DATABASE_NAME, defaultDatabaseName),
+                configuration.getProperty(MongoConstants.SETTING_DEFAULT_MAPPING, Closure, null),
+        )
         mongoMappingContext.addPersistentEntities(classes)
         mongoMappingContext.initialize()
         return mongoMappingContext;
@@ -559,6 +628,11 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     protected Document createIdQuery(Serializable id) {
         def idQuery = new Document(MongoConstants.MONGO_ID_FIELD, id)
         return idQuery
+    }
+
+    @Override
+    boolean isAllowBlockingOperations() {
+        return allowBlockingOperations
     }
 
     @Override

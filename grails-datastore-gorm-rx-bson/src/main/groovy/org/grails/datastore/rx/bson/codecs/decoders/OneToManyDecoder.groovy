@@ -9,6 +9,7 @@ import org.grails.datastore.mapping.engine.EntityAccess
 import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.ManyToMany
 import org.grails.datastore.mapping.model.types.ToMany
+import org.grails.datastore.rx.collection.RxCollectionUtils
 import org.grails.datastore.rx.collection.RxPersistentList
 import org.grails.datastore.rx.collection.RxPersistentSet
 import org.grails.datastore.rx.collection.RxPersistentSortedSet
@@ -34,14 +35,7 @@ class OneToManyDecoder implements PropertyDecoder<ToMany> {
     }
 
     protected Collection createConcreteCollection(Association association, Serializable foreignKey) {
-        switch(association.type) {
-            case SortedSet:
-                return new RxPersistentSortedSet(RxGormEnhancer.findInstanceApi(association.associatedEntity.javaClass).datastoreClient, association, foreignKey, queryState)
-            case List:
-                return new RxPersistentList(RxGormEnhancer.findInstanceApi(association.associatedEntity.javaClass).datastoreClient, association, foreignKey, queryState)
-            default:
-                return new RxPersistentSet(RxGormEnhancer.findInstanceApi(association.associatedEntity.javaClass).datastoreClient, association, foreignKey, queryState)
-        }
+        return RxCollectionUtils.createConcreteCollection(association, foreignKey, queryState)
     }
 
     @Override
