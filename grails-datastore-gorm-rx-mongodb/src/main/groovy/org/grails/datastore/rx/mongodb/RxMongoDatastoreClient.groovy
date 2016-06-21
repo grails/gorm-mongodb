@@ -23,6 +23,7 @@ import org.bson.codecs.configuration.CodecRegistry
 import org.bson.types.Binary
 import org.bson.types.ObjectId
 import org.grails.datastore.gorm.mongo.MongoGormEnhancer
+import org.grails.datastore.mapping.config.AbstractGormMappingFactory
 import org.grails.datastore.mapping.config.Property
 import org.grails.datastore.mapping.core.IdentityGenerationException
 import org.grails.datastore.mapping.core.OptimisticLockingException
@@ -325,6 +326,8 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
                 configuration.getProperty(MongoConstants.SETTING_DATABASE_NAME, defaultDatabaseName),
                 configuration.getProperty(MongoConstants.SETTING_DEFAULT_MAPPING, Closure, null),
         )
+        // disable versioning by default
+        ((AbstractGormMappingFactory)mongoMappingContext.mappingFactory).setVersionByDefault(false)
         mongoMappingContext.addPersistentEntities(classes)
         mongoMappingContext.initialize()
         return mongoMappingContext;

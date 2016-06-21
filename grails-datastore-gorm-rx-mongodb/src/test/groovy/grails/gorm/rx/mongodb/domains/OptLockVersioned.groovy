@@ -10,4 +10,8 @@ class OptLockVersioned implements RxMongoEntity<OptLockVersioned> {
     Long version
 
     String name
+
+    static mapping = {
+        version true
+    }
 }
