@@ -602,10 +602,27 @@ public abstract class BsonQuery extends Query {
      * @return The query
      */
     public static Document createBsonQuery(CodecRegistry registry, PersistentEntity entity, List<Criterion> criteria) {
-        EmbeddedQueryEncoder embeddedQueryEncoder = new CodecRegistryEmbeddedQueryEncoder(registry);
+        Conjunction junction = new Conjunction(criteria);
+        return createBsonQuery(registry, entity, junction);
+    }
 
+    /**
+     * Creates a new query for the given registry, entity and criteria
+     *
+     * @param registry The registry
+     * @param entity   The entity
+     * @param junction The junction
+     * @return The query
+     */
+    public static Document createBsonQuery(CodecRegistry registry, PersistentEntity entity, Junction junction) {
+        EmbeddedQueryEncoder embeddedQueryEncoder = new CodecRegistryEmbeddedQueryEncoder(registry);
         Document query = new Document();
-        populateBsonQuery(embeddedQueryEncoder, query, criteria, entity);
+        if(junction instanceof Conjunction) {
+            populateBsonQuery(embeddedQueryEncoder, query, junction.getCriteria(), entity);
+        }
+        else {
+            populateBsonQuery(embeddedQueryEncoder, query, junction, entity);
+        }
         return query;
     }
 
@@ -893,6 +910,9 @@ public abstract class BsonQuery extends Query {
         } else if (criteria instanceof Conjunction) {
             subList = new ArrayList();
             query.put(AND_OPERATOR, subList);
+        } else if (criteria instanceof Negation) {
+            subList = new ArrayList();
+            query.put(NOT_OPERATOR, new Document(OR_OPERATOR, subList));
         }
 
         for (Criterion criterion : criteria.getCriteria()) {
