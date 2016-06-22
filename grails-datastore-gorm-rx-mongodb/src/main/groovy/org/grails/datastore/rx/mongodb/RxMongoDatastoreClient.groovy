@@ -22,6 +22,7 @@ import org.bson.codecs.configuration.CodecRegistries
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.types.Binary
 import org.bson.types.ObjectId
+import org.grails.datastore.bson.query.BsonQuery
 import org.grails.datastore.gorm.mongo.MongoGormEnhancer
 import org.grails.datastore.mapping.config.AbstractGormMappingFactory
 import org.grails.datastore.mapping.config.Property
@@ -40,7 +41,6 @@ import org.grails.datastore.mapping.mongo.config.MongoCollection
 import org.grails.datastore.mapping.mongo.config.MongoMappingContext
 import org.grails.datastore.bson.codecs.CodecExtensions
 import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec
-import org.grails.datastore.mapping.mongo.query.MongoQuery
 import org.grails.datastore.mapping.query.Query
 import org.grails.datastore.mapping.reflect.EntityReflector
 import org.grails.datastore.rx.AbstractRxDatastoreClient
@@ -532,7 +532,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
             def mongoCollection = getCollection(entity, entity.javaClass)
             def entityOperations = entry.value.values()
 
-            def inQuery = new Document( MongoConstants.MONGO_ID_FIELD, new Document(MongoQuery.MONGO_IN_OPERATOR, entityOperations.collect() { BatchOperation.EntityOperation eo -> eo.identity }) )
+            def inQuery = new Document( MongoConstants.MONGO_ID_FIELD, new Document(BsonQuery.IN_OPERATOR, entityOperations.collect() { BatchOperation.EntityOperation eo -> eo.identity }) )
             observables.add mongoCollection.deleteMany(inQuery)
         }
 

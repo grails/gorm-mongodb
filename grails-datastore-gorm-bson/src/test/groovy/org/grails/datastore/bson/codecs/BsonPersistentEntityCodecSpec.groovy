@@ -32,7 +32,11 @@ class BsonPersistentEntityCodecSpec extends Specification {
         BsonPersistentEntityCodec codec = new BsonPersistentEntityCodec(codecRegistry, entity)
 
         def sw = new StringWriter()
-        def date = new Date().parse('yyyy/MM/dd', '1973/07/09')
+        def format = new SimpleDateFormat('yyyy/MM/dd')
+        TimeZone UTC = TimeZone.getTimeZone("UTC");
+        format.setTimeZone(UTC)
+
+        def date = format.parse('1973/07/09')
         codec.encode(new JsonWriter(sw,new JsonWriterSettings(JsonMode.STRICT)), new Person(name: "Fred", age: 12, dateOfBirth: date))
 
 

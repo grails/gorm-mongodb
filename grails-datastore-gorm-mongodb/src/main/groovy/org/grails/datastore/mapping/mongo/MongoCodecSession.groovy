@@ -30,26 +30,19 @@ import groovy.transform.CompileStatic
 import org.bson.BsonDocumentReader
 import org.bson.BsonDocumentWrapper
 import org.bson.Document
-import org.bson.codecs.Codec
 import org.bson.codecs.DecoderContext
-import org.bson.codecs.configuration.CodecRegistries
-import org.bson.codecs.configuration.CodecRegistry
 import org.bson.conversions.Bson
-import org.grails.datastore.mapping.core.Datastore
+import org.grails.datastore.bson.query.BsonQuery
 import org.grails.datastore.mapping.core.OptimisticLockingException
 import org.grails.datastore.mapping.core.impl.PendingDelete
 import org.grails.datastore.mapping.core.impl.PendingInsert
 import org.grails.datastore.mapping.core.impl.PendingOperation
 import org.grails.datastore.mapping.core.impl.PendingUpdate
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
-import org.grails.datastore.mapping.dirty.checking.DirtyCheckingSupport
 import org.grails.datastore.mapping.document.config.DocumentMappingContext
-import org.grails.datastore.mapping.engine.EntityAccess
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.config.GormProperties
-import org.grails.datastore.mapping.model.types.Embedded
-import org.grails.datastore.mapping.model.types.ToOne
 import org.grails.datastore.mapping.mongo.engine.MongoCodecEntityPersister
 import org.grails.datastore.mapping.mongo.engine.MongoEntityPersister
 import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec
@@ -207,7 +200,7 @@ class MongoCodecSession extends AbstractMongoSession {
                         entityWrites << new DeleteOneModel<Document>(new Document( MongoEntityPersister.MONGO_ID_FIELD, nativeKeys.get(0)))
                     }
                     else {
-                        entityWrites << new DeleteManyModel<Document>(new Document( MongoEntityPersister.MONGO_ID_FIELD, new Document(MongoQuery.MONGO_IN_OPERATOR, nativeKeys)))
+                        entityWrites << new DeleteManyModel<Document>(new Document( MongoEntityPersister.MONGO_ID_FIELD, new Document(BsonQuery.IN_OPERATOR, nativeKeys)))
                     }
                 }
             }

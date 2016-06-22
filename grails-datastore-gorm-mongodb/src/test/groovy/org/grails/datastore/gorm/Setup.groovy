@@ -4,23 +4,16 @@ package org.grails.datastore.gorm
 import com.mongodb.BasicDBObject
 import grails.gorm.tests.GormDatastoreSpec
 import org.bson.Document
-import org.grails.datastore.gorm.events.AutoTimestampEventListener
-import org.grails.datastore.gorm.events.DomainEventListener
+import org.grails.datastore.bson.query.BsonQuery
 import org.grails.datastore.gorm.mongo.Birthday
-import org.grails.datastore.gorm.mongo.MongoGormEnhancer
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.engine.types.AbstractMappingAwareCustomTypeMarshaller
-import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.mongo.AbstractMongoSession
 import org.grails.datastore.mapping.mongo.MongoDatastore
-import org.grails.datastore.mapping.mongo.config.MongoMappingContext
-import org.grails.datastore.mapping.mongo.query.MongoQuery
 import org.grails.datastore.mapping.query.Query.Between
 import org.grails.datastore.mapping.query.Query.PropertyCriterion
-import org.grails.datastore.mapping.transactions.DatastoreTransactionManager
-import org.springframework.context.support.GenericApplicationContext
 import org.springframework.util.StringUtils
 import org.springframework.validation.Errors
 import org.springframework.validation.Validator
@@ -55,8 +48,8 @@ class Setup {
             protected void queryInternal(PersistentProperty property, String key, PropertyCriterion criterion, Document nativeQuery) {
                 if (criterion instanceof Between) {
                     def dbo = new BasicDBObject()
-                    dbo.put(MongoQuery.MONGO_GTE_OPERATOR, criterion.getFrom().date.time)
-                    dbo.put(MongoQuery.MONGO_LTE_OPERATOR, criterion.getTo().date.time)
+                    dbo.put(BsonQuery.MONGO_GTE_OPERATOR, criterion.getFrom().date.time)
+                    dbo.put(BsonQuery.MONGO_LTE_OPERATOR, criterion.getTo().date.time)
                     nativeQuery.put(key, dbo)
                 }
                 else {

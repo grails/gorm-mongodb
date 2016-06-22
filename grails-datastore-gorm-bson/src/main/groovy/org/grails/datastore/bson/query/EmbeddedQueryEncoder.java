@@ -1,4 +1,4 @@
-package org.grails.datastore.mapping.mongo.query;
+package org.grails.datastore.bson.query;
 
 import org.grails.datastore.mapping.model.types.Embedded;
 

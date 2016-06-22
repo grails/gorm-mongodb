@@ -5,18 +5,16 @@ import com.mongodb.MongoClient
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import org.bson.Document
+import org.grails.datastore.bson.query.BsonQuery
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.mongo.Birthday
 import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.engine.types.AbstractMappingAwareCustomTypeMarshaller
 import org.grails.datastore.mapping.model.MappingContext
-import org.grails.datastore.mapping.model.MappingFactory
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.mongo.AbstractMongoSession
 import org.grails.datastore.mapping.mongo.MongoDatastore
-import org.grails.datastore.mapping.mongo.MongoSession
-import org.grails.datastore.mapping.mongo.query.MongoQuery
 import org.grails.datastore.mapping.query.Query
 import org.grails.validation.GrailsDomainClassValidator
 import org.springframework.context.support.GenericApplicationContext
@@ -68,8 +66,8 @@ abstract class GormDatastoreSpec extends Specification {
             protected void queryInternal(PersistentProperty property, String key, Query.PropertyCriterion criterion, Document nativeQuery) {
                 if (criterion instanceof Query.Between) {
                     def dbo = new BasicDBObject()
-                    dbo.put(MongoQuery.MONGO_GTE_OPERATOR, criterion.getFrom().date.time)
-                    dbo.put(MongoQuery.MONGO_LTE_OPERATOR, criterion.getTo().date.time)
+                    dbo.put(BsonQuery.GTE_OPERATOR, criterion.getFrom().date.time)
+                    dbo.put(BsonQuery.LTE_OPERATOR, criterion.getTo().date.time)
                     nativeQuery.put(key, dbo)
                 }
                 else {

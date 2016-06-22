@@ -22,6 +22,7 @@ import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
+import org.grails.datastore.bson.query.BsonQuery;
 import org.grails.datastore.mapping.core.OptimisticLockingException;
 import org.grails.datastore.mapping.core.impl.*;
 import org.grails.datastore.mapping.engine.EntityAccess;
@@ -122,10 +123,10 @@ public class MongoSession extends AbstractMongoSession {
                         if(update.isVetoed()) continue;
 
                         Document updateDoc = (Document) update.getNativeEntry();
-                        updateDoc.remove(MongoEntityPersister.MONGO_ID_FIELD);
+                        updateDoc.remove(MongoConstants.MONGO_ID_FIELD);
                         updateDoc = createSetAndUnsetDoc(updateDoc);
                         final Object nativeKey = update.getNativeKey();
-                        final Document id = new Document(MongoEntityPersister.MONGO_ID_FIELD, nativeKey);
+                        final Document id = new Document(MongoConstants.MONGO_ID_FIELD, nativeKey);
                         MongoEntityPersister documentEntityPersister = (MongoEntityPersister) getPersister(persistentEntity);
                         final EntityAccess entityAccess = update.getEntityAccess();
                         if(documentEntityPersister.isVersioned(entityAccess)) {
@@ -178,7 +179,7 @@ public class MongoSession extends AbstractMongoSession {
                         final List cascadeOperations = delete.getCascadeOperations();
                         addPostFlushOperations(cascadeOperations);
                     }
-                    entityWrites.add(new DeleteManyModel<Document>(new Document( MongoEntityPersister.MONGO_ID_FIELD, new Document(MongoQuery.MONGO_IN_OPERATOR, nativeKeys))));
+                    entityWrites.add(new DeleteManyModel<Document>(new Document( MongoConstants.MONGO_ID_FIELD, new Document(BsonQuery.IN_OPERATOR, nativeKeys))));
                 }
             }
 

@@ -19,6 +19,7 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoClientURI;
 import groovy.lang.Closure;
 
+import java.beans.PropertyDescriptor;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -50,6 +51,7 @@ import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.datastore.mapping.model.MappingFactory;
 import org.grails.datastore.mapping.model.PersistentEntity;
 
+import org.grails.datastore.mapping.model.types.Identity;
 import org.grails.datastore.mapping.mongo.MongoConstants;
 import org.grails.datastore.mapping.mongo.MongoDatastore;
 import org.grails.datastore.mapping.reflect.FieldEntityAccess;
@@ -153,6 +155,14 @@ public class MongoMappingContext extends DocumentMappingContext {
         @Override
         protected Class<MongoCollection> getEntityMappedFormType() {
             return MongoCollection.class;
+        }
+
+
+        @Override
+        public Identity<MongoAttribute> createIdentity(PersistentEntity owner, MappingContext context, PropertyDescriptor pd) {
+            Identity<MongoAttribute> identity = super.createIdentity(owner, context, pd);
+            identity.getMapping().getMappedForm().setTargetName(MongoConstants.MONGO_ID_FIELD);
+            return identity;
         }
 
         @Override

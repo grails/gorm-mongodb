@@ -17,6 +17,7 @@ package org.grails.datastore.gorm.mongo.simple
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.bson.Document
+import org.grails.datastore.bson.query.BsonQuery
 import org.grails.datastore.mapping.config.Property
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.engine.types.AbstractMappingAwareCustomTypeMarshaller
@@ -27,7 +28,6 @@ import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.Basic
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.config.MongoMappingContext
-import org.grails.datastore.mapping.mongo.query.MongoQuery
 import org.grails.datastore.mapping.query.Query
 import org.grails.datastore.mapping.query.Query.Between
 import org.grails.datastore.mapping.query.Query.Equals
@@ -192,10 +192,10 @@ class EnumType extends AbstractMappingAwareCustomTypeMarshaller<Object, Document
             if (criterion instanceof Equals) {
                 nativeQuery.put(queryKey, enumValue(property, criterion.value))
             } else if (criterion instanceof NotEquals) {
-                nativeQuery.put(queryKey, [(MongoQuery.MONGO_NE_OPERATOR): enumValue(property, criterion.value)])
+                nativeQuery.put(queryKey, [(BsonQuery.NE_OPERATOR): enumValue(property, criterion.value)])
             } else if (criterion instanceof Between) {
-                criteriaObject.put(MongoQuery.MONGO_GTE_OPERATOR, enumValue(property, ((Between) criterion).getFrom()))
-                criteriaObject.put(MongoQuery.MONGO_LTE_OPERATOR, enumValue(property, ((Between) criterion).getTo()))
+                criteriaObject.put(BsonQuery.GTE_OPERATOR, enumValue(property, ((Between) criterion).getFrom()))
+                criteriaObject.put(BsonQuery.LTE_OPERATOR, enumValue(property, ((Between) criterion).getTo()))
 
                 nativeQuery.put(queryKey, criteriaObject)
             } else if (criterion instanceof In) {
@@ -204,7 +204,7 @@ class EnumType extends AbstractMappingAwareCustomTypeMarshaller<Object, Document
                     criteriaValues << enumValue(property, crtieriaValue)
                 }
 
-                criteriaObject.put(MongoQuery.MONGO_IN_OPERATOR, criteriaValues)
+                criteriaObject.put(BsonQuery.IN_OPERATOR, criteriaValues)
                 nativeQuery.put(queryKey, criteriaObject)
             }
 
