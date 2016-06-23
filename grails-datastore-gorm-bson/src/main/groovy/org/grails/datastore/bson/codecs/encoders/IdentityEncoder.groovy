@@ -18,7 +18,7 @@ class IdentityEncoder implements PropertyEncoder<Identity> {
 
     @Override
     void encode(BsonWriter writer, Identity property, Object id, EntityAccess parentAccess, EncoderContext encoderContext, CodecRegistry codecRegistry) {
-        writer.writeName(getIdentifierName())
+        writer.writeName(getIdentifierName(property))
 
         if (id instanceof ObjectId) {
             writer.writeObjectId(id)
@@ -30,7 +30,13 @@ class IdentityEncoder implements PropertyEncoder<Identity> {
 
     }
 
-    protected String getIdentifierName() {
-        GormProperties.IDENTITY
+    protected String getIdentifierName(Identity property) {
+        String[] identifierName = property.getOwner().mapping.identifier?.identifierName
+        if(identifierName != null) {
+            return identifierName[0]
+        }
+        else {
+            return GormProperties.IDENTITY
+        }
     }
 }

@@ -79,7 +79,7 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
         Identity,
         new IdentityEncoder() {
             @Override
-            protected String getIdentifierName() {
+            protected String getIdentifierName(Identity property) {
                 MongoConstants.MONGO_ID_FIELD
             }
         })
