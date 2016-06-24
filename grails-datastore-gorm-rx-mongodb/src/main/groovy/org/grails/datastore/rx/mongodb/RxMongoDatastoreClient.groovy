@@ -588,6 +588,11 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     }
 
     @Override
+    Query createEntityQuery(PersistentEntity entity, QueryState queryState, Map arguments) {
+        return new RxMongoQuery(this, entity, queryState)
+    }
+
+    @Override
     MongoClient getNativeInterface() {
         return mongoClient
     }
