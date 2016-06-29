@@ -1,0 +1,26 @@
+
+===== dbo
+
+
+
+===== Purpose
+
+
+Returns the MongoDB http://api.mongodb.org/java/current/com/mongodb/DBObject.html[DBObject] for an instance of a domain class
+
+
+===== Examples
+
+
+[source,java]
+----
+def b = Book.get(1)
+
+println b.dbo
+----
+
+
+===== Description
+
+
+The `dbo` property allows access to the underlying MongoDB http://api.mongodb.org/java/current/com/mongodb/DBObject.html[DBObject], which is a respresentation of the stored BSON document that can be manipulated in memory.

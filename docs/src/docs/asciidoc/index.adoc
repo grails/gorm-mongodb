@@ -1,0 +1,247 @@
+= GORM for MongoDB
+Graeme Rocher, Burt Beckwith
+:imagesdir: ./images
+:source-highlighter: coderay
+
+[[introduction]]
+== Introduction
+
+include::introduction.adoc[]
+
+[[compatibility]]
+=== Compatibility with GORM for Hibernate
+
+include::introduction/compatibility.adoc[]
+
+[[releaseNotes]]
+=== Release Notes
+
+include::introduction/releaseNotes.adoc[]
+
+[[upgradeNotes]]
+=== Upgrade Notes
+
+include::introduction/upgradeNotes.adoc[]
+
+[[gettingStarted]]
+== Getting Started
+
+include::gettingStarted.adoc[]
+
+[[mongoOnly]]
+=== Using MongoDB Standalone
+
+include::gettingStarted/mongoOnly.adoc[]
+
+[[withHibernate]]
+=== Combining MongoDB and Hibernate
+
+include::gettingStarted/withHibernate.adoc[]
+
+[[advancedConfig]]
+=== Advanced Configuration
+
+include::gettingStarted/advancedConfig.adoc[]
+
+[[springBoot]]
+=== Using GORM in Spring Boot
+
+include::gettingStarted/springBoot.adoc[]
+
+[[outsideGrails]]
+=== GORM for MongoDB without Grails
+
+include::gettingStarted/outsideGrails.adoc[]
+
+[[objectMapping]]
+== Mapping Domain Classes to MongoDB Collections
+
+include::objectMapping.adoc[]
+
+[[idGeneration]]
+=== Identity Generation
+
+include::objectMapping/idGeneration.adoc[]
+
+[[dirtyChecking]]
+=== Understanding Dirty Checking
+
+include::objectMapping/dirtyChecking.adoc[]
+
+[[queryIndexes]]
+=== Querying Indexing
+
+include::objectMapping/queryIndexes.adoc[]
+
+[[writeConcern]]
+=== Customizing the WriteConcern
+
+include::objectMapping/writeConcern.adoc[]
+
+[[dynamicAttributes]]
+=== Dynamic Attributes
+
+include::objectMapping/dynamicAttributes.adoc[]
+
+[[geoSpatial]]
+=== Geospacial Querying
+
+include::objectMapping/geoSpatial.adoc[]
+
+[[2dsphere]]
+==== Geospacial 2D Sphere Support
+
+include::objectMapping/geoSpatial/2dsphere.adoc[]
+
+[[2dindex]]
+==== Geospacial 2D Index Support
+
+include::objectMapping/geoSpatial/2dindex.adoc[]
+
+[[geoJson]]
+==== GeoJSON Data Models
+
+include::objectMapping/geoSpatial/geoJson.adoc[]
+
+[[textSearch]]
+=== Full Text Search
+
+include::objectMapping/textSearch.adoc[]
+
+[[customTypes]]
+=== Custom User Types
+
+include::objectMapping/customTypes.adoc[]
+
+[[databaseSwitching]]
+== Switching Database or Collection at Runtime
+
+include::databaseSwitching.adoc[]
+
+[[stateless]]
+== Stateless Mode
+
+include::stateless.adoc[]
+
+[[lowLevelApi]]
+== Using the MongoDB Driver Directly
+
+include::lowLevelApi.adoc[]
+
+[[transactions]]
+== Transactions
+
+include::transactions.adoc[]
+
+[[testing]]
+== Unit Testing
+
+include::testing.adoc[]
+
+[[reference]]
+== Reference
+
+[[ref-beans]]
+=== Beans
+
+[[ref-beans-mongo]]
+==== mongo
+
+include::ref/Beans/mongo.adoc[]
+
+[[ref-domain-classes]]
+=== Domain Classes
+
+[[ref-domain-classes-collection]]
+==== collection
+
+include::ref/Domain Classes/collection.adoc[]
+
+[[ref-domain-classes-collectionName]]
+==== collectionName
+
+include::ref/Domain Classes/collectionName.adoc[]
+
+[[ref-domain-classes-countHits]]
+==== countHits
+
+include::ref/Domain Classes/countHits.adoc[]
+
+[[ref-domain-classes-DB]]
+==== DB
+
+include::ref/Domain Classes/DB.adoc[]
+
+[[ref-domain-classes-dbo]]
+==== dbo
+
+include::ref/Domain Classes/dbo.adoc[]
+
+[[ref-domain-classes-findByGeoIntersects]]
+==== findByGeoIntersects
+
+include::ref/Domain Classes/findByGeoIntersects.adoc[]
+
+[[ref-domain-classes-findByGeoWithin]]
+==== findByGeoWithin
+
+include::ref/Domain Classes/findByGeoWithin.adoc[]
+
+[[ref-domain-classes-findByNear]]
+==== findByNear
+
+include::ref/Domain Classes/findByNear.adoc[]
+
+[[ref-domain-classes-findByNearSphere]]
+==== findByNearSphere
+
+include::ref/Domain Classes/findByNearSphere.adoc[]
+
+[[ref-domain-classes-findByWithinBox]]
+==== findByWithinBox
+
+include::ref/Domain Classes/findByWithinBox.adoc[]
+
+[[ref-domain-classes-findByWithinCircle]]
+==== findByWithinCircle
+
+include::ref/Domain Classes/findByWithinCircle.adoc[]
+
+[[ref-domain-classes-search]]
+==== search
+
+include::ref/Domain Classes/search.adoc[]
+
+[[ref-domain-classes-searchTop]]
+==== searchTop
+
+include::ref/Domain Classes/searchTop.adoc[]
+
+[[ref-domain-classes-useCollection]]
+==== useCollection
+
+include::ref/Domain Classes/useCollection.adoc[]
+
+[[ref-domain-classes-useDatabase]]
+==== useDatabase
+
+include::ref/Domain Classes/useDatabase.adoc[]
+
+[[ref-domain-classes-withCollection]]
+==== withCollection
+
+include::ref/Domain Classes/withCollection.adoc[]
+
+[[ref-domain-classes-withDatabase]]
+==== withDatabase
+
+include::ref/Domain Classes/withDatabase.adoc[]
+
+[[ref-testing]]
+=== Testing
+
+[[ref-testing-MongoDbTestMixin]]
+==== MongoDbTestMixin
+
+include::ref/Testing/MongoDbTestMixin.adoc[]
+

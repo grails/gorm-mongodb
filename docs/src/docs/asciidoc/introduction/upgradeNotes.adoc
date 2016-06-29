@@ -1,0 +1,47 @@
+
+==== Configuration Properties
+
+
+In previous versions of the plugin configuration was specified using the `grails.mongo` prefix. This is now `grails.mongodb` instead. For example, the following configuration in `application.groovy` or `Config.groovy`:
+
+[source,groovy]
+----
+grails {
+    mongo {
+        databaseName = 'foo'
+    }
+}
+----
+
+Should now be expressed as:
+
+[source,groovy]
+----
+grails {
+    mongodb {
+        databaseName = 'foo'
+    }
+}
+----
+
+
+==== Persistence Engine
+
+
+Since GORM for MongoDB 5.0 there is now a choice of persistence engine. The original GORM for MongoDB converted MongoDB documents to and from Groovy objects. This engine is still present and can be activated with the following configuration in `grails-app/conf/application.yml`:
+
+[source,groovy]
+----
+grails:
+    mongodb:
+        engine: mapping
+----
+
+However, 5.0 and above uses a new engine based on MongoDB 3.x driver codecs which means objects are no longer converted first to MongoDB Document objects and then to Groovy objects, instead the driver reads Groovy objects directly from the JSON stream at the driver level, which is far more efficient, however may not exhibit exactly the same behaviour as the previous version. To active this new engine use the following codec (or leave it blank as the codec engine is now the default):
+
+[source,groovy]
+----
+grails:
+    mongodb:
+        engine: codec
+----

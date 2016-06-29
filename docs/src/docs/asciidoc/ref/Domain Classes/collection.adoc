@@ -1,0 +1,24 @@
+
+===== collection
+
+
+
+===== Purpose
+
+
+Returns the MongoDB http://api.mongodb.org/java/current/com/mongodb/DBCollection.html[collection] used for the current domain class
+
+
+===== Examples
+
+
+[source,java]
+----
+def bookBson = Book.collection.findOne()
+----
+
+
+===== Description
+
+
+The `collection` property allows access to the underlying MongoDB http://api.mongodb.org/java/current/com/mongodb/DBCollection.html[DBCollection] object, thus allowing direct access to the low-level MongoDB driver.

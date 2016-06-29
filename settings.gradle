@@ -5,7 +5,9 @@ include "grails-datastore-gorm-bson",
         "grails-datastore-gorm-rx-mongodb",
         "boot-plugin", 
         'grails2-plugin', 
-        'grails-plugin'
+        'grails-plugin',
+        'rx-plugin',
+        'docs'
 
 findProject(':boot-plugin').name = 'gorm-mongodb-spring-boot'
 

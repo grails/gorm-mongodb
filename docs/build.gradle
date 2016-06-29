@@ -1,0 +1,117 @@
+import org.groovy.lang.groovydoc.tasks.GroovydocTask
+
+ext {
+    githubBranch = "master"
+    checkOutDir = "build/checkout"
+    zipFile = "build/source.zip"
+
+    coreProjects = [
+            'core',
+            'gorm',
+            'gorm-plugin-support'
+    ]
+
+}
+
+version rootProject.version
+
+apply plugin: 'org.asciidoctor.convert'
+
+dependencies {
+    documentation "org.codehaus.groovy:groovy-all:2.4.6"
+    documentation 'org.fusesource.jansi:jansi:1.12'
+    for(p in coreProjects) {
+        documentation "org.grails:grails-datastore-$p:$gormVersion"
+    }
+    project.rootProject.subprojects.findAll { !it.name.contains('-rx-') }.each { subproject ->
+        if(subproject.name != "docs") {
+            documentation project(":$subproject.name")
+        }
+    }
+}
+
+asciidoctor {
+    resources {
+        from("${project.projectDir}/src/docs/images")
+        into "${project.projectDir}/images"
+    }
+
+    attributes 'experimental'  : 'true',
+            'compat-mode'   : 'true',
+            'toc'           : 'left',
+            'icons'         : 'font',
+            'version'       : project.version,
+            'sourcedir'     : "${project.projectDir}/src/main/groovy"
+}
+
+task fetchSource << {
+    ant.mkdir dir: project.buildDir
+    ant.mkdir dir: checkOutDir
+
+    println "Downloading GORM source code."
+    def tag = System.getenv('TRAVIS_TAG')
+    if(tag) {
+        ant.get src: "https://github.com/grails/grails-data-mapping/archive/${tag}.zip", dest: zipFile, verbose: true
+    }
+    else {
+        ant.get src: "http://github.com/grails/grails-data-mapping/zipball/${githubBranch}", dest: zipFile, verbose: true
+    }
+
+    ant.unzip src: zipFile, dest: checkOutDir, {
+        mapper type: "regexp", from: "(grails-\\S*?/)(.*)", to: "gorm-src/\\2"
+    }
+
+    println "GORM source code downloaded."
+}
+
+fetchSource.inputs.properties(branch:githubBranch)
+fetchSource.outputs.dir checkOutDir
+
+
+task copyDocs(type:Copy, dependsOn:asciidoctor) {
+    from "${project.buildDir}/asciidoc/html5"
+    into "${project.buildDir}/docs/manual"
+}
+
+task groovydoc(type:GroovydocTask, dependsOn:fetchSource) {
+    docTitle = "GORM for MongoDB - ${project.version}"
+    destinationDir = project.file("build/docs/api")
+    notimestamp = true
+    noversionstamp = true
+
+    def files
+    for(p in coreProjects) {
+        if(files == null) {
+            files = project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
+        }
+        else {
+            files += project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
+        }
+    }
+    project.rootProject.subprojects.findAll { !it.name.contains('-rx-') }.each { subproject ->
+        if(subproject.file('src/main/groovy').exists()) {
+            files += subproject.files("src/main/groovy")
+        }
+    }
+    source = files
+    classpath = configurations.documentation
+    jvmArgs "-Xmx1024m"
+}
+
+task clean(type:Delete) {
+    delete project.buildDir
+}
+task copyResources(type:Copy) {
+    from 'src/docs/resources'
+    into "${project.buildDir}/docs"
+}
+task docs(dependsOn:[asciidoctor, groovydoc, copyDocs, copyResources] +
+        subprojects.findAll { project -> project.tasks.findByName('groovydoc')}
+                .collect { project -> project.tasks.groovydoc }
+)
+
+//task assemble(type: Zip, dependsOn:docs) {
+//    from "${project.buildDir}/docs"
+//    baseName = "${project.name}-${project.version}"
+//    destinationDir = project.file("${project.buildDir}/distributions")
+//}

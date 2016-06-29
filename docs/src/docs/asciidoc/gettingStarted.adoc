@@ -1,0 +1,60 @@
+To get started with GORM for MongoDB you need configure it as a dependency in `build.gradle`:
+
+[source,groovy,subs="attributes"]
+----
+dependencies {
+    compile 'org.grails.plugins:mongodb:{version}'
+}
+----
+
+For Grails 2.x you need to modify `BuildConfig.groovy`:
+
+[source,groovy,subs="attributes"]
+----
+plugins {
+ compile ':mongodb:{version}.RELEASE'
+}
+----
+
+With that done you need to set up a running MongoDB server. Refer to the <<ref-orgmanual-MongoDB Documentation,MongoDB Documentation>> for an explanation on how to startup a MongoDB instance. Once installed, starting MongoDB is typically a matter of executing the following command:
+
+[source,groovy]
+----
+MONGO_HOME/bin/mongod
+----
+
+With the above command executed in a terminal window you should see output like the following appear:
+
+[source,groovy]
+----
+2015-11-18T19:38:50.073+0100 I JOURNAL  <<initandlisten>> journal dir=/data/db/journal
+2015-11-18T19:38:50.073+0100 I JOURNAL  <<initandlisten>> recover : no journal files present, no recovery needed
+2015-11-18T19:38:50.090+0100 I JOURNAL  <<durability>> Durability thread started
+2015-11-18T19:38:50.090+0100 I JOURNAL  <<journal writer>> Journal writer thread started
+2015-11-18T19:38:50.090+0100 I CONTROL  <<initandlisten>> MongoDB starting : pid=52540 port=27017 dbpath=/data/db 64-bit host=Graemes-iMac.local
+2015-11-18T19:38:50.090+0100 I CONTROL  <<initandlisten>> ** WARNING: You are running this process as the root user, which is not recommended.
+2015-11-18T19:38:50.090+0100 I CONTROL  <<initandlisten>>
+2015-11-18T19:38:50.090+0100 I CONTROL  <<initandlisten>>
+2015-11-18T19:38:50.090+0100 I CONTROL  <<initandlisten>> ** WARNING: soft rlimits too low. Number of files is 256, should be at least 1000
+2015-11-18T19:38:50.090+0100 I CONTROL  <<initandlisten>> db version v3.0.4
+2015-11-18T19:38:50.090+0100 I CONTROL  <<initandlisten>> git version: 0481c958daeb2969800511e7475dc66986fa9ed5
+2015-11-18T19:38:50.090+0100 I CONTROL  <<initandlisten>> build info: Darwin mci-osx108-11.build.10gen.cc 12.5.0 Darwin Kernel Version 12.5.0: Sun Sep 29 13:33:47 PDT 2013; root:xnu-2050.48.12~1/RELEASE_X86_64 x86_64 BOOST_LIB_VERSION=1_49
+2015-11-18T19:38:50.090+0100 I CONTROL  <<initandlisten>> allocator: system
+2015-11-18T19:38:50.090+0100 I CONTROL  <<initandlisten>> options: {}
+2015-11-18T19:38:50.176+0100 I NETWORK  <<initandlisten>> waiting for connections on port 27017
+----
+
+As you can see the server is running on port 27017, but don't worry the MongoDB plugin for Grails will automatically configure itself to look for MongoDB on that port by default.
+
+If you want to configure how Grails connects to MongoDB then you can do so using the following settings in `grails-app/conf/application.yml`:
+
+[source,groovy]
+----
+grails:
+    mongodb:
+        host: "localhost"
+        port: 27017
+        username: "blah"
+        password: "blah"
+        databaseName: "foo"
+----

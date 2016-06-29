@@ -1,0 +1,24 @@
+
+===== DB
+
+
+
+===== Purpose
+
+
+Returns the MongoDB http://api.mongodb.org/java/current/com/mongodb/DB.html[DB] object.
+
+
+===== Examples
+
+
+[source,java]
+----
+def dbCollection = Book.DB.getCollection("books")
+----
+
+
+===== Description
+
+
+The `DB` property allows access to the underlying MongoDB http://api.mongodb.org/java/current/com/mongodb/DB.html[DB] object, thus allowing easy access to the low-level MongoDB Java driver.

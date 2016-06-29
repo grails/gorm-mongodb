@@ -1,0 +1,55 @@
+
+===== MongoDbTestMixin
+
+
+
+===== Purpose
+
+
+A mixin for loading GORM for MongoDB in a unit test
+
+
+===== Examples
+
+
+[source,groovy]
+----
+@Entity
+class Person {
+    Object id
+    Long version
+    String name
+}
+
+...
+
+import grails.test.mixin.mongodb.*
+
+@TestMixin(MongoDbTestMixin)
+class PersonSpec extends Specification{
+
+    void "Test count people"() {
+        given:"A mongo domain model"
+            mongoDomain(<<Person>>)
+
+        expect:"Count the number of people"
+            Person.count() == 0
+    }
+}
+----
+
+
+This library dependency is required in build.gradle for adding support for `MongoDbTestMixin`.
+
+[source,groovy]
+----
+dependencies {
+        testCompile 'org.grails:grails-datastore-test-support:VERSION'
+    }
+----
+
+
+===== Description
+
+
+`MongoDbTestMixin` allows you to test interactions with GORM for MongoDB against a running MongoDB instance or a Mock instance such as one provided by the <<ref-comfakemongofongo-Fongo,Fongo>> project.
