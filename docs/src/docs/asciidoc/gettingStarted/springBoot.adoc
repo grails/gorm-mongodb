@@ -1,8 +1,8 @@
 To use GORM for MongoDB in Spring Boot add the necessary dependencies to your Boot application:
 
-[source,groovy]
+[source,groovy,subs="attributes"]
 ----
-compile("org.grails:gorm-mongodb-spring-boot:VERSION")
+compile("org.grails:gorm-mongodb-spring-boot:{version}")
 ----
 
 Ensure your Boot `Application` class is annotated with `ComponentScan`, example:

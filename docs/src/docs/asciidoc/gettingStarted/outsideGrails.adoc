@@ -1,8 +1,8 @@
 If you wish to use GORM for MongoDB outside of a Grails application you should declare the necessary dependencies, for example in Gradle:
 
-[source,groovy]
+[source,groovy,subs="attributes"]
 ----
-compile "org.grails:grails-datastore-gorm-mongodb:VERSION"
+compile "org.grails:grails-datastore-gorm-mongodb:{version}"
 ----
 
 Then annotate your entities with the `grails.gorm.annotation.Entity` annotation:
