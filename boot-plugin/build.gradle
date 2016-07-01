@@ -19,3 +19,5 @@ dependencies {
 
     testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
 }
+
+//compileTestGroovy.groovyOptions.forkOptions.jvmArgs = ["-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"]

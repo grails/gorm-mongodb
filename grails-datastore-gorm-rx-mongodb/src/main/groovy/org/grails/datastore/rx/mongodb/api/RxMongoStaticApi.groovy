@@ -7,13 +7,17 @@ import com.mongodb.rx.client.MongoCollection
 import com.mongodb.rx.client.MongoDatabase
 import grails.gorm.rx.CriteriaBuilder
 import grails.gorm.rx.mongodb.MongoCriteriaBuilder
+import grails.gorm.rx.mongodb.RxMongoEntity
+import grails.gorm.rx.mongodb.api.RxMongoAllOperations
 import grails.gorm.rx.mongodb.api.RxMongoStaticOperations
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import org.bson.BsonDocument
 import org.bson.Document
 import org.bson.conversions.Bson
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.rx.mongodb.RxMongoDatastoreClient
+import org.grails.datastore.rx.mongodb.RxMongoDatastoreClientImplementor
 import org.grails.datastore.rx.mongodb.client.DelegatingRxMongoDatastoreClient
 import org.grails.gorm.rx.api.RxGormStaticApi
 import rx.Observable
@@ -25,17 +29,18 @@ import rx.Observable
  * @author Graeme Rocher
  */
 @CompileStatic
-class RxMongoStaticApi<D> extends RxGormStaticApi<D> implements RxMongoStaticOperations<D> {
-    final RxMongoDatastoreClient mongoDatastoreClient
+class RxMongoStaticApi<D> extends RxGormStaticApi<D> implements RxMongoAllOperations<D> {
+    final RxMongoDatastoreClientImplementor mongoDatastoreClient
 
-    RxMongoStaticApi(PersistentEntity entity, RxMongoDatastoreClient datastoreClient) {
+    RxMongoStaticApi(PersistentEntity entity, RxMongoDatastoreClientImplementor datastoreClient) {
         super(entity, datastoreClient)
         this.mongoDatastoreClient = datastoreClient
     }
 
     @Override
     MongoDatabase getDB() {
-        return mongoDatastoreClient.nativeInterface.getDatabase( mongoDatastoreClient.getDatabaseName(entity) )
+        String databaseName = mongoDatastoreClient.getDatabaseName(entity)
+        return mongoDatastoreClient.nativeInterface.getDatabase(databaseName)
     }
 
     @Override
@@ -176,5 +181,10 @@ class RxMongoStaticApi<D> extends RxGormStaticApi<D> implements RxMongoStaticOpe
             }
         }
         newPipeline
+    }
+
+    @Override
+    BsonDocument toBsonDocument(D instance) {
+        return ((RxMongoEntity)instance).toBsonDocument()
     }
 }

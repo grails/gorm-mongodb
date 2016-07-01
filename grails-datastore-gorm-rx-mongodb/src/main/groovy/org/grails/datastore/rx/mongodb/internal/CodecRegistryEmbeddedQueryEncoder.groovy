@@ -8,6 +8,7 @@ import org.grails.datastore.bson.query.BsonQuery
 import org.grails.datastore.mapping.model.types.Embedded
 import org.grails.datastore.bson.query.EmbeddedQueryEncoder
 import org.grails.datastore.rx.mongodb.RxMongoDatastoreClient
+import org.grails.datastore.rx.mongodb.RxMongoDatastoreClientImplementor
 import org.grails.datastore.rx.mongodb.engine.codecs.RxPersistentEntityCodec
 
 /**
@@ -19,9 +20,9 @@ import org.grails.datastore.rx.mongodb.engine.codecs.RxPersistentEntityCodec
 @CompileStatic
 class CodecRegistryEmbeddedQueryEncoder implements EmbeddedQueryEncoder {
 
-    final RxMongoDatastoreClient datastoreClient
+    final RxMongoDatastoreClientImplementor datastoreClient
 
-    CodecRegistryEmbeddedQueryEncoder(RxMongoDatastoreClient datastoreClient) {
+    CodecRegistryEmbeddedQueryEncoder(RxMongoDatastoreClientImplementor datastoreClient) {
         this.datastoreClient = datastoreClient
     }
 

@@ -72,12 +72,22 @@ class RxPersistentEntityCodec extends PersistentEntityCodec {
     }
 
     @Override
+    protected Object retrieveCachedInstance(EntityAccess access) {
+        return null
+    }
+
+    @Override
     Object decode(BsonReader bsonReader, DecoderContext decoderContext) {
         def decoded = super.decode(bsonReader, decoderContext)
         if(decoded instanceof DirtyCheckable) {
             ((DirtyCheckable)decoded).trackChanges()
         }
         return decoded
+    }
+
+    @Override
+    protected void readingComplete(EntityAccess access) {
+        decodeAssociations(null, access)
     }
 
     @Override

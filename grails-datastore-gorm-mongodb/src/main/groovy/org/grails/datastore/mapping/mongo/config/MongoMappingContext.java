@@ -14,8 +14,6 @@
  */
 package org.grails.datastore.mapping.mongo.config;
 
-import com.mongodb.DBObject;
-
 import com.mongodb.MongoClientURI;
 import groovy.lang.Closure;
 
@@ -28,25 +26,22 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import org.bson.BSONObject;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.bson.types.BSONTimestamp;
+import org.bson.types.Binary;
 import org.bson.types.Code;
-import org.bson.types.CodeWScope;
+import org.bson.types.ObjectId;
 import org.bson.types.Symbol;
+import org.grails.datastore.bson.codecs.CodecExtensions;
 import org.grails.datastore.gorm.mongo.geo.*;
 import org.grails.datastore.gorm.mongo.simple.EnumType;
 import org.grails.datastore.mapping.config.AbstractGormMappingFactory;
-import org.grails.datastore.mapping.config.Property;
 import org.grails.datastore.mapping.document.config.Attribute;
 import org.grails.datastore.mapping.document.config.Collection;
 import org.grails.datastore.mapping.document.config.DocumentMappingContext;
-import org.grails.datastore.mapping.document.config.GormDocumentMappingFactory;
 import org.grails.datastore.mapping.model.AbstractClassMapping;
 import org.grails.datastore.mapping.model.ClassMapping;
 import org.grails.datastore.mapping.model.EmbeddedPersistentEntity;
-import org.grails.datastore.mapping.model.IdentityMapping;
 import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.datastore.mapping.model.MappingFactory;
 import org.grails.datastore.mapping.model.PersistentEntity;
@@ -54,7 +49,9 @@ import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.types.Identity;
 import org.grails.datastore.mapping.mongo.MongoConstants;
 import org.grails.datastore.mapping.mongo.MongoDatastore;
-import org.grails.datastore.mapping.reflect.FieldEntityAccess;
+import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettings;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.env.PropertyResolver;
 
 /**
@@ -107,7 +104,37 @@ public class MongoMappingContext extends DocumentMappingContext {
     public MongoMappingContext(String defaultDatabaseName, Closure defaultMapping, Class...classes) {
         super(defaultDatabaseName, defaultMapping);
         registerMongoTypes();
+        final ConverterRegistry converterRegistry = getConverterRegistry();
+        converterRegistry.addConverter(new Converter<String, ObjectId>() {
+            public ObjectId convert(String source) {
+                return new ObjectId(source);
+            }
+        });
+
+        converterRegistry.addConverter(new Converter<ObjectId, String>() {
+            public String convert(ObjectId source) {
+                return source.toString();
+            }
+        });
+
+        converterRegistry.addConverter(new Converter<byte[], Binary>() {
+            public Binary convert(byte[] source) {
+                return new Binary(source);
+            }
+        });
+
+        converterRegistry.addConverter(new Converter<Binary, byte[]>() {
+            public byte[] convert(Binary source) {
+                return source.getData();
+            }
+        });
+
+        for (Converter converter : CodecExtensions.getBsonConverters()) {
+            converterRegistry.addConverter(converter);
+        }
+
         addPersistentEntities(classes);
+
     }
 
     /**
@@ -115,11 +142,22 @@ public class MongoMappingContext extends DocumentMappingContext {
      *
      * @param configuration The configuration
      * @param classes The persistent classes
+     * @deprecated  Use {@link #MongoMappingContext(MongoConnectionSourceSettings, Class[])} instead
+     *
      */
+    @Deprecated
     public MongoMappingContext(PropertyResolver configuration, Class...classes) {
-        super(getDefaultDatabaseName(configuration), configuration.getProperty(MongoConstants.SETTING_DEFAULT_MAPPING, Closure.class, null));
-        registerMongoTypes();
-        addPersistentEntities(classes);
+        this(getDefaultDatabaseName(configuration), configuration.getProperty(MongoSettings.SETTING_DEFAULT_MAPPING, Closure.class, null), classes);
+    }
+
+    /**
+     * Construct a new context for the given settings and classes
+     *
+     * @param settings The settings
+     * @param classes The classes
+     */
+    public MongoMappingContext(MongoConnectionSourceSettings settings, Class... classes) {
+        this(settings.getDatabase(), settings.getDefault().getMapping(), classes );
     }
 
     /**
@@ -142,7 +180,7 @@ public class MongoMappingContext extends DocumentMappingContext {
                 return database;
             }
         }
-        return configuration.getProperty(MongoDatastore.SETTING_DATABASE_NAME, "test");
+        return configuration.getProperty(MongoSettings.SETTING_DATABASE_NAME, "test");
     }
 
     private final class MongoDocumentMappingFactory extends

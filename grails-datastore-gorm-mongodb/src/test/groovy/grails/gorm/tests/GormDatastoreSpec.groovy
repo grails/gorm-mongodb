@@ -15,6 +15,7 @@ import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.mongo.AbstractMongoSession
 import org.grails.datastore.mapping.mongo.MongoDatastore
+import org.grails.datastore.mapping.mongo.config.MongoSettings
 import org.grails.datastore.mapping.query.Query
 import org.grails.validation.GrailsDomainClassValidator
 import org.springframework.context.support.GenericApplicationContext
@@ -51,7 +52,7 @@ abstract class GormDatastoreSpec extends Specification {
         def databaseName = System.getProperty(GormDatastoreSpec.CURRENT_TEST_NAME) ?: 'test'
 
 
-        mongoDatastore = new MongoDatastore([(MongoDatastore.SETTING_DATABASE_NAME): databaseName])
+        mongoDatastore = new MongoDatastore([(MongoSettings.SETTING_DATABASE_NAME): databaseName])
         mappingContext = mongoDatastore.mappingContext
         mappingContext.mappingFactory.registerCustomType(new AbstractMappingAwareCustomTypeMarshaller<Birthday, Document, Document>(Birthday) {
             @Override

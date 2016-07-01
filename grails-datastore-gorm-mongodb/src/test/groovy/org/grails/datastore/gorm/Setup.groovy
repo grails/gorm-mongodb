@@ -12,8 +12,10 @@ import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.mongo.AbstractMongoSession
 import org.grails.datastore.mapping.mongo.MongoDatastore
+import org.grails.datastore.mapping.mongo.config.MongoSettings
 import org.grails.datastore.mapping.query.Query.Between
 import org.grails.datastore.mapping.query.Query.PropertyCriterion
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.util.StringUtils
 import org.springframework.validation.Errors
 import org.springframework.validation.Validator
@@ -29,13 +31,14 @@ class Setup {
     static destroy() {
         session.nativeInterface.dropDatabase( session.defaultDatabase )
         session.disconnect()
+        TransactionSynchronizationManager.unbindResource(mongo)
         mongo.close()
     }
 
     static Session setup(classes) {
         def databaseName = System.getProperty(GormDatastoreSpec.CURRENT_TEST_NAME) ?: 'test'
 
-        mongo = new MongoDatastore([(MongoDatastore.SETTING_DATABASE_NAME): databaseName], classes as Class[])
+        mongo = new MongoDatastore([(MongoSettings.SETTING_DATABASE_NAME): databaseName], classes as Class[])
         mongo.mappingContext.mappingFactory.registerCustomType(new AbstractMappingAwareCustomTypeMarshaller<Birthday, Document, Document>(Birthday) {
             @Override
             protected Object writeInternal(PersistentProperty property, String key, Birthday value, Document nativeTarget) {
@@ -82,6 +85,8 @@ class Setup {
 
 
         session = mongo.connect()
+
+        TransactionSynchronizationManager.bindResource(mongo, session)
 
         return session
     }

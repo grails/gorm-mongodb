@@ -6,7 +6,6 @@ import com.mongodb.MongoCredential
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import org.grails.datastore.mapping.mongo.MongoConstants
 import org.springframework.core.env.PropertyResolver
 import org.springframework.util.ReflectionUtils
 
@@ -23,7 +22,7 @@ class MongoClientOptionsBuilder {
     final PropertyResolver propertyResolver
     final String databaseName
 
-    private String prefix = MongoConstants.SETTING_OPTIONS
+    private String prefix = MongoSettings.SETTING_OPTIONS
 
     private ConnectionString connectionString
     private String host
@@ -33,24 +32,24 @@ class MongoClientOptionsBuilder {
     private MongoCredential mongoCredential
 
     MongoClientOptionsBuilder(PropertyResolver propertyResolver) {
-        this(propertyResolver,  propertyResolver.getProperty(MongoConstants.SETTING_DATABASE_NAME, 'test'))
+        this(propertyResolver,  propertyResolver.getProperty(MongoSettings.SETTING_DATABASE_NAME, 'test'))
     }
 
     MongoClientOptionsBuilder(PropertyResolver propertyResolver, String databaseName) {
         this.propertyResolver = propertyResolver
         this.databaseName = databaseName
 
-        host = propertyResolver.getProperty(MongoConstants.SETTING_HOST, '')
-        username = propertyResolver.getProperty(MongoConstants.SETTING_USERNAME, '')
-        password = propertyResolver.getProperty(MongoConstants.SETTING_PASSWORD, '')
+        host = propertyResolver.getProperty(MongoSettings.SETTING_HOST, '')
+        username = propertyResolver.getProperty(MongoSettings.SETTING_USERNAME, '')
+        password = propertyResolver.getProperty(MongoSettings.SETTING_PASSWORD, '')
         uAndP = username && password ? "$username:$password@" : ''
         if(host) {
-            def port = propertyResolver.getProperty(MongoConstants.SETTING_PORT, '')
+            def port = propertyResolver.getProperty(MongoSettings.SETTING_PORT, '')
             port = port ? ":$port" : ''
             connectionString = new ConnectionString("mongodb://${uAndP}${host}${port}/$databaseName")
         }
         else {
-            connectionString = new ConnectionString(propertyResolver.getProperty(MongoConstants.SETTING_CONNECTION_STRING, propertyResolver.getProperty(MongoConstants.SETTING_URL, "mongodb://localhost/$databaseName")))
+            connectionString = new ConnectionString(propertyResolver.getProperty(MongoSettings.SETTING_CONNECTION_STRING, propertyResolver.getProperty(MongoSettings.SETTING_URL, "mongodb://localhost/$databaseName")))
         }
         mongoCredential = uAndP ? MongoCredential.createCredential(username, databaseName, password.toCharArray()) : null
     }

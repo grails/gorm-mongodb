@@ -23,6 +23,7 @@ import org.grails.datastore.mapping.query.Query
 import org.grails.datastore.mapping.query.event.PreQueryEvent
 import org.grails.datastore.mapping.reflect.EntityReflector
 import org.grails.datastore.rx.mongodb.RxMongoDatastoreClient
+import org.grails.datastore.rx.mongodb.RxMongoDatastoreClientImplementor
 import org.grails.datastore.rx.mongodb.engine.codecs.QueryStateAwareCodeRegistry
 import org.grails.datastore.rx.mongodb.internal.CodecRegistryEmbeddedQueryEncoder
 import org.grails.datastore.rx.query.QueryState
@@ -43,10 +44,10 @@ import javax.persistence.FetchType
 @CompileStatic
 class RxMongoQuery extends MongoQuery implements RxQuery {
 
-    final RxMongoDatastoreClient datastoreClient
+    final RxMongoDatastoreClientImplementor datastoreClient
     final QueryState queryState
 
-    RxMongoQuery(RxMongoDatastoreClient client, PersistentEntity entity, QueryState queryState = null) {
+    RxMongoQuery(RxMongoDatastoreClientImplementor client, PersistentEntity entity, QueryState queryState = null) {
         super(null, entity)
 
         this.datastoreClient = client

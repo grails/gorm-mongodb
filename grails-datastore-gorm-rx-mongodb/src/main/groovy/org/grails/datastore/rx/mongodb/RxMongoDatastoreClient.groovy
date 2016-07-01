@@ -1,17 +1,10 @@
 package org.grails.datastore.rx.mongodb
 
 import com.mongodb.ConnectionString
-import com.mongodb.ServerAddress
 import com.mongodb.async.client.MongoClientSettings
 import com.mongodb.bulk.BulkWriteResult
-import com.mongodb.client.model.BulkWriteOptions
-import com.mongodb.client.model.IndexOptions
-import com.mongodb.client.model.InsertOneModel
-import com.mongodb.client.model.UpdateOneModel
-import com.mongodb.client.model.UpdateOptions
-import com.mongodb.client.model.WriteModel
+import com.mongodb.client.model.*
 import com.mongodb.client.result.DeleteResult
-import com.mongodb.connection.ClusterSettings
 import com.mongodb.rx.client.MongoClient
 import com.mongodb.rx.client.MongoClients
 import com.mongodb.rx.client.ObservableAdapter
@@ -22,24 +15,23 @@ import org.bson.codecs.configuration.CodecRegistries
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.types.Binary
 import org.bson.types.ObjectId
+import org.grails.datastore.bson.codecs.CodecExtensions
 import org.grails.datastore.bson.query.BsonQuery
 import org.grails.datastore.gorm.mongo.MongoGormEnhancer
 import org.grails.datastore.mapping.config.AbstractGormMappingFactory
+import org.grails.datastore.mapping.config.ConfigurationUtils
 import org.grails.datastore.mapping.config.Property
 import org.grails.datastore.mapping.core.IdentityGenerationException
 import org.grails.datastore.mapping.core.OptimisticLockingException
-import org.grails.datastore.mapping.model.ClassMapping
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.datastore.mapping.model.PersistentProperty
-import org.grails.datastore.mapping.model.PropertyMapping
+import org.grails.datastore.mapping.core.connections.*
+import org.grails.datastore.mapping.model.*
 import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.datastore.mapping.model.types.BasicTypeConverterRegistrar
 import org.grails.datastore.mapping.mongo.MongoConstants
 import org.grails.datastore.mapping.mongo.config.MongoAttribute
 import org.grails.datastore.mapping.mongo.config.MongoCollection
 import org.grails.datastore.mapping.mongo.config.MongoMappingContext
-import org.grails.datastore.bson.codecs.CodecExtensions
+import org.grails.datastore.mapping.mongo.config.MongoSettings
 import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec
 import org.grails.datastore.mapping.query.Query
 import org.grails.datastore.mapping.reflect.EntityReflector
@@ -48,7 +40,9 @@ import org.grails.datastore.rx.RxDatastoreClient
 import org.grails.datastore.rx.batch.BatchOperation
 import org.grails.datastore.rx.bson.CodecsRxDatastoreClient
 import org.grails.datastore.rx.mongodb.api.RxMongoStaticApi
-import org.grails.datastore.rx.mongodb.config.MongoClientSettingsBuilder
+import org.grails.datastore.rx.mongodb.client.DelegatingRxMongoDatastoreClient
+import org.grails.datastore.rx.mongodb.connections.MongoConnectionSourceFactory
+import org.grails.datastore.rx.mongodb.connections.MongoConnectionSourceSettings
 import org.grails.datastore.rx.mongodb.engine.codecs.RxPersistentEntityCodec
 import org.grails.datastore.rx.mongodb.extensions.MongoExtensions
 import org.grails.datastore.rx.mongodb.query.RxMongoQuery
@@ -60,7 +54,6 @@ import org.springframework.core.convert.converter.ConverterRegistry
 import org.springframework.core.env.PropertyResolver
 import org.springframework.core.env.StandardEnvironment
 import rx.Observable
-
 /**
  * Implementation of the {@link RxDatastoreClient} interface for MongoDB that uses the MongoDB RX driver
  *
@@ -68,7 +61,12 @@ import rx.Observable
  * @author Graeme Rocher
  */
 @CompileStatic
-class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> implements CodecsRxDatastoreClient {
+class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> implements RxMongoDatastoreClientImplementor {
+
+    static {
+        MongoGormEnhancer.registerMongoMethodExpressions()
+    }
+
     private static final String INDEX_ATTRIBUTES = "indexAttributes"
 
     protected MongoClient mongoClient
@@ -81,6 +79,51 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     protected final PropertyResolver configuration
     protected final boolean allowBlockingOperations
 
+
+    /**
+     * Creates a new RxMongoDatastoreClient for the given mapping context and {@link MongoClient}
+     *
+     * @param connectionSources The connection sources
+     * @param mappingContext The mapping context
+     */
+    RxMongoDatastoreClient(ConnectionSources<MongoClient, MongoConnectionSourceSettings> connectionSources, MongoMappingContext mappingContext) {
+        super(connectionSources, mappingContext)
+        this.configuration = connectionSources.baseConfiguration
+        this.mongoClient = connectionSources.defaultConnectionSource.source
+        this.defaultDatabase = mappingContext.defaultDatabaseName
+        this.mappingContext = mappingContext
+        this.codecRegistry = createCodeRegistry()
+        this.allowBlockingOperations = configuration.getProperty(SETTING_ALLOW_BLOCKING, Boolean, true)
+
+        if(!(connectionSources instanceof SingletonConnectionSources)) {
+            for(ConnectionSource<MongoClient, MongoConnectionSourceSettings> connectionSource in connectionSources) {
+                if(connectionSource.name == ConnectionSource.DEFAULT) continue
+
+                DelegatingRxMongoDatastoreClient delegatingClient = new DelegatingRxMongoDatastoreClient(connectionSource, this)
+                delegatingClient.targetMongoClient = connectionSource.source
+                delegatingClient.targetDatabaseName = connectionSource.settings.database
+                datastoreClients.put(connectionSource.name, (RxDatastoreClient)delegatingClient)
+            }
+        }
+
+
+        for(Codec codec in ConfigurationUtils.findServices(this.configuration, MongoSettings.SETTING_CODECS, Codec ) ){
+            this.entityCodecs.put(codec.encoderClass.name, codec )
+        }
+
+        initialize(mappingContext)
+    }
+
+    /**
+     * Creates a new RxMongoDatastoreClient for the given mapping context and {@link MongoClient}
+     *
+     * @param connectionSources The connection sources
+     * @param mappingContext The mapping context
+     */
+    RxMongoDatastoreClient(ConnectionSources<MongoClient, MongoConnectionSourceSettings> connectionSources, Class...classes) {
+        this(connectionSources, initializeMappingContext( connectionSources.baseConfiguration, connectionSources.defaultConnectionSource.settings.database, classes ))
+    }
+
     /**
      * Creates a new RxMongoDatastoreClient for the given mapping context and {@link MongoClient}
      *
@@ -88,14 +131,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param mappingContext The mapping context
      */
     RxMongoDatastoreClient(MongoClient mongoClient, MongoMappingContext mappingContext, PropertyResolver configuration = new StandardEnvironment()) {
-        super(mappingContext)
-        this.mongoClient = mongoClient
-        this.defaultDatabase = mappingContext.defaultDatabaseName
-        this.mappingContext = mappingContext
-        this.codecRegistry = createCodeRegistry()
-        this.configuration = configuration
-        this.allowBlockingOperations = configuration.getProperty(SETTING_ALLOW_BLOCKING, Boolean, true)
-        initialize(mappingContext)
+        this(createDefaultConnectionSources(mongoClient, configuration), mappingContext)
     }
 
 
@@ -267,37 +303,16 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
         this(new ConnectionString(connectionString), databaseName, classes)
     }
 
-    /**
-     * Creates a new RxMongoDatastoreClient from the given configuration which is supplied by a property resolver
-     *
-     * @param configuration The configuration resolver
-     * @param databaseName The default database name
-     * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
-     */
-    RxMongoDatastoreClient(PropertyResolver configuration, String databaseName, ObservableAdapter observableAdapter, Class...classes) {
-        this(new MongoClientSettingsBuilder(configuration).build(), databaseName, observableAdapter, configuration, classes)
-    }
 
     /**
      * Creates a new RxMongoDatastoreClient from the given configuration which is supplied by a property resolver
      *
-     * @param configuration The configuration resolver
-     * @param databaseName The default database name
-     * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
-     */
-    RxMongoDatastoreClient(PropertyResolver configuration, String databaseName, Class...classes) {
-        this(configuration, databaseName, null, classes)
-    }
-
-    /**
-     * Creates a new RxMongoDatastoreClient from the given configuration which is supplied by a property resolver
-     *\
      * @param configuration The configuration resolver
      * @param databaseName The default database name
      * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
      */
     RxMongoDatastoreClient(PropertyResolver configuration, Class...classes) {
-        this(configuration, configuration.getProperty(MongoConstants.SETTING_DATABASE_NAME, "test"), classes)
+        this( ConnectionSourcesInitializer.create(new MongoConnectionSourceFactory(), configuration), classes)
     }
 
 
@@ -321,29 +336,24 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
         observableAdapter != null ? MongoClients.create(clientSettings, observableAdapter) : MongoClients.create(clientSettings)
     }
 
+    protected static InMemoryConnectionSources<MongoClient, MongoConnectionSourceSettings> createDefaultConnectionSources(MongoClient mongoClient, PropertyResolver configuration) {
+        new InMemoryConnectionSources<MongoClient, MongoConnectionSourceSettings>(
+                new DefaultConnectionSource<MongoClient, MongoConnectionSourceSettings>(ConnectionSource.DEFAULT, mongoClient, new MongoConnectionSourceSettings().options(mongoClient.settings)),
+                new MongoConnectionSourceFactory(),
+                configuration
+        )
+    }
+
     protected static MongoMappingContext initializeMappingContext(PropertyResolver configuration, String defaultDatabaseName, Class... classes) {
         MongoMappingContext mongoMappingContext = new MongoMappingContext(
-                configuration.getProperty(MongoConstants.SETTING_DATABASE_NAME, defaultDatabaseName),
-                configuration.getProperty(MongoConstants.SETTING_DEFAULT_MAPPING, Closure, null),
+                configuration.getProperty(MongoSettings.SETTING_DATABASE_NAME, defaultDatabaseName),
+                configuration.getProperty(MongoSettings.SETTING_DEFAULT_MAPPING, Closure, null),
         )
         // disable versioning by default
         ((AbstractGormMappingFactory)mongoMappingContext.mappingFactory).setVersionByDefault(false)
         mongoMappingContext.addPersistentEntities(classes)
         mongoMappingContext.initialize()
         return mongoMappingContext;
-    }
-
-    protected MongoClient initializeMongoClient(MongoClientSettings clientSettings) {
-        def clientSettingsBuilder = MongoClientSettings.builder(clientSettings)
-                .codecRegistry(codecRegistry)
-
-        if (clientSettings.getClusterSettings() == null) {
-            // default to localhost if no cluster settings specified
-            def clusterSettings = ClusterSettings.builder().hosts(Arrays.asList(new ServerAddress("localhost")))
-            clientSettingsBuilder
-                    .clusterSettings(clusterSettings.build())
-        }
-        return MongoClients.create(clientSettingsBuilder.build())
     }
 
     /**
@@ -374,7 +384,6 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
         initializeMongoDatastoreClient(mappingContext, codecRegistry)
         initializeConverters(mappingContext)
         initDefaultEventListeners(eventPublisher)
-        MongoGormEnhancer.registerMongoMethodExpressions()
     }
 
 
@@ -556,7 +565,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
                 .getCollection(getCollectionName(entity))
                 .withCodecRegistry(getCodecRegistry())
                 .withDocumentClass(type)
-        collection
+        return collection
     }
 
     public String getCollectionName(PersistentEntity entity) {
@@ -577,7 +586,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
 
         final String databaseName = mongoDatabases.get(entity.getName())
         if(databaseName == null) {
-            return defaultDatabase
+            return getDefaultDatabase()
         }
         return databaseName
     }
@@ -599,7 +608,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
 
     @Override
     void doClose() throws IOException {
-        mongoClient?.close()
+        connectionSources?.close()
     }
 
     @Override
@@ -644,8 +653,8 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     }
 
     @Override
-    RxGormStaticApi createStaticApi(PersistentEntity entity) {
-        return new RxMongoStaticApi(entity, this)
+    RxGormStaticApi createStaticApi(PersistentEntity entity, String connectionSourceName) {
+        return new RxMongoStaticApi(entity, (RxMongoDatastoreClientImplementor)getDatastoreClient(connectionSourceName))
     }
 
     protected boolean isAssignedId(PersistentEntity persistentEntity) {

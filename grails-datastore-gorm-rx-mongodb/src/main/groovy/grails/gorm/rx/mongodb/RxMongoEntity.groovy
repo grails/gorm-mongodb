@@ -5,6 +5,7 @@ import com.mongodb.rx.client.MongoCollection
 import com.mongodb.rx.client.MongoDatabase
 import grails.gorm.rx.RxEntity
 import grails.gorm.rx.api.RxGormStaticOperations
+import grails.gorm.rx.mongodb.api.RxMongoAllOperations
 import grails.gorm.rx.mongodb.api.RxMongoStaticOperations
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -182,6 +183,20 @@ trait RxMongoEntity<D> implements RxEntity<D>, DynamicAttributes {
         staticApi.withCollection(name, callable)
     }
 
+
+    /**
+     * Switches to given named connection within the context of the closure. The delegate of the closure is used to resolve
+     * operations against the connection.
+     *
+     * @param connectionName The name of the connection
+     * @param callable The closure
+     * @return
+     */
+    static <T> T withConnection(String connectionName, @DelegatesTo(RxMongoAllOperations) Closure<T> callable ) {
+        def staticOperations = (RxMongoAllOperations<D>) RxGormEnhancer.findStaticApi(this, connectionName)
+        callable.setDelegate(staticOperations)
+        return callable.call()
+    }
     /**
      * Execute a MongoDB aggregation pipeline. Note that the pipeline should return documents that represent this domain class as each return document will be converted to a domain instance in the result set
      *

@@ -416,8 +416,7 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         if (uniqueResult) {
             if(isCodecPersister) {
                 collection = collection
-                        .withDocumentClass(entity.getJavaClass())
-                        .withCodecRegistry( mongoSession.getDatastore().getCodecRegistry());
+                        .withDocumentClass(entity.getJavaClass());
             }
             final Object dbObject;
             if (criteria.isEmpty()) {

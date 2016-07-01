@@ -54,6 +54,10 @@ class Pizza {
     def afterDelete() {
         orderService.removeOrder(this.name)
     }
+
+    static mapping = {
+        autowire true
+    }
 }
 
 class OrderService {

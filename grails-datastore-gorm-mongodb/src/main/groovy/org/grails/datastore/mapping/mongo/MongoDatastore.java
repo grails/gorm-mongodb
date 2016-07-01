@@ -28,38 +28,37 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.types.Binary;
-import org.bson.types.ObjectId;
 import org.grails.datastore.gorm.GormEnhancer;
+import org.grails.datastore.gorm.GormInstanceApi;
+import org.grails.datastore.gorm.GormStaticApi;
+import org.grails.datastore.gorm.GormValidationApi;
 import org.grails.datastore.gorm.events.AutoTimestampEventListener;
 import org.grails.datastore.gorm.events.ConfigurableApplicationEventPublisher;
 import org.grails.datastore.gorm.events.DefaultApplicationEventPublisher;
 import org.grails.datastore.gorm.events.DomainEventListener;
 import org.grails.datastore.gorm.mongo.MongoGormEnhancer;
-import org.grails.datastore.gorm.mongo.bean.factory.MongoClientFactoryBean;
+import org.grails.datastore.gorm.mongo.api.MongoStaticApi;
 import org.grails.datastore.gorm.validation.constraints.MappingContextAwareConstraintFactory;
 import org.grails.datastore.gorm.validation.constraints.builtin.UniqueConstraint;
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry;
 import org.grails.datastore.mapping.core.*;
-import org.grails.datastore.mapping.document.config.DocumentMappingContext;
+import org.grails.datastore.mapping.core.connections.*;
+import org.grails.datastore.mapping.core.exceptions.ConfigurationException;
 import org.grails.datastore.mapping.model.*;
-import org.grails.datastore.mapping.mongo.config.MongoAttribute;
-import org.grails.datastore.mapping.mongo.config.MongoClientOptionsBuilder;
-import org.grails.datastore.mapping.mongo.config.MongoCollection;
-import org.grails.datastore.mapping.mongo.config.MongoMappingContext;
+import org.grails.datastore.mapping.mongo.config.*;
 import org.grails.datastore.bson.codecs.CodecExtensions;
+import org.grails.datastore.mapping.mongo.config.MongoCollection;
+import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceFactory;
+import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettings;
+import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettingsBuilder;
 import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec;
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.core.convert.converter.ConverterRegistry;
-import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertyResolver;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.annotation.PreDestroy;
+import javax.persistence.FlushModeType;
 
 /**
  * A Datastore implementation for the Mongo document store.
@@ -67,82 +66,62 @@ import javax.annotation.PreDestroy;
  * @author Graeme Rocher
  * @since 1.0
  */
-public class MongoDatastore extends AbstractDatastore implements MappingContext.Listener, Closeable, StatelessDatastore {
+public class MongoDatastore extends AbstractDatastore implements MappingContext.Listener, Closeable, StatelessDatastore, ConnectionSourcesProvider<MongoClient, MongoConnectionSourceSettings> {
 
-    public static final String SETTING_DATABASE_NAME = MongoConstants.SETTING_DATABASE_NAME;
-    public static final String SETTING_CONNECTION_STRING = MongoConstants.SETTING_CONNECTION_STRING;
-    public static final String SETTING_URL = MongoConstants.SETTING_URL;
-    public static final String SETTING_DEFAULT_MAPPING = MongoConstants.SETTING_DEFAULT_MAPPING;
-    public static final String SETTING_OPTIONS = MongoConstants.SETTING_OPTIONS;
-    public static final String SETTING_HOST = MongoConstants.SETTING_HOST;
-    public static final String SETTING_PORT = MongoConstants.SETTING_PORT;
-    public static final String SETTING_USERNAME = MongoConstants.SETTING_USERNAME;
-    public static final String SETTING_PASSWORD = MongoConstants.SETTING_PASSWORD;
-    public static final String SETTING_STATELESS = "grails.mongodb.stateless";
-    public static final String SETTING_ENGINE = "grails.mongodb.engine";
+    public static final String SETTING_DATABASE_NAME = MongoSettings.SETTING_DATABASE_NAME;
+    public static final String SETTING_CONNECTION_STRING = MongoSettings.SETTING_CONNECTION_STRING;
+    public static final String SETTING_URL = MongoSettings.SETTING_URL;
+    public static final String SETTING_DEFAULT_MAPPING = MongoSettings.SETTING_DEFAULT_MAPPING;
+    public static final String SETTING_OPTIONS = MongoSettings.SETTING_OPTIONS;
+    public static final String SETTING_HOST = MongoSettings.SETTING_HOST;
+    public static final String SETTING_PORT = MongoSettings.SETTING_PORT;
+    public static final String SETTING_USERNAME = MongoSettings.SETTING_USERNAME;
+    public static final String SETTING_PASSWORD = MongoSettings.SETTING_PASSWORD;
+    public static final String SETTING_STATELESS = MongoSettings.SETTING_STATELESS;
+    public static final String SETTING_ENGINE = MongoSettings.SETTING_ENGINE;
     public static final String INDEX_ATTRIBUTES = "indexAttributes";
-    public static final String CODEC_ENGINE = "codec";
+    public static final String CODEC_ENGINE = MongoConstants.CODEC_ENGINE;
 
     protected final MongoClient mongo;
     protected final String defaultDatabase;
-    protected final Map<PersistentEntity, String> mongoCollections = new ConcurrentHashMap<PersistentEntity, String>();
-    protected final Map<PersistentEntity, String> mongoDatabases = new ConcurrentHashMap<PersistentEntity, String>();
-    protected boolean stateless = false;
-    protected boolean codecEngine = true;
+    protected final Map<PersistentEntity, String> mongoCollections = new ConcurrentHashMap<>();
+    protected final Map<PersistentEntity, String> mongoDatabases = new ConcurrentHashMap<>();
+    protected final boolean stateless;
+    protected final boolean codecEngine;
     protected CodecRegistry codecRegistry;
-    protected final ApplicationEventPublisher eventPublisher;
+    protected final ConfigurableApplicationEventPublisher eventPublisher;
     protected final PlatformTransactionManager transactionManager;
     protected final GormEnhancer gormEnhancer;
+    protected final ConnectionSources<MongoClient, MongoConnectionSourceSettings> connectionSources;
+    protected final FlushModeType defaultFlushMode;
+
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
-     * @param mongoClient The {@link MongoClient} instance
+     * @param connectionSources The {@link ConnectionSources} to use
      * @param eventPublisher The Spring ApplicationContext
      * @param mappingContext The mapping context
      */
-    public MongoDatastore(MongoClient mongoClient, PropertyResolver configuration, MongoMappingContext mappingContext, ConfigurableApplicationEventPublisher eventPublisher) {
-        super(mappingContext, configuration, null);
-        this.mongo = mongoClient;
+    public MongoDatastore(final ConnectionSources<MongoClient, MongoConnectionSourceSettings> connectionSources, final MongoMappingContext mappingContext, final ConfigurableApplicationEventPublisher eventPublisher) {
+        super(mappingContext, connectionSources != null ? connectionSources.getBaseConfiguration() : null, null);
+        if(connectionSources == null) {
+            throw new IllegalArgumentException("Argument [connectionSources] cannot be null");
+        }
+        if(mappingContext == null) {
+            throw new IllegalArgumentException("Argument [mappingContext] cannot be null");
+        }
+
+        this.connectionSources = connectionSources;
+
+        ConnectionSource<MongoClient, MongoConnectionSourceSettings> defaultConnectionSource = connectionSources.getDefaultConnectionSource();
+        MongoConnectionSourceSettings settings = defaultConnectionSource.getSettings();
+
+        this.mongo = defaultConnectionSource.getSource();
         this.eventPublisher = eventPublisher;
-        this.defaultDatabase = mappingContext.getDefaultDatabaseName();
-        if (mappingContext != null) {
-            mappingContext.addMappingContextListener(this);
-        }
-
-        this.stateless = connectionDetails.getProperty(SETTING_STATELESS, Boolean.class, false);
-        this.codecEngine = connectionDetails.getProperty(SETTING_ENGINE, String.class, CODEC_ENGINE).equals(CODEC_ENGINE);
-
-        initializeConverters(mappingContext);
-
-        final ConverterRegistry converterRegistry = mappingContext.getConverterRegistry();
-        converterRegistry.addConverter(new Converter<String, ObjectId>() {
-            public ObjectId convert(String source) {
-                return new ObjectId(source);
-            }
-        });
-
-        converterRegistry.addConverter(new Converter<ObjectId, String>() {
-            public String convert(ObjectId source) {
-                return source.toString();
-            }
-        });
-
-        converterRegistry.addConverter(new Converter<byte[], Binary>() {
-            public Binary convert(byte[] source) {
-                return new Binary(source);
-            }
-        });
-
-        converterRegistry.addConverter(new Converter<Binary, byte[]>() {
-            public byte[] convert(Binary source) {
-                return source.getData();
-            }
-        });
-
-        for (Converter converter : CodecExtensions.getBsonConverters()) {
-            converterRegistry.addConverter(converter);
-        }
-
+        this.defaultDatabase = settings.getDatabase();
+        this.defaultFlushMode = settings.getFlushMode();
+        this.stateless = settings.isStateless();
+        this.codecEngine = settings.getEngine().equals(MongoConstants.CODEC_ENGINE);
         codecRegistry = CodecRegistries.fromRegistries(
                 MongoClient.getDefaultCodecRegistry(),
                 CodecRegistries.fromProviders(new CodecExtensions(), new PersistentEntityCodeRegistry())
@@ -152,29 +131,103 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         datastoreTransactionManager.setDatastore(this);
         transactionManager = datastoreTransactionManager;
 
-        gormEnhancer = new MongoGormEnhancer(this, transactionManager);
+        for(PersistentEntity entity : mappingContext.getPersistentEntities()) {
+            registerEntity(entity);
+        }
 
 
-        registerEventListeners(eventPublisher);
+        this.gormEnhancer = initialize(settings);
+    }
 
-        mappingContext.addMappingContextListener(new MappingContext.Listener() {
+    /**
+     * Runs the initialization sequence
+     * @param settings
+     */
+    protected MongoGormEnhancer initialize(MongoConnectionSourceSettings settings) {
+        getMappingContext().addMappingContextListener(this);
+        initializeConverters(this.mappingContext);
+        registerEventListeners(this.eventPublisher);
+
+        this.mappingContext.addMappingContextListener(new MappingContext.Listener() {
             @Override
             public void persistentEntityAdded(PersistentEntity entity) {
                 gormEnhancer.registerEntity(entity);
+                registerEntity(entity);
             }
         });
 
         buildIndex();
 
+        return new MongoGormEnhancer(this, transactionManager, settings.isFailOnError()) {
+            @Override
+            public Set<String> allQualifiers(Datastore datastore, PersistentEntity entity) {
+                LinkedHashSet<String> allConnectionSources = new LinkedHashSet<>(ConnectionSourcesSupport.getConnectionSourceNames(entity));
+                allConnectionSources.add(ConnectionSource.DEFAULT);
+                return allConnectionSources;
+            }
+
+            @Override
+            protected <D> MongoStaticApi<D> getStaticApi(Class<D> cls, String qualifier) {
+                MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);
+                return new MongoStaticApi<>(cls, mongoDatastore, getFinders(), transactionManager);
+            }
+
+            @Override
+            protected <D> GormInstanceApi<D> getInstanceApi(Class<D> cls, String qualifier) {
+                MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);
+                return new GormInstanceApi<>(cls,mongoDatastore);
+            }
+
+            private <D> MongoDatastore getDatastoreForQualifier(Class<D> cls, String qualifier) {
+                String defaultConnectionSourceName = ConnectionSourcesSupport.getDefaultConnectionSourceName(getMappingContext().getPersistentEntity(cls.getName()));
+                boolean isDefaultQualifier = qualifier.equals(ConnectionSource.DEFAULT);
+                if(isDefaultQualifier && defaultConnectionSourceName.equals(ConnectionSource.DEFAULT)) {
+                    return MongoDatastore.this;
+                }
+                else {
+                    if(isDefaultQualifier) {
+                        qualifier = defaultConnectionSourceName;
+                    }
+                    ConnectionSource<MongoClient, MongoConnectionSourceSettings> connectionSource = connectionSources.getConnectionSource(qualifier);
+                    if(connectionSource == null) {
+                        throw new ConfigurationException("Invalid connection ["+defaultConnectionSourceName+"] configured for class ["+cls+"]");
+                    }
+                    SingletonConnectionSources<MongoClient, MongoConnectionSourceSettings> newConnectionSources = new SingletonConnectionSources<>(connectionSource, connectionSources.getBaseConfiguration());
+                    return new MongoDatastore(newConnectionSources, getMappingContext(), eventPublisher) {
+                        @Override
+                        protected MongoGormEnhancer initialize(MongoConnectionSourceSettings settings) {
+                            // no-op
+                            super.buildIndex();
+                            return null;
+                        }
+                    };
+                }
+            }
+        };
+
+
     }
 
-    public void buildIndex() {
-        for (PersistentEntity entity : this.mappingContext.getPersistentEntities()) {
-            // Only create Mongo templates for entities that are mapped with Mongo
-            if (!entity.isExternal()) {
-                initializeIndices(entity);
-            }
-        }
+    /**
+     * Configures a new {@link MongoDatastore} for the given arguments
+     *
+     * @param connectionSources The {@link ConnectionSources} to use
+     * @param eventPublisher The Spring ApplicationContext
+     * @param classes The persistent classes
+     */
+    public MongoDatastore(ConnectionSources<MongoClient, MongoConnectionSourceSettings> connectionSources, ConfigurableApplicationEventPublisher eventPublisher, Class...classes) {
+        this(connectionSources, createMappingContext(connectionSources, classes), eventPublisher);
+    }
+
+    /**
+     * Configures a new {@link MongoDatastore} for the given arguments
+     *
+     * @param mongoClient The {@link MongoClient} instance
+     * @param eventPublisher The Spring ApplicationContext
+     * @param mappingContext The mapping context
+     */
+    public MongoDatastore(MongoClient mongoClient, PropertyResolver configuration, MongoMappingContext mappingContext, ConfigurableApplicationEventPublisher eventPublisher) {
+        this(createDefaultConnectionSources(mongoClient, configuration, mappingContext), mappingContext, eventPublisher);
     }
 
 
@@ -209,6 +262,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         this(mongoClient, mapToPropertyResolver(null), createMappingContext(mapToPropertyResolver(null), classes), new DefaultApplicationEventPublisher());
     }
 
+
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
@@ -232,7 +286,6 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         this(createMongoClient(configuration, clientOptions, mappingContext),  configuration, mappingContext,  new DefaultApplicationEventPublisher());
     }
 
-
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
@@ -241,7 +294,18 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * @param mappingContext The mapping context
      */
     public MongoDatastore(PropertyResolver configuration, MongoMappingContext mappingContext, ConfigurableApplicationEventPublisher eventPublisher) {
-        this(createMongoClientOptions(configuration),  configuration, mappingContext,  eventPublisher);
+        this(ConnectionSourcesInitializer.create(new MongoConnectionSourceFactory(), configuration), mappingContext,  eventPublisher);
+    }
+
+    /**
+     * Configures a new {@link MongoDatastore} for the given arguments
+     *
+     * @param configuration The configuration for the datastore
+     * @param eventPublisher The Spring ApplicationContext
+     * @param classes The persistent classes
+     */
+    public MongoDatastore(PropertyResolver configuration, ConfigurableApplicationEventPublisher eventPublisher, Class...classes) {
+        this(ConnectionSourcesInitializer.create(new MongoConnectionSourceFactory(), configuration), eventPublisher, classes);
     }
 
     /**
@@ -254,15 +318,15 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         this(configuration, mappingContext, new DefaultApplicationEventPublisher());
     }
 
+
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
      * @param configuration The configuration for the datastore
-     * @param eventPublisher The Spring ApplicationContext
      * @param classes The persistent classes
      */
-    public MongoDatastore(PropertyResolver configuration, ConfigurableApplicationEventPublisher eventPublisher, Class...classes) {
-        this(configuration, createMappingContext(configuration, classes), eventPublisher);
+    public MongoDatastore(PropertyResolver configuration, Class...classes) {
+        this(configuration, new DefaultApplicationEventPublisher(), classes);
     }
 
     /**
@@ -312,82 +376,48 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * @param classes The persistent classes
      */
     public MongoDatastore(Class...classes) {
-        this(createMappingContext(mapToPropertyResolver(null), classes));
+        this(mapToPropertyResolver(null), classes);
     }
 
     /**
-     * Creates the {@link MongoClientOptions} instance from the given configuration
-     *
-     * @param configuration The configuration
-     *
-     * @return A {@link MongoClientOptions} instance
+     * @return The {@link ConnectionSources} for this datastore
      */
-    protected static MongoClientOptions.Builder createMongoClientOptions(PropertyResolver configuration) {
-        MongoClientOptionsBuilder builder = new MongoClientOptionsBuilder(configuration, MongoMappingContext.getDefaultDatabaseName(configuration));
-        MongoClientOptions.Builder optionsBuilder = builder.build();
-        optionsBuilder.codecRegistry(
-                CodecRegistries.fromRegistries(MongoClient.getDefaultCodecRegistry(), new MongoClientFactoryBean.DefaultGrailsCodecRegistry())
-        );
-
-        return optionsBuilder;
+    public ConnectionSources<MongoClient, MongoConnectionSourceSettings> getConnectionSources() {
+        return connectionSources;
     }
 
-    protected static MongoClient createMongoClient(PropertyResolver configuration, MongoClientOptions.Builder mongoOptions, MongoMappingContext mappingContext) {
-        String connectionString = configuration.getProperty(SETTING_CONNECTION_STRING, String.class,
-                                    configuration.getProperty(SETTING_URL, String.class, null) );
 
-        if(connectionString != null) {
-            MongoClientURI mongoClientURI = new MongoClientURI(connectionString, mongoOptions);
-            return new MongoClient(mongoClientURI);
-        }
-        else {
-
-            ServerAddress defaults = new ServerAddress();
-            String username = configuration.getProperty(SETTING_USERNAME, (String)null);
-            String password = configuration.getProperty(SETTING_PASSWORD, (String)null);
-            String databaseName = mappingContext.getDefaultDatabaseName();
-
-            List<MongoCredential> credentials = new ArrayList<>();
-            if (username != null && password != null) {
-                credentials.add(MongoCredential.createCredential(username, databaseName, password.toCharArray()));
+    /**
+     * Builds the MongoDB index for this datastore
+     */
+    public void buildIndex() {
+        for (PersistentEntity entity : this.mappingContext.getPersistentEntities()) {
+            // Only create Mongo templates for entities that are mapped with Mongo
+            if (!entity.isExternal()) {
+                initializeIndices(entity);
             }
-
-            String host = configuration.getProperty(SETTING_HOST, defaults.getHost());
-            int port = configuration.getProperty(SETTING_PORT, Integer.class, defaults.getPort());
-            ServerAddress serverAddress = new ServerAddress(host,port);
-            MongoClient mongo;
-            if (mongoOptions != null) {
-                mongo = new MongoClient(serverAddress, credentials, mongoOptions.build());
-            } else {
-                mongo = new MongoClient(serverAddress, credentials);
-            }
-            return mongo;
         }
     }
 
-    protected static MongoMappingContext createMappingContext(PropertyResolver configuration, Class[] classes) {
-        MongoMappingContext mongoMappingContext = new MongoMappingContext(configuration,
-                                                                            classes);
-
-        DefaultValidatorRegistry defaultValidatorRegistry = new DefaultValidatorRegistry(mongoMappingContext, configuration);
-        defaultValidatorRegistry.addConstraintFactory(
-                new MappingContextAwareConstraintFactory(UniqueConstraint.class, defaultValidatorRegistry.getMessageSource(), mongoMappingContext)
-        );
-        mongoMappingContext.setValidatorRegistry(
-                defaultValidatorRegistry
-        );
-        return mongoMappingContext;
+    /**
+     * @return The default flush mode
+     */
+    public FlushModeType getDefaultFlushMode() {
+        return defaultFlushMode;
     }
 
-    protected void registerEventListeners(ConfigurableApplicationEventPublisher eventPublisher) {
-        eventPublisher.addApplicationListener(new DomainEventListener(this));
-        eventPublisher.addApplicationListener(new AutoTimestampEventListener(this));
-    }
-
+    /**
+     * @return The default database name
+     */
     public String getDefaultDatabase() {
         return defaultDatabase;
     }
 
+    /**
+     * Sets any additional codec registries
+     *
+     * @param codecRegistries The {@link CodecRegistry} instances
+     */
     @Autowired(required = false)
     public void setCodecRegistries(List<CodecRegistry> codecRegistries) {
         this.codecRegistry = CodecRegistries.fromRegistries(
@@ -395,6 +425,11 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
                 CodecRegistries.fromRegistries(codecRegistries));
     }
 
+    /**
+     * Sets any additional codec providers
+     *
+     * @param codecProviders The {@link CodecProvider} instances
+     */
     @Autowired(required = false)
     public void setCodecProviders(List<CodecProvider> codecProviders) {
         this.codecRegistry = CodecRegistries.fromRegistries(
@@ -402,6 +437,11 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
                 CodecRegistries.fromProviders(codecProviders));
     }
 
+    /**
+     * Sets any additional codecs
+     *
+     * @param codecs The {@link Codec} instances
+     */
     @Autowired(required = false)
     public void setCodecs(List<Codec<?>> codecs) {
         this.codecRegistry = CodecRegistries.fromRegistries(
@@ -409,14 +449,26 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
                 CodecRegistries.fromCodecs(codecs));
     }
 
+    /**
+     * @return The transaction manager
+     */
     public PlatformTransactionManager getTransactionManager() {
         return transactionManager;
     }
 
+    /**
+     * @return The {@link CodecRegistry}
+     */
     public CodecRegistry getCodecRegistry() {
         return codecRegistry;
     }
 
+    /**
+     * Obtains a {@link PersistentEntityCodec} for the given entity
+     *
+     * @param entity The entity
+     * @return The {@link PersistentEntityCodec}
+     */
     public PersistentEntityCodec getPersistentEntityCodec(PersistentEntity entity) {
         if (entity instanceof EmbeddedPersistentEntity) {
             return new PersistentEntityCodec(codecRegistry, entity);
@@ -425,6 +477,12 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         }
     }
 
+    /**
+     * Obtains a {@link PersistentEntityCodec} for the given entity
+     *
+     * @param entityClass The entity class
+     * @return The {@link PersistentEntityCodec}
+     */
     public PersistentEntityCodec getPersistentEntityCodec(Class entityClass) {
         if (entityClass == null) {
             throw new IllegalArgumentException("Argument [entityClass] cannot be null");
@@ -438,15 +496,36 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         return (PersistentEntityCodec) getCodecRegistry().get(entity.getJavaClass());
     }
 
+    /**
+     * @return The {@link ConfigurableApplicationEventPublisher} instance used by this datastore
+     */
     @Override
     public ConfigurableApplicationEventPublisher getApplicationEventPublisher() {
-        return (ConfigurableApplicationEventPublisher) this.eventPublisher;
+        return this.eventPublisher;
     }
 
+    /**
+     * @return The {@link MongoClient} instance
+     */
     public MongoClient getMongoClient() {
         return mongo;
     }
 
+    public String getDatabaseName(PersistentEntity entity) {
+        final String databaseName = mongoDatabases.get(entity);
+        if(databaseName == null) {
+            mongoDatabases.put(entity, defaultDatabase);
+            return defaultDatabase;
+        }
+        return databaseName;
+    }
+
+    /**
+     * Gets the default collection name for the given entity
+     *
+     * @param entity The entity
+     * @return The collection name
+     */
     public String getCollectionName(PersistentEntity entity) {
         final String collectionName = mongoCollections.get(entity);
         if(collectionName == null) {
@@ -456,6 +535,20 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         }
         return collectionName;
     }
+
+    /**
+     * Obtain the raw {@link com.mongodb.client.MongoCollection} for the given entity
+     *
+     * @param entity The entity
+     * @return The Mongo collection
+     */
+    public com.mongodb.client.MongoCollection<Document> getCollection(PersistentEntity entity) {
+        return getMongoClient()
+                .getDatabase(getDatabaseName(entity))
+                .getCollection(getCollectionName(entity))
+                .withCodecRegistry(codecRegistry);
+    }
+
 
     @Override
     protected Session createSession(PropertyResolver connDetails) {
@@ -470,6 +563,19 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         }
     }
 
+    /**
+     * @return The mapping context
+     */
+    @Override
+    public MongoMappingContext getMappingContext() {
+        return (MongoMappingContext) super.getMappingContext();
+    }
+
+    @Override
+    public boolean isSchemaless() {
+        return true;
+    }
+
     @Override
     protected Session createStatelessSession(PropertyResolver connectionDetails) {
         if (codecEngine) {
@@ -479,10 +585,9 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         }
     }
 
-
-    @Override
-    public DocumentMappingContext getMappingContext() {
-        return (DocumentMappingContext) super.getMappingContext();
+    protected void registerEventListeners(ConfigurableApplicationEventPublisher eventPublisher) {
+        eventPublisher.addApplicationListener(new DomainEventListener(this));
+        eventPublisher.addApplicationListener(new AutoTimestampEventListener(this));
     }
 
     /**
@@ -491,24 +596,8 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * @param entity The entity
      */
     protected void initializeIndices(final PersistentEntity entity) {
-        String collectionName = entity.getDecapitalizedName();
-        String databaseName = getMappingContext().getDefaultDatabaseName();
 
-        MongoCollection collectionMapping = (MongoCollection)entity.getMapping().getMappedForm();
-        if(collectionMapping.getCollection() != null) {
-            collectionName = collectionMapping.getCollection();
-        }
-        if(collectionMapping.getDatabase() != null) {
-            databaseName = collectionMapping.getDatabase();
-        }
-
-        mongoCollections.put(entity, collectionName);
-        mongoDatabases.put(entity,databaseName);
-
-        final com.mongodb.client.MongoCollection<Document> collection = getMongoClient().getDatabase(databaseName)
-                .getCollection(collectionName);
-
-
+        final com.mongodb.client.MongoCollection<Document> collection = getCollection(entity);
         final ClassMapping<MongoCollection> classMapping = entity.getMapping();
         if (classMapping != null) {
             final MongoCollection mappedForm = classMapping.getMappedForm();
@@ -584,6 +673,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         return propKey;
     }
 
+
     public void persistentEntityAdded(PersistentEntity entity) {
         initializeIndices(entity);
     }
@@ -597,8 +687,8 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             // ignore
         }
         try {
-            if (mongo != null) {
-                mongo.close();
+            if (connectionSources != null) {
+                connectionSources.close();
             }
         } finally {
 
@@ -612,19 +702,70 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         }
     }
 
-    @Override
-    public boolean isSchemaless() {
-        return true;
+    /**
+     * Creates the connection sources for an existing {@link MongoClient}
+     *
+     * @param mongoClient The {@link MongoClient}
+     * @param configuration The configuration
+     * @param mappingContext The {@link MongoMappingContext}
+     * @return The {@link ConnectionSources}
+     */
+    protected static ConnectionSources<MongoClient, MongoConnectionSourceSettings> createDefaultConnectionSources(MongoClient mongoClient, PropertyResolver configuration, MongoMappingContext mappingContext) {
+        MongoConnectionSourceSettings settings = new MongoConnectionSourceSettings();
+        settings.setOptions(mongoClient.getMongoClientOptions());
+        settings.setDatabaseName(mappingContext.getDefaultDatabaseName());
+        ConnectionSource<MongoClient, MongoConnectionSourceSettings> defaultConnectionSource = new DefaultConnectionSource<>(ConnectionSource.DEFAULT, mongoClient, settings);
+        return new InMemoryConnectionSources<>(defaultConnectionSource, new MongoConnectionSourceFactory(), configuration);
     }
 
 
-    public String getDatabaseName(PersistentEntity entity) {
-        final String databaseName = mongoDatabases.get(entity);
-        if(databaseName == null) {
-            mongoDatabases.put(entity, defaultDatabase);
-            return defaultDatabase;
+    protected static MongoClient createMongoClient(PropertyResolver configuration, MongoClientOptions.Builder mongoOptions, MongoMappingContext mappingContext) {
+        MongoConnectionSourceFactory mongoConnectionSourceFactory = new MongoConnectionSourceFactory();
+        mongoConnectionSourceFactory.setClientOptionsBuilder(mongoOptions);
+        return mongoConnectionSourceFactory.create(ConnectionSource.DEFAULT, configuration).getSource();
+    }
+
+
+    protected static MongoMappingContext createMappingContext(ConnectionSources<MongoClient, MongoConnectionSourceSettings> connectionSources, Class... classes) {
+        ConnectionSource<MongoClient, MongoConnectionSourceSettings> defaultConnectionSource = connectionSources.getDefaultConnectionSource();
+        MongoMappingContext mongoMappingContext = new MongoMappingContext(defaultConnectionSource.getSettings(), classes);
+        PropertyResolver configuration = connectionSources.getBaseConfiguration();
+        configureValidationRegistry(configuration, mongoMappingContext);
+        return mongoMappingContext;
+    }
+
+    protected static MongoMappingContext createMappingContext(PropertyResolver configuration, Class... classes) {
+        MongoConnectionSourceSettingsBuilder builder = new MongoConnectionSourceSettingsBuilder(configuration);
+        MongoConnectionSourceSettings mongoConnectionSourceSettings = builder.build();
+        MongoMappingContext mongoMappingContext = new MongoMappingContext(mongoConnectionSourceSettings, classes);;
+        configureValidationRegistry(configuration, mongoMappingContext);
+        return mongoMappingContext;
+    }
+
+    protected void registerEntity(PersistentEntity entity) {
+        String collectionName = entity.getDecapitalizedName();
+        String databaseName = this.defaultDatabase;
+
+        MongoCollection collectionMapping = (MongoCollection)entity.getMapping().getMappedForm();
+        if(collectionMapping.getCollection() != null) {
+            collectionName = collectionMapping.getCollection();
         }
-        return databaseName;
+        if(collectionMapping.getDatabase() != null) {
+            databaseName = collectionMapping.getDatabase();
+        }
+
+        mongoCollections.put(entity, collectionName);
+        mongoDatabases.put(entity,databaseName);
+    }
+
+    private static void configureValidationRegistry(PropertyResolver configuration, MongoMappingContext mongoMappingContext) {
+        DefaultValidatorRegistry defaultValidatorRegistry = new DefaultValidatorRegistry(mongoMappingContext, configuration);
+        defaultValidatorRegistry.addConstraintFactory(
+                new MappingContextAwareConstraintFactory(UniqueConstraint.class, defaultValidatorRegistry.getMessageSource(), mongoMappingContext)
+        );
+        mongoMappingContext.setValidatorRegistry(
+                defaultValidatorRegistry
+        );
     }
 
     class PersistentEntityCodeRegistry implements CodecProvider {

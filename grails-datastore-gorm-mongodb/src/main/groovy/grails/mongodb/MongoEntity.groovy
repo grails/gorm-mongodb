@@ -20,12 +20,15 @@ import com.mongodb.MongoClient
 import com.mongodb.ReadPreference
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
+import grails.mongodb.api.MongoAllOperations
 import groovy.transform.CompileStatic
 import org.bson.Document
 import org.bson.conversions.Bson
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.GormEntity
+import org.grails.datastore.gorm.GormStaticApi
 import org.grails.datastore.gorm.mongo.MongoCriteriaBuilder
+import org.grails.datastore.gorm.mongo.api.MongoStaticApi
 import org.grails.datastore.gorm.schemaless.DynamicAttributes
 import org.grails.datastore.mapping.core.AbstractDatastore
 import org.grails.datastore.mapping.core.Session
@@ -110,32 +113,21 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @return Custom MongoDB criteria builder
      */
     static MongoCriteriaBuilder createCriteria() {
-        (MongoCriteriaBuilder)withSession { Session session ->
-            def entity = session.mappingContext.getPersistentEntity(this.name)
-            return new MongoCriteriaBuilder(entity.javaClass, session)
-        }
+        currentMongoStaticApi().createCriteria()
     }
 
     /**
      * @return The database for this domain class
      */
     static MongoDatabase getDB() {
-        (MongoDatabase)withSession({ AbstractMongoSession session ->
-            def databaseName = session.getDatabase(session.mappingContext.getPersistentEntity(this.name))
-            session.getNativeInterface()
-                    .getDatabase(databaseName)
-
-        })
+        currentMongoStaticApi().getDB()
     }
 
     /**
      * @return The name of the Mongo collection that entity maps to
      */
     static String getCollectionName() {
-        (String)withSession({ AbstractMongoSession session ->
-            def entity = session.mappingContext.getPersistentEntity(this.name)
-            return session.getCollectionName(entity)
-        })
+        currentMongoStaticApi().getCollectionName()
     }
 
     /**
@@ -144,10 +136,7 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @return The actual collection
      */
     static MongoCollection<Document> getCollection() {
-        (MongoCollection<Document>)withSession { AbstractMongoSession session ->
-            def entity = session.mappingContext.getPersistentEntity(this.name)
-            return session.getCollection(entity)
-        }
+        currentMongoStaticApi().getCollection()
     }
 
     /**
@@ -156,20 +145,8 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @param callable The callable
      * @return The result of the closure
      */
-    static withCollection(String collectionName, Closure callable) {
-        withSession { AbstractMongoSession session ->
-            def entity = session.mappingContext.getPersistentEntity(this.name)
-            final previous = session.useCollection(entity, collectionName)
-            try {
-                def dbName = session.getDatabase(entity)
-                MongoClient mongoClient = (MongoClient) session.getNativeInterface()
-                MongoDatabase db = mongoClient.getDatabase(dbName)
-                def coll = db.getCollection(collectionName)
-                return callable.call(coll)
-            } finally {
-                session.useCollection(entity, previous)
-            }
-        }
+    static <T> T withCollection(String collectionName, Closure<T> callable) {
+        currentMongoStaticApi().withCollection(collectionName, callable)
     }
 
     /**
@@ -179,10 +156,7 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @return The previous collection name
      */
     static String useCollection(String collectionName) {
-        withSession { AbstractMongoSession session ->
-            def entity = session.mappingContext.getPersistentEntity(this.name)
-            session.useCollection(entity, collectionName)
-        }
+        currentMongoStaticApi().useCollection(collectionName)
     }
 
     /**
@@ -191,17 +165,8 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @param callable The callable
      * @return The result of the closure
      */
-    static withDatabase(String databaseName, Closure callable) {
-        withSession { AbstractMongoSession session ->
-            def entity = session.mappingContext.getPersistentEntity(this.name)
-            final previous = session.useDatabase(entity, databaseName)
-            try {
-                MongoDatabase db = session.getNativeInterface().getDatabase(databaseName)
-                return callable.call(db)
-            } finally {
-                session.useDatabase(entity, previous)
-            }
-        }
+    static <T> T withDatabase(String databaseName, Closure<T> callable) {
+        currentMongoStaticApi().withDatabase(databaseName, callable)
     }
 
     /**
@@ -211,10 +176,7 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @return The previous database name
      */
     static String useDatabase(String databaseName) {
-        withSession { AbstractMongoSession session ->
-            def entity = session.mappingContext.getPersistentEntity(this.name)
-            session.useDatabase(entity, databaseName)
-        }
+        currentMongoStaticApi().useDatabase(databaseName)
     }
 
     /**
@@ -223,7 +185,7 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @return The hit count
      */
     static int countHits(String query) {
-        search(query).size()
+        currentMongoStaticApi().countHits(query)
     }
 
     /**
@@ -234,30 +196,8 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @return A mongodb result list
      */
     static List<D> aggregate(List pipeline, AggregationOptions options = AggregationOptions.builder().build()) {
-        (List<D>)withSession( { AbstractMongoSession session ->
-            def persistentEntity = session.mappingContext.getPersistentEntity(this.name)
-            def mongoCollection = session.getCollection(persistentEntity)
-            if(session instanceof MongoCodecSession) {
-                MongoDatastore datastore = (MongoDatastore)session.getDatastore()
-                mongoCollection = mongoCollection
-                        .withDocumentClass(persistentEntity.javaClass)
-                        .withCodecRegistry(datastore.getCodecRegistry())
-            }
-
-            List<Document> newPipeline = cleanPipeline(pipeline)
-            def aggregateIterable = mongoCollection.aggregate(newPipeline)
-            if(options.allowDiskUse) {
-                aggregateIterable.allowDiskUse(options.allowDiskUse)
-            }
-            if(options.batchSize) {
-                aggregateIterable.batchSize(options.batchSize)
-            }
-
-            new MongoQuery.MongoResultList(aggregateIterable.iterator(), 0, (EntityPersister)session.getPersister(persistentEntity) as EntityPersister)
-        } )
+        currentMongoStaticApi().aggregate(pipeline, options)
     }
-
-
 
     /**
      * Execute a MongoDB aggregation pipeline. Note that the pipeline should return documents that represent this domain class as each return document will be converted to a domain instance in the result set
@@ -267,17 +207,7 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @return A mongodb result list
      */
     static List<D> aggregate(List pipeline, AggregationOptions options, ReadPreference readPreference) {
-        (List<D>)withSession( { AbstractMongoSession session ->
-            def persistentEntity = session.mappingContext.getPersistentEntity(this.name)
-            List<Document> newPipeline = cleanPipeline(pipeline)
-            def mongoCollection = session.getCollection(persistentEntity)
-                    .withReadPreference(readPreference)
-            def aggregateIterable = mongoCollection.aggregate(newPipeline)
-            aggregateIterable.allowDiskUse(options.allowDiskUse)
-            aggregateIterable.batchSize(options.batchSize)
-
-            new MongoQuery.MongoResultList(aggregateIterable.iterator(), 0, (EntityPersister)session.getPersister(persistentEntity))
-        } )
+        currentMongoStaticApi().aggregate(pipeline,options, readPreference)
     }
 
     /**
@@ -287,27 +217,7 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @return The results
      */
     static List<D> search(String query, Map options = Collections.emptyMap()) {
-        (List<D>)withSession( { AbstractMongoSession session ->
-            def persistentEntity = session.mappingContext.getPersistentEntity(this.name)
-            def coll = session.getCollection(persistentEntity)
-            if(session instanceof MongoCodecSession) {
-                MongoDatastore datastore = (MongoDatastore)session.datastore
-                coll = coll
-                        .withDocumentClass(persistentEntity.javaClass)
-                        .withCodecRegistry(datastore.codecRegistry)
-            }
-            def searchArgs = ['$search': query]
-            if(options.language) {
-                searchArgs['$language'] = options.language.toString()
-            }
-            def cursor = coll.find((Bson)new Document((Map<String,Object>)['$text': searchArgs]))
-
-            int offset = options.offset instanceof Number ? ((Number)options.offset).intValue() : 0
-            int max = options.max instanceof Number ? ((Number)options.max).intValue() : -1
-            if(offset > 0) cursor.skip(offset)
-            if(max > -1) cursor.limit(max)
-            new MongoQuery.MongoResultList(cursor.iterator(), offset, (EntityPersister)session.getPersister(persistentEntity))
-        } )
+        currentMongoStaticApi().search(query, options)
     }
 
     /**
@@ -318,53 +228,26 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * @return The results
      */
     static List<D> searchTop(String query, int limit = 5, Map options = Collections.emptyMap()) {
-        (List<D>)withSession( { AbstractMongoSession session ->
-            def persistentEntity = session.mappingContext.getPersistentEntity(this.name)
-
-            MongoCollection coll = session.getCollection(persistentEntity)
-            if(session instanceof MongoCodecSession) {
-                MongoDatastore datastore = (MongoDatastore)session.datastore
-                coll = coll
-                        .withDocumentClass(persistentEntity.javaClass)
-                        .withCodecRegistry(datastore.codecRegistry)
-            }
-            EntityPersister persister = (EntityPersister)session.getPersister(persistentEntity)
-
-            def searchArgs = ['$search': query]
-            if(options.language) {
-                searchArgs['$language'] = options.language.toString()
-            }
-
-            def score = new Document((Map<String,Object>)[score: ['$meta': 'textScore']])
-            def cursor = coll.find((Bson)new Document((Map<String,Object>)['$text': searchArgs]))
-                             .projection((Bson)score)
-                    .sort((Bson)score)
-                    .limit(limit)
-
-            new MongoQuery.MongoResultList(cursor.iterator(), 0, persister)
-        } )
+        currentMongoStaticApi().searchTop(query, limit, options)
     }
 
     /**
-     * Execute a closure whose first argument is a reference to the current session.
+     * Perform an operation with the given connection
      *
-     * @param callable the closure
-     * @return The result of the closure
+     * @param connectionName The name of the connection
+     * @param callable The operation
+     * @return The return value of the closure
      */
-    static withSession(Closure callable) {
-        GormEnhancer.findStaticApi(this).withSession callable
+    static <T> T withConnection(String connectionName, @DelegatesTo(MongoAllOperations)Closure callable) {
+        def staticApi = GormEnhancer.findStaticApi(this, connectionName)
+        return (T)staticApi.withNewSession {
+            callable.setDelegate(staticApi)
+            return callable.call()
+        }
     }
 
-    @CompileStatic
-    private static List<Document> cleanPipeline(List pipeline) {
-        List<Document> newPipeline = new ArrayList<Document>()
-        for (o in pipeline) {
-            if (o instanceof Document) {
-                newPipeline << (Document)o
-            } else if (o instanceof Map) {
-                newPipeline << new Document((Map) o)
-            }
-        }
-        newPipeline
+    private static MongoStaticApi currentMongoStaticApi() {
+        (MongoStaticApi)GormEnhancer.findStaticApi(this)
     }
+
 }

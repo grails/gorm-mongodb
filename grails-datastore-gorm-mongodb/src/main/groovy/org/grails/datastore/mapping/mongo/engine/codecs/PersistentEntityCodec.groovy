@@ -32,18 +32,21 @@ import org.grails.datastore.bson.codecs.decoders.EmbeddedDecoder
 import org.grails.datastore.bson.codecs.encoders.EmbeddedCollectionEncoder
 import org.grails.datastore.bson.codecs.encoders.EmbeddedEncoder
 import org.grails.datastore.bson.codecs.encoders.IdentityEncoder
+import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.schemaless.DynamicAttributes
 import org.grails.datastore.mapping.collection.PersistentList
 import org.grails.datastore.mapping.collection.PersistentSet
 import org.grails.datastore.mapping.collection.PersistentSortedSet
 import org.grails.datastore.mapping.core.AbstractDatastore
 import org.grails.datastore.mapping.core.DatastoreException
+import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckableCollection
 import org.grails.datastore.mapping.engine.EntityAccess
 import org.grails.datastore.mapping.engine.EntityPersister
 import org.grails.datastore.mapping.engine.internal.MappingUtils
+import org.grails.datastore.mapping.model.EmbeddedPersistentEntity
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.model.config.GormProperties
@@ -134,17 +137,32 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
 
     @Override
     protected void readingComplete(EntityAccess access) {
-        decodeAssociations(lookupSession(), access)
+        Closure callback = { Session session ->
+            decodeAssociations(session, access)
+        }
+        if(entity instanceof EmbeddedPersistentEntity) {
+            callback( AbstractDatastore.retrieveSession(MongoDatastore) )
+        }
+        else {
+            GormEnhancer.findStaticApi(entity.javaClass).withSession callback
+        }
     }
 
     @Override
     protected Object retrieveCachedInstance(EntityAccess access) {
-        AbstractMongoSession mongoSession = lookupSession()
-        Object cachedInstance = null
-        if (mongoSession?.contains(access.entity)) {
-            cachedInstance = mongoSession.retrieve(access.persistentEntity.javaClass, (Serializable) access.identifier)
+        Closure callback = { Session session ->
+            Object cachedInstance = null
+            if (session?.contains(access.entity)) {
+                cachedInstance = session.retrieve(access.persistentEntity.javaClass, (Serializable) access.identifier)
+            }
+            return cachedInstance
         }
-        return cachedInstance
+        if(entity instanceof EmbeddedPersistentEntity) {
+            callback( AbstractDatastore.retrieveSession(MongoDatastore) )
+        }
+        else {
+            GormEnhancer.findStaticApi(entity.javaClass).withSession callback
+        }
     }
 
     protected void decodeAssociations(Session mongoSession, EntityAccess access) {
@@ -175,12 +193,6 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
             }
         }
     }
-
-    protected AbstractMongoSession lookupSession() {
-        AbstractMongoSession mongoSession = (AbstractMongoSession) (stateful ? AbstractDatastore.retrieveSession(MongoDatastore) : null)
-        return mongoSession
-    }
-
 
     /**
      * This method will encode an update for the given object based
@@ -270,24 +282,25 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
             }
             else {
 
-                def mongoSession = lookupSession()
-                if(mongoSession != null) {
-
-                    Document schemaless = (Document)mongoSession.getAttribute(value, SCHEMALESS_ATTRIBUTES)
-                    if(schemaless != null) {
-                        for(name in schemaless.keySet()) {
-                            def v = schemaless.get(name)
-                            if(v == null) {
-                                unsets.put(name,BLANK_STRING)
-                            }
-                            else {
-                                writer.writeName(name)
-                                Codec<Object> codec = (Codec<Object>)codecRegistry.get(v.getClass())
-                                codec.encode(writer, v, encoderContext)
+                GormEnhancer.findStaticApi(entity.javaClass).withSession { Session mongoSession ->
+                    if(mongoSession != null) {
+                        Document schemaless = (Document)mongoSession.getAttribute(value, SCHEMALESS_ATTRIBUTES)
+                        if(schemaless != null) {
+                            for(name in schemaless.keySet()) {
+                                def v = schemaless.get(name)
+                                if(v == null) {
+                                    unsets.put(name,BLANK_STRING)
+                                }
+                                else {
+                                    writer.writeName(name)
+                                    Codec<Object> codec = (Codec<Object>)codecRegistry.get(v.getClass())
+                                    codec.encode(writer, v, encoderContext)
+                                }
                             }
                         }
                     }
                 }
+
             }
 
             for(association in entity.associations) {

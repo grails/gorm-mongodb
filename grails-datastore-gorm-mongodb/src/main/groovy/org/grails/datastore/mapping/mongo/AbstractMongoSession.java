@@ -183,7 +183,8 @@ public abstract class AbstractMongoSession extends AbstractSession<MongoClient> 
             final String collectionName = getCollectionName(entity);
             return getNativeInterface()
                     .getDatabase(database)
-                    .getCollection(collectionName);
+                    .getCollection(collectionName)
+                    .withCodecRegistry(getDatastore().getCodecRegistry());
         }
         else {
             final PersistentEntity root = entity.getRootEntity();

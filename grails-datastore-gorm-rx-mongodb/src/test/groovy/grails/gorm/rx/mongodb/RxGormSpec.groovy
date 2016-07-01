@@ -11,7 +11,11 @@ abstract class RxGormSpec extends Specification {
 
     void setupSpec() {
         def classes = getDomainClasses()
-        client = new RxMongoDatastoreClient("test", classes as Class[])
+        client = createMongoDatastoreClient(classes)
+    }
+
+    protected RxMongoDatastoreClient createMongoDatastoreClient(List<Class> classes) {
+        new RxMongoDatastoreClient("test", classes as Class[])
     }
 
     void setup() {

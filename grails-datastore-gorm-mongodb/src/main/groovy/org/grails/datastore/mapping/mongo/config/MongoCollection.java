@@ -54,7 +54,7 @@ public class MongoCollection extends Collection {
         return sort;
     }
 
-    public void setSort(Object s) {
+    public MongoCollection setSort(Object s) {
         if (s instanceof Query.Order) {
             this.sort = (Query.Order) s;
         }
@@ -74,6 +74,8 @@ public class MongoCollection extends Collection {
         else {
             this.sort = Query.Order.asc(s.toString());
         }
+
+        return this;
     }
 
     /**

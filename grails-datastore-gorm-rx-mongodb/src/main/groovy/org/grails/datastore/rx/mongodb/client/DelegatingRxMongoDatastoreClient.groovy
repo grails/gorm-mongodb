@@ -1,13 +1,22 @@
 package org.grails.datastore.rx.mongodb.client
 
 import com.mongodb.rx.client.MongoClient
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import org.bson.codecs.configuration.CodecRegistry
+import org.grails.datastore.mapping.core.DatastoreUtils
+import org.grails.datastore.mapping.core.connections.ConnectionSource
+import org.grails.datastore.mapping.core.connections.ConnectionSources
+import org.grails.datastore.mapping.core.connections.InMemoryConnectionSources
+import org.grails.datastore.mapping.core.connections.SingletonConnectionSources
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.mongo.config.MongoMappingContext
 import org.grails.datastore.mapping.query.Query
+import org.grails.datastore.rx.internal.RxDatastoreClientImplementor
 import org.grails.datastore.rx.mongodb.RxMongoDatastoreClient
+import org.grails.datastore.rx.mongodb.RxMongoDatastoreClientImplementor
+import org.grails.datastore.rx.mongodb.connections.MongoConnectionSourceSettings
 import org.grails.datastore.rx.mongodb.query.RxMongoQuery
 import org.grails.datastore.rx.query.QueryState
 
@@ -17,29 +26,30 @@ import org.grails.datastore.rx.query.QueryState
  * @author Graeme Rocher
  * @since 6.0
  */
-@InheritConstructors
 @CompileStatic
 class DelegatingRxMongoDatastoreClient extends RxMongoDatastoreClient {
 
-    final @Delegate RxMongoDatastoreClient datastoreClient
+    final @Delegate RxMongoDatastoreClientImplementor datastoreClient
 
     String targetCollectionName
     String targetDatabaseName
     MongoClient targetMongoClient
 
-    DelegatingRxMongoDatastoreClient(RxMongoDatastoreClient datastoreClient) {
-        super(datastoreClient.nativeInterface, datastoreClient.mappingContext)
+    @CompileDynamic
+    DelegatingRxMongoDatastoreClient(ConnectionSource<MongoClient, MongoConnectionSourceSettings> connectionSource, RxMongoDatastoreClientImplementor datastoreClient) {
+        super(new SingletonConnectionSources<MongoClient, MongoConnectionSourceSettings>(connectionSource, DatastoreUtils.createPropertyResolver([:])), (MongoMappingContext)datastoreClient.mappingContext)
+        this.datastoreClient = datastoreClient
+    }
+
+
+    DelegatingRxMongoDatastoreClient(RxMongoDatastoreClientImplementor datastoreClient) {
+        super(new SingletonConnectionSources<MongoClient, MongoConnectionSourceSettings>((ConnectionSource<MongoClient, MongoConnectionSourceSettings>)datastoreClient.connectionSources.defaultConnectionSource, datastoreClient.connectionSources.baseConfiguration), (MongoMappingContext)datastoreClient.mappingContext)
         this.datastoreClient = datastoreClient
     }
 
     @Override
     protected void initialize(MongoMappingContext mappingContext) {
-        // no-op, use state of delegate
-    }
-
-    @Override
-    protected CodecRegistry createCodeRegistry() {
-        return null
+        // no-op
     }
 
     @Override
@@ -57,7 +67,6 @@ class DelegatingRxMongoDatastoreClient extends RxMongoDatastoreClient {
         }
     }
 
-    @Override
     String getCollectionName(PersistentEntity entity) {
         if(targetCollectionName != null) {
             return targetCollectionName
@@ -67,7 +76,6 @@ class DelegatingRxMongoDatastoreClient extends RxMongoDatastoreClient {
         }
     }
 
-    @Override
     String getDatabaseName(PersistentEntity entity) {
         if(targetDatabaseName != null) {
             return targetDatabaseName
@@ -77,7 +85,6 @@ class DelegatingRxMongoDatastoreClient extends RxMongoDatastoreClient {
         }
     }
 
-    @Override
     Query createEntityQuery(PersistentEntity entity, QueryState queryState) {
         return new RxMongoQuery(this, entity, queryState)
     }

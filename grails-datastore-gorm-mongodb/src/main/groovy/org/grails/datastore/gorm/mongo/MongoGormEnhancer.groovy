@@ -18,6 +18,7 @@ import groovy.transform.CompileStatic
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.finders.DynamicFinder
 import org.grails.datastore.mapping.core.Datastore
+import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.springframework.transaction.PlatformTransactionManager
 /**
  * GORM enhancer for Mongo.
@@ -27,10 +28,8 @@ import org.springframework.transaction.PlatformTransactionManager
 @CompileStatic
 class MongoGormEnhancer extends GormEnhancer {
 
-    MongoGormEnhancer(Datastore datastore, PlatformTransactionManager transactionManager) {
-        super(datastore, transactionManager)
-
-
+    MongoGormEnhancer(MongoDatastore datastore, PlatformTransactionManager transactionManager, boolean failOnError = false) {
+        super(datastore, transactionManager, failOnError)
         registerMongoMethodExpressions()
     }
 
@@ -44,7 +43,7 @@ class MongoGormEnhancer extends GormEnhancer {
         DynamicFinder.registerNewMethodExpression(GeoIntersects)
     }
 
-    MongoGormEnhancer(Datastore datastore) {
+    MongoGormEnhancer(MongoDatastore datastore) {
         this(datastore, null)
     }
 

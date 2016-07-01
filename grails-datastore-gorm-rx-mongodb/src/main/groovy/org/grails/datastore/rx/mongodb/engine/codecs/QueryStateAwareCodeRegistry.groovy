@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import org.bson.codecs.Codec
 import org.bson.codecs.configuration.CodecRegistry
 import org.grails.datastore.rx.mongodb.RxMongoDatastoreClient
+import org.grails.datastore.rx.mongodb.RxMongoDatastoreClientImplementor
 import org.grails.datastore.rx.query.QueryState
 /**
  * A {@link CodecRegistry} that maintains a query state of loaded entities to avoid repeated loading of entities in association graphs
@@ -16,9 +17,9 @@ class QueryStateAwareCodeRegistry implements CodecRegistry {
 
     final CodecRegistry parent
     final QueryState queryState
-    final RxMongoDatastoreClient datastoreClient
+    final RxMongoDatastoreClientImplementor datastoreClient
 
-    QueryStateAwareCodeRegistry(CodecRegistry parent, QueryState queryState, RxMongoDatastoreClient datastoreClient) {
+    QueryStateAwareCodeRegistry(CodecRegistry parent, QueryState queryState, RxMongoDatastoreClientImplementor datastoreClient) {
         this.parent = parent
         this.queryState = queryState
         this.datastoreClient = datastoreClient

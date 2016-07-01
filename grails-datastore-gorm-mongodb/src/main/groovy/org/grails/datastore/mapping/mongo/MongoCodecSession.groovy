@@ -78,6 +78,8 @@ class MongoCodecSession extends AbstractMongoSession {
     }
     public MongoCodecSession(MongoDatastore datastore, MappingContext mappingContext, ApplicationEventPublisher publisher, boolean stateless) {
         super(datastore, mappingContext, publisher, stateless);
+
+        setFlushMode( datastore.getDefaultFlushMode() );
     }
 
     @Override
@@ -210,7 +212,6 @@ class MongoCodecSession extends AbstractMongoSession {
                 MongoCollection collection = getCollection(persistentEntity)
                                                 .withDocumentClass(persistentEntity.javaClass)
 
-                collection = collection.withCodecRegistry( mongoDatastore.codecRegistry )
                 final WriteConcern wc = writeConcern
                 if(wc == null) {
                     org.grails.datastore.mapping.mongo.config.MongoCollection mapping = (org.grails.datastore.mapping.mongo.config.MongoCollection)persistentEntity.mapping.mappedForm
