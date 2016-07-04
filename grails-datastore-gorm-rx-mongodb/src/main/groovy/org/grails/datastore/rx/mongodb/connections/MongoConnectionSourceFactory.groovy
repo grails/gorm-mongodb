@@ -18,17 +18,17 @@ import org.springframework.core.env.PropertyResolver
 @CompileStatic
 class MongoConnectionSourceFactory implements ConnectionSourceFactory<MongoClient, MongoConnectionSourceSettings> {
     @Override
-    ConnectionSource<MongoClient, MongoConnectionSourceSettings> create(String name, PropertyResolver configuration) {
+    ConnectionSource<MongoClient, MongoConnectionSourceSettings> create(String name, PropertyResolver configuration, MongoConnectionSourceSettings fallback = null) {
         String prefix = ConnectionSource.DEFAULT == name ? MongoSettings.PREFIX : MongoSettings.SETTING_CONNECTIONS + ".$name"
-        MongoConnectionSourceSettingsBuilder settingsBuilder = new MongoConnectionSourceSettingsBuilder(configuration, prefix)
+        MongoConnectionSourceSettingsBuilder settingsBuilder = new MongoConnectionSourceSettingsBuilder(configuration, prefix, fallback)
         MongoConnectionSourceSettings settings = settingsBuilder.build()
 
         MongoClient client
         if(settings.observableAdapter != null) {
-            client = MongoClients.create(settings.options, settings.observableAdapter)
+            client = MongoClients.create(settings.options.build(), settings.observableAdapter)
         }
         else {
-            client = MongoClients.create(settings.options)
+            client = MongoClients.create(settings.options.build())
         }
         return new DefaultConnectionSource<MongoClient, MongoConnectionSourceSettings>(name, client, settings);
     }

@@ -36,12 +36,17 @@ asciidoctor {
         into "${project.projectDir}/images"
     }
 
-    attributes 'experimental'  : 'true',
-            'compat-mode'   : 'true',
-            'toc'           : 'left',
-            'icons'         : 'font',
-            'version'       : project.version,
-            'sourcedir'     : "${project.projectDir}/src/main/groovy"
+    attributes  'experimental'  : 'true',
+                'compat-mode'   : 'true',
+                'toc'           : 'left',
+                'icons'         : 'font',
+                'reproducible'  : '',
+                'version'       : project.version,
+                'sourcedir'     : "${project.projectDir}/src/main/groovy"
+}
+
+asciidoctorj {
+    version = '1.5.4'
 }
 
 task fetchSource << {
@@ -98,9 +103,6 @@ task groovydoc(type:GroovydocTask, dependsOn:fetchSource) {
     jvmArgs "-Xmx1024m"
 }
 
-task clean(type:Delete) {
-    delete project.buildDir
-}
 task copyResources(type:Copy) {
     from 'src/docs/resources'
     into "${project.buildDir}/docs"

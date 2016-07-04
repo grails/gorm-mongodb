@@ -2,6 +2,7 @@ package org.grails.datastore.rx.mongodb.connections
 
 import com.mongodb.ConnectionString
 import com.mongodb.MongoCredential
+import com.mongodb.async.client.MongoClientSettings
 import groovy.transform.CompileStatic
 import org.grails.datastore.mapping.config.ConfigurationBuilder
 import org.grails.datastore.mapping.mongo.config.MongoSettings
@@ -17,12 +18,16 @@ import org.springframework.util.ReflectionUtils
 @CompileStatic
 class MongoConnectionSourceSettingsBuilder extends ConfigurationBuilder<MongoConnectionSourceSettings, MongoConnectionSourceSettings> {
 
-    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, String configurationPrefix) {
-        super(propertyResolver, configurationPrefix)
+    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, String configurationPrefix, MongoConnectionSourceSettings fallback) {
+        super(propertyResolver, configurationPrefix, fallback)
     }
 
     MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver) {
         super(propertyResolver, MongoSettings.PREFIX)
+    }
+
+    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, MongoConnectionSourceSettings fallback) {
+        super(propertyResolver, MongoSettings.PREFIX, fallback)
     }
 
     @Override
@@ -45,6 +50,14 @@ class MongoConnectionSourceSettingsBuilder extends ConfigurationBuilder<MongoCon
     protected void startBuild(Object builder, String configurationPath) {
         applyCredentials(builder)
         applyConnectionString(builder)
+    }
+
+    @Override
+    Object newChildBuilderForFallback(Object childBuilder, Object fallbackConfig) {
+        if(( childBuilder instanceof MongoClientSettings.Builder) && (fallbackConfig instanceof MongoClientSettings.Builder)) {
+            return MongoClientSettings.builder(((MongoClientSettings.Builder)fallbackConfig).build())
+        }
+        return childBuilder
     }
 
     protected void applyCredentials(builder) {

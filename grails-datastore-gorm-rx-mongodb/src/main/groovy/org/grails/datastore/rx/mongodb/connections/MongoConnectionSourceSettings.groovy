@@ -24,5 +24,5 @@ class MongoConnectionSourceSettings extends AbstractMongoConnectionSourceSetting
     /**
      * The {@link MongoClientSettings} object
      */
-    MongoClientSettings options
+    MongoClientSettings.Builder options = MongoClientSettings.builder()
 }

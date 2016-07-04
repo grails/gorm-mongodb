@@ -20,12 +20,16 @@ class MongoConnectionSourceSettingsBuilder extends ConfigurationBuilder<MongoCon
 
     MongoClientOptions.Builder clientOptionsBuilder
 
-    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, String configurationPrefix) {
-        super(propertyResolver, configurationPrefix)
+    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, String configurationPrefix, MongoConnectionSourceSettings fallback) {
+        super(propertyResolver, configurationPrefix, fallback)
     }
 
     MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver) {
         super(propertyResolver, MongoSettings.PREFIX)
+    }
+
+    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, MongoConnectionSourceSettings fallback) {
+        super(propertyResolver, MongoSettings.PREFIX, fallback)
     }
 
     @Override
@@ -45,6 +49,14 @@ class MongoConnectionSourceSettingsBuilder extends ConfigurationBuilder<MongoCon
         }
         applyConnectionString(builder)
         applyCredentials(builder)
+    }
+
+    @Override
+    Object newChildBuilderForFallback(Object childBuilder, Object fallbackConfig) {
+        if(( childBuilder instanceof MongoClientOptions.Builder) && (fallbackConfig instanceof MongoClientOptions.Builder)) {
+            return MongoClientOptions.builder(((MongoClientOptions.Builder)fallbackConfig).build())
+        }
+        return childBuilder
     }
 
     @Override

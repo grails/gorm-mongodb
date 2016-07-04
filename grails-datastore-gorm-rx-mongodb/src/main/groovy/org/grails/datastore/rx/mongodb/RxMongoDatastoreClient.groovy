@@ -337,8 +337,10 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     }
 
     protected static InMemoryConnectionSources<MongoClient, MongoConnectionSourceSettings> createDefaultConnectionSources(MongoClient mongoClient, PropertyResolver configuration) {
+
+        MongoConnectionSourceSettings settings = new MongoConnectionSourceSettings(options: MongoClientSettings.builder(mongoClient.settings))
         new InMemoryConnectionSources<MongoClient, MongoConnectionSourceSettings>(
-                new DefaultConnectionSource<MongoClient, MongoConnectionSourceSettings>(ConnectionSource.DEFAULT, mongoClient, new MongoConnectionSourceSettings().options(mongoClient.settings)),
+                new DefaultConnectionSource<MongoClient, MongoConnectionSourceSettings>(ConnectionSource.DEFAULT, mongoClient, settings),
                 new MongoConnectionSourceFactory(),
                 configuration
         )

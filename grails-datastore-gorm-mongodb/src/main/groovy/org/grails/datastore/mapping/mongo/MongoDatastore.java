@@ -712,7 +712,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      */
     protected static ConnectionSources<MongoClient, MongoConnectionSourceSettings> createDefaultConnectionSources(MongoClient mongoClient, PropertyResolver configuration, MongoMappingContext mappingContext) {
         MongoConnectionSourceSettings settings = new MongoConnectionSourceSettings();
-        settings.setOptions(mongoClient.getMongoClientOptions());
+        settings.setOptions(MongoClientOptions.builder(mongoClient.getMongoClientOptions()));
         settings.setDatabaseName(mappingContext.getDefaultDatabaseName());
         ConnectionSource<MongoClient, MongoConnectionSourceSettings> defaultConnectionSource = new DefaultConnectionSource<>(ConnectionSource.DEFAULT, mongoClient, settings);
         return new InMemoryConnectionSources<>(defaultConnectionSource, new MongoConnectionSourceFactory(), configuration);

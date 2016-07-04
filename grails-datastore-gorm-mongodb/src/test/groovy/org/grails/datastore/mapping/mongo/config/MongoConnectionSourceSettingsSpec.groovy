@@ -28,7 +28,7 @@ class MongoConnectionSourceSettingsSpec extends Specification {
         settings.password == 'bar'
         settings.username == 'foo'
         settings.port == 1234
-        settings.options.readPreference == ReadPreference.secondary()
+        settings.options.build().readPreference == ReadPreference.secondary()
     }
 
     void "test mongo client settings builder with URL"() {

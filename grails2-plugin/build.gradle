@@ -43,8 +43,6 @@ def component = new GrailsPluginComponent(
 project.getComponents().add(component)
 
 dependencies {
-    compile "org.grails:grails-datastore-simple:$gormVersion"
-
     compile "org.grails:grails-datastore-core:$gormVersion"
     compile "org.grails:grails-datastore-gorm:$gormVersion"
     compile "org.grails:grails-datastore-web:$gormVersion"
