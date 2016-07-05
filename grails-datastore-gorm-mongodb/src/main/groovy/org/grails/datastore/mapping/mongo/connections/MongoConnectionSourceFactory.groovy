@@ -6,6 +6,7 @@ import com.mongodb.MongoClientURI
 import groovy.transform.CompileStatic
 import org.grails.datastore.mapping.core.connections.ConnectionSource
 import org.grails.datastore.mapping.core.connections.ConnectionSourceFactory
+import org.grails.datastore.mapping.core.connections.ConnectionSourceSettings
 import org.grails.datastore.mapping.core.connections.DefaultConnectionSource
 import org.grails.datastore.mapping.mongo.config.MongoSettings
 import org.springframework.core.env.PropertyResolver
@@ -22,9 +23,14 @@ class MongoConnectionSourceFactory implements ConnectionSourceFactory<MongoClien
     MongoClientOptions.Builder clientOptionsBuilder
 
     @Override
-    ConnectionSource<MongoClient, MongoConnectionSourceSettings> create(String name, PropertyResolver configuration, MongoConnectionSourceSettings fallback = null) {
+    Serializable getConnectionSourcesConfigurationKey() {
+        return MongoSettings.SETTING_CONNECTIONS
+    }
+
+    @Override
+    def <F extends ConnectionSourceSettings> ConnectionSource<MongoClient, MongoConnectionSourceSettings> create(String name, PropertyResolver configuration, F fallbackSettings) {
         String prefix = ConnectionSource.DEFAULT == name ? MongoSettings.PREFIX : MongoSettings.SETTING_CONNECTIONS + ".$name"
-        MongoConnectionSourceSettingsBuilder settingsBuilder = new MongoConnectionSourceSettingsBuilder(configuration, prefix, fallback)
+        MongoConnectionSourceSettingsBuilder settingsBuilder = new MongoConnectionSourceSettingsBuilder(configuration, prefix, fallbackSettings)
         MongoConnectionSourceSettings settings = settingsBuilder.build()
 
         MongoClientOptions.Builder builder = clientOptionsBuilder ?: settingsBuilder.clientOptionsBuilder
@@ -34,7 +40,8 @@ class MongoConnectionSourceFactory implements ConnectionSourceFactory<MongoClien
     }
 
     @Override
-    Serializable getConnectionSourcesConfigurationKey() {
-        return MongoSettings.SETTING_CONNECTIONS
+    ConnectionSource<MongoClient, MongoConnectionSourceSettings> create(String name, PropertyResolver configuration) {
+        return create(name, configuration, null)
     }
 }
+

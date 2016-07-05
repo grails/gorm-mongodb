@@ -5,6 +5,7 @@ import com.mongodb.MongoClientOptions
 import com.mongodb.MongoCredential
 import groovy.transform.CompileStatic
 import org.grails.datastore.mapping.config.ConfigurationBuilder
+import org.grails.datastore.mapping.core.connections.ConnectionSourceSettings
 import org.grails.datastore.mapping.mongo.config.MongoSettings
 import org.springframework.core.env.PropertyResolver
 import org.springframework.util.ReflectionUtils
@@ -20,7 +21,7 @@ class MongoConnectionSourceSettingsBuilder extends ConfigurationBuilder<MongoCon
 
     MongoClientOptions.Builder clientOptionsBuilder
 
-    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, String configurationPrefix, MongoConnectionSourceSettings fallback) {
+    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, String configurationPrefix, ConnectionSourceSettings fallback) {
         super(propertyResolver, configurationPrefix, fallback)
     }
 

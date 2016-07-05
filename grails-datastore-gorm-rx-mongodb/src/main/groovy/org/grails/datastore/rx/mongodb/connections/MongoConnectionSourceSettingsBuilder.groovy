@@ -5,6 +5,7 @@ import com.mongodb.MongoCredential
 import com.mongodb.async.client.MongoClientSettings
 import groovy.transform.CompileStatic
 import org.grails.datastore.mapping.config.ConfigurationBuilder
+import org.grails.datastore.mapping.core.connections.ConnectionSourceSettings
 import org.grails.datastore.mapping.mongo.config.MongoSettings
 import org.springframework.core.env.PropertyResolver
 import org.springframework.util.ReflectionUtils
@@ -18,7 +19,7 @@ import org.springframework.util.ReflectionUtils
 @CompileStatic
 class MongoConnectionSourceSettingsBuilder extends ConfigurationBuilder<MongoConnectionSourceSettings, MongoConnectionSourceSettings> {
 
-    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, String configurationPrefix, MongoConnectionSourceSettings fallback) {
+    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, String configurationPrefix, ConnectionSourceSettings fallback) {
         super(propertyResolver, configurationPrefix, fallback)
     }
 
@@ -26,7 +27,7 @@ class MongoConnectionSourceSettingsBuilder extends ConfigurationBuilder<MongoCon
         super(propertyResolver, MongoSettings.PREFIX)
     }
 
-    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, MongoConnectionSourceSettings fallback) {
+    MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, ConnectionSourceSettings fallback) {
         super(propertyResolver, MongoSettings.PREFIX, fallback)
     }
 
