@@ -23,7 +23,7 @@ class MongoConnectionSourceSettingsSpec extends Specification{
 
         def builder = new MongoConnectionSourceSettingsBuilder(DatastoreUtils.createPropertyResolver(myMap))
         MongoConnectionSourceSettings settings = builder.build()
-        MongoClientSettings clientSettings = settings.options
+        MongoClientSettings clientSettings = settings.options.build()
 
         then:"The settings are correct"
         clientSettings.clusterSettings.hosts.contains(new ServerAddress("mycompany", 1234))
