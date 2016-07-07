@@ -1,6 +1,7 @@
 package org.grails.datastore.gorm.mongo
 
 import grails.gorm.tests.GormDatastoreSpec
+import grails.mongodb.MongoEntity
 import grails.persistence.Entity
 import org.bson.types.ObjectId
 
@@ -35,7 +36,7 @@ class AggregateMethodSpec extends GormDatastoreSpec{
 }
 
 @Entity
-class City {
+class City implements MongoEntity<City> {
     ObjectId id
     String city
     String state

@@ -158,14 +158,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
 
         buildIndex();
 
-        return new MongoGormEnhancer(this, transactionManager, settings.isFailOnError()) {
-            @Override
-            public Set<String> allQualifiers(Datastore datastore, PersistentEntity entity) {
-                LinkedHashSet<String> allConnectionSources = new LinkedHashSet<>(ConnectionSourcesSupport.getConnectionSourceNames(entity));
-                allConnectionSources.add(ConnectionSource.DEFAULT);
-                return allConnectionSources;
-            }
-
+        return new MongoGormEnhancer(this, transactionManager, settings) {
             @Override
             protected <D> MongoStaticApi<D> getStaticApi(Class<D> cls, String qualifier) {
                 MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);

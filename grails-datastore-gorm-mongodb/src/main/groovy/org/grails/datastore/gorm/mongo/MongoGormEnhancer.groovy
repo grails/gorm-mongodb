@@ -19,6 +19,7 @@ import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.finders.DynamicFinder
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.mongo.MongoDatastore
+import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettings
 import org.springframework.transaction.PlatformTransactionManager
 /**
  * GORM enhancer for Mongo.
@@ -30,6 +31,11 @@ class MongoGormEnhancer extends GormEnhancer {
 
     MongoGormEnhancer(MongoDatastore datastore, PlatformTransactionManager transactionManager, boolean failOnError = false) {
         super(datastore, transactionManager, failOnError)
+        registerMongoMethodExpressions()
+    }
+
+    MongoGormEnhancer(MongoDatastore datastore, PlatformTransactionManager transactionManager, MongoConnectionSourceSettings settings) {
+        super(datastore, transactionManager, settings)
         registerMongoMethodExpressions()
     }
 
