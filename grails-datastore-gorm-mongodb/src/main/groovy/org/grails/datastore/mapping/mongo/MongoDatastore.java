@@ -16,22 +16,17 @@
 package org.grails.datastore.mapping.mongo;
 
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.mongodb.*;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.client.model.IndexOptions;
 import org.bson.Document;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.grails.datastore.bson.codecs.CodecExtensions;
 import org.grails.datastore.gorm.GormEnhancer;
 import org.grails.datastore.gorm.GormInstanceApi;
-import org.grails.datastore.gorm.GormStaticApi;
-import org.grails.datastore.gorm.GormValidationApi;
 import org.grails.datastore.gorm.events.AutoTimestampEventListener;
 import org.grails.datastore.gorm.events.ConfigurableApplicationEventPublisher;
 import org.grails.datastore.gorm.events.DefaultApplicationEventPublisher;
@@ -41,13 +36,16 @@ import org.grails.datastore.gorm.mongo.api.MongoStaticApi;
 import org.grails.datastore.gorm.validation.constraints.MappingContextAwareConstraintFactory;
 import org.grails.datastore.gorm.validation.constraints.builtin.UniqueConstraint;
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry;
-import org.grails.datastore.mapping.core.*;
+import org.grails.datastore.mapping.core.AbstractDatastore;
+import org.grails.datastore.mapping.core.Session;
+import org.grails.datastore.mapping.core.StatelessDatastore;
 import org.grails.datastore.mapping.core.connections.*;
 import org.grails.datastore.mapping.core.exceptions.ConfigurationException;
 import org.grails.datastore.mapping.model.*;
-import org.grails.datastore.mapping.mongo.config.*;
-import org.grails.datastore.bson.codecs.CodecExtensions;
+import org.grails.datastore.mapping.mongo.config.MongoAttribute;
 import org.grails.datastore.mapping.mongo.config.MongoCollection;
+import org.grails.datastore.mapping.mongo.config.MongoMappingContext;
+import org.grails.datastore.mapping.mongo.config.MongoSettings;
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceFactory;
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettings;
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettingsBuilder;
@@ -59,6 +57,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.annotation.PreDestroy;
 import javax.persistence.FlushModeType;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A Datastore implementation for the Mongo document store.
@@ -94,6 +99,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     protected final GormEnhancer gormEnhancer;
     protected final ConnectionSources<MongoClient, MongoConnectionSourceSettings> connectionSources;
     protected final FlushModeType defaultFlushMode;
+    protected final Map<String, MongoDatastore> datastoresByConnectionSource = new LinkedHashMap<>();
 
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
@@ -134,7 +140,28 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         for(PersistentEntity entity : mappingContext.getPersistentEntities()) {
             registerEntity(entity);
         }
+        if(!(connectionSources instanceof SingletonConnectionSources)) {
 
+            Iterable<ConnectionSource<MongoClient, MongoConnectionSourceSettings>> allConnectionSources = connectionSources.getAllConnectionSources();
+            for (ConnectionSource<MongoClient, MongoConnectionSourceSettings> connectionSource : allConnectionSources) {
+                SingletonConnectionSources singletonConnectionSources = new SingletonConnectionSources(connectionSource, connectionSources.getBaseConfiguration());
+                MongoDatastore childDatastore;
+
+                if(ConnectionSource.DEFAULT.equals(connectionSource.getName())) {
+                    childDatastore = this;
+                }
+                else {
+                    childDatastore = new MongoDatastore(singletonConnectionSources, mappingContext, eventPublisher) {
+                        @Override
+                        protected MongoGormEnhancer initialize(MongoConnectionSourceSettings settings) {
+                            super.buildIndex();
+                            return null;
+                        }
+                    };
+                }
+                datastoresByConnectionSource.put(connectionSource.getName(), childDatastore);
+            }
+        }
 
         this.gormEnhancer = initialize(settings);
     }
@@ -185,15 +212,8 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
                     if(connectionSource == null) {
                         throw new ConfigurationException("Invalid connection ["+defaultConnectionSourceName+"] configured for class ["+cls+"]");
                     }
-                    SingletonConnectionSources<MongoClient, MongoConnectionSourceSettings> newConnectionSources = new SingletonConnectionSources<>(connectionSource, connectionSources.getBaseConfiguration());
-                    return new MongoDatastore(newConnectionSources, getMappingContext(), eventPublisher) {
-                        @Override
-                        protected MongoGormEnhancer initialize(MongoConnectionSourceSettings settings) {
-                            // no-op
-                            super.buildIndex();
-                            return null;
-                        }
-                    };
+
+                    return datastoresByConnectionSource.get(qualifier);
                 }
             }
         };

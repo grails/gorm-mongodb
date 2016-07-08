@@ -22,7 +22,7 @@ abstract class AbstractMongoConnectionSourceSettings extends ConnectionSourceSet
     /**
      * The connection string
      */
-    ConnectionString connectionString
+    protected ConnectionString connectionString
 
     /**
      * The default database name
@@ -72,6 +72,9 @@ abstract class AbstractMongoConnectionSourceSettings extends ConnectionSourceSet
         }
     }
 
+    /**
+     * @param connectionString The connection string
+     */
     void url(ConnectionString connectionString) {
         this.connectionString = connectionString
     }
