@@ -42,6 +42,7 @@ import org.springframework.util.Assert;
  *
  * @author Graeme Rocher
  */
+@Deprecated
 public class MongoClientFactoryBean implements FactoryBean<MongoClient>, InitializingBean/*,
     PersistenceExceptionTranslator*/, DisposableBean {
 
