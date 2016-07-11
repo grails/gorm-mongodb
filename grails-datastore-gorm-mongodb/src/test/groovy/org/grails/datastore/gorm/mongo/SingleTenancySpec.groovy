@@ -81,7 +81,9 @@ class SingleTenancySpec extends Specification {
         then:"the correct tenant is used"
         CompanyB.DB.name == 'test2Db'
         CompanyB.count() == 0
-        CompanyB.withTenant("test1") { Session s ->
+        CompanyB.withTenant("test1") { Serializable tenantId, Session s ->
+            assert tenantId
+            assert s
             CompanyB.count() == 1
         }
 

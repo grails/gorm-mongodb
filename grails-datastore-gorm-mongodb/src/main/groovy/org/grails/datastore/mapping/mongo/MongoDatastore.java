@@ -19,6 +19,7 @@ package org.grails.datastore.mapping.mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.model.IndexOptions;
+import groovy.lang.Closure;
 import org.bson.Document;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecProvider;
@@ -36,9 +37,7 @@ import org.grails.datastore.gorm.mongo.api.MongoStaticApi;
 import org.grails.datastore.gorm.validation.constraints.MappingContextAwareConstraintFactory;
 import org.grails.datastore.gorm.validation.constraints.builtin.UniqueConstraint;
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry;
-import org.grails.datastore.mapping.core.AbstractDatastore;
-import org.grails.datastore.mapping.core.Session;
-import org.grails.datastore.mapping.core.StatelessDatastore;
+import org.grails.datastore.mapping.core.*;
 import org.grails.datastore.mapping.core.connections.*;
 import org.grails.datastore.mapping.core.exceptions.ConfigurationException;
 import org.grails.datastore.mapping.model.*;
@@ -50,6 +49,9 @@ import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceFacto
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettings;
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettingsBuilder;
 import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec;
+import org.grails.datastore.mapping.multitenancy.MultiTenancySettings;
+import org.grails.datastore.mapping.multitenancy.MultiTenantCapableDatastore;
+import org.grails.datastore.mapping.multitenancy.TenantResolver;
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.PropertyResolver;
@@ -59,6 +61,7 @@ import javax.annotation.PreDestroy;
 import javax.persistence.FlushModeType;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,7 +74,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Graeme Rocher
  * @since 1.0
  */
-public class MongoDatastore extends AbstractDatastore implements MappingContext.Listener, Closeable, StatelessDatastore, ConnectionSourcesProvider<MongoClient, MongoConnectionSourceSettings> {
+public class MongoDatastore extends AbstractDatastore implements MappingContext.Listener, Closeable, StatelessDatastore, MultiTenantCapableDatastore<MongoClient, MongoConnectionSourceSettings> {
 
     public static final String SETTING_DATABASE_NAME = MongoSettings.SETTING_DATABASE_NAME;
     public static final String SETTING_CONNECTION_STRING = MongoSettings.SETTING_CONNECTION_STRING;
@@ -100,6 +103,8 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     protected final ConnectionSources<MongoClient, MongoConnectionSourceSettings> connectionSources;
     protected final FlushModeType defaultFlushMode;
     protected final Map<String, MongoDatastore> datastoresByConnectionSource = new LinkedHashMap<>();
+    protected final MultiTenancySettings.MultiTenancyMode multiTenancyMode;
+    protected final TenantResolver tenantResolver;
 
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
@@ -121,8 +126,11 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
 
         ConnectionSource<MongoClient, MongoConnectionSourceSettings> defaultConnectionSource = connectionSources.getDefaultConnectionSource();
         MongoConnectionSourceSettings settings = defaultConnectionSource.getSettings();
+        MultiTenancySettings multiTenancySettings = settings.getMultiTenancy();
 
         this.mongo = defaultConnectionSource.getSource();
+        this.multiTenancyMode = multiTenancySettings.getMode();
+        this.tenantResolver = multiTenancySettings.getTenantResolver();
         this.eventPublisher = eventPublisher;
         this.defaultDatabase = settings.getDatabase();
         this.defaultFlushMode = settings.getFlushMode();
@@ -779,6 +787,37 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         mongoMappingContext.setValidatorRegistry(
                 defaultValidatorRegistry
         );
+    }
+
+    @Override
+    public MultiTenancySettings.MultiTenancyMode getMultiTenancyMode() {
+        return this.multiTenancyMode;
+    }
+
+    @Override
+    public TenantResolver getTenantResolver() {
+        return this.tenantResolver;
+    }
+
+    @Override
+    public MongoDatastore getDatastoreForTenantId(Serializable tenantId) {
+        if(getMultiTenancyMode() == MultiTenancySettings.MultiTenancyMode.SINGLE) {
+            return this.datastoresByConnectionSource.get(tenantId.toString());
+        }
+        return this;
+    }
+
+    @Override
+    public <T1> T1 withNewSession(Serializable tenantId, Closure<T1> callable) {
+        MongoDatastore mongoDatastore = getDatastoreForTenantId(tenantId);
+        Session session = mongoDatastore.connect();
+        try {
+            DatastoreUtils.bindNewSession(session);
+            return callable.call(session);
+        }
+        finally {
+            DatastoreUtils.unbindSession(session);
+        }
     }
 
     class PersistentEntityCodeRegistry implements CodecProvider {
