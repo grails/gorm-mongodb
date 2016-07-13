@@ -18,6 +18,7 @@ include 'rx-plugin'
 
 // examples
 include 'examples/grails31-mongodb'
+include 'examples/grails31-rxmongodb'
 include 'examples/grails31-hibernate4-mongodb'
 
 
