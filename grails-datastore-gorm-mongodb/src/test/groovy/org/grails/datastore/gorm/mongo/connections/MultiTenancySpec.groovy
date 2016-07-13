@@ -1,37 +1,32 @@
-package org.grails.datastore.gorm.mongo
+package org.grails.datastore.gorm.mongo.connections
 
 import grails.gorm.MultiTenant
 import grails.gorm.annotation.Entity
 import grails.mongodb.MongoEntity
 import org.bson.types.ObjectId
+import org.grails.datastore.gorm.mongo.City
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.config.MongoSettings
+import org.grails.datastore.mapping.multitenancy.AllTenantsResolver
 import org.grails.datastore.mapping.multitenancy.exceptions.TenantNotFoundException
 import org.grails.datastore.mapping.multitenancy.resolvers.SystemPropertyTenantResolver
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
+import static com.mongodb.client.model.Filters.*;
 /**
- * Created by graemerocher on 07/07/2016.
+ * Created by graemerocher on 13/07/2016.
  */
-class SingleTenancySpec extends Specification {
+class MultiTenancySpec extends Specification {
 
     @Shared @AutoCleanup MongoDatastore datastore
 
     void setupSpec() {
         Map config = [
-                "grails.gorm.multiTenancy.mode":"SINGLE",
-                "grails.gorm.multiTenancy.tenantResolverClass":SystemPropertyTenantResolver,
-                (MongoSettings.SETTING_URL): "mongodb://localhost/defaultDb",
-                (MongoSettings.SETTING_CONNECTIONS): [
-                        test1: [
-                                url: "mongodb://localhost/test1Db"
-                        ],
-                        test2: [
-                                url: "mongodb://localhost/test2Db"
-                        ]
-                ]
+                "grails.gorm.multiTenancy.mode"               :"MULTI",
+                "grails.gorm.multiTenancy.tenantResolverClass": MyResolver,
+                (MongoSettings.SETTING_URL)                   : "mongodb://localhost/defaultDb",
         ]
         this.datastore = new MongoDatastore(config, getDomainClasses() as Class[])
     }
@@ -40,57 +35,41 @@ class SingleTenancySpec extends Specification {
         System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "")
     }
 
-    void "Test no tenant id"() {
-        when:
-        CompanyB.DB
-
-        then:
-        thrown(TenantNotFoundException)
-    }
-
-    void "Test multi tenancy state"() {
-        given:
-        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "test1")
-        expect:
-        City.DB.name == "defaultDb"
-        CompanyB.DB.name == 'test1Db'
-    }
 
     void "Test persist and retrieve entities with multi tenancy"() {
         setup:
-        CompanyB.eachTenant {
-            CompanyB.DB.drop()
-        }
+        CompanyC.DB.drop()
 
         when:"A tenant id is present"
         System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "test1")
 
         then:"the correct tenant is used"
-        CompanyB.count() == 0
-        CompanyB.DB.name == 'test1Db'
+        CompanyC.count() == 0
+        CompanyC.DB.name == 'defaultDb'
 
         when:"An object is saved"
-        new CompanyB(name: "Foo").save(flush:true)
+        new CompanyC(name: "Foo").save(flush:true)
 
         then:"The results are correct"
-        CompanyB.count() == 1
+        CompanyC.count() == 1
 
         when:"The tenant id is switched"
         System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "test2")
 
         then:"the correct tenant is used"
-        CompanyB.DB.name == 'test2Db'
-        CompanyB.count() == 0
-        CompanyB.withTenant("test1") { Serializable tenantId, Session s ->
+        CompanyC.DB.name == 'defaultDb'
+        CompanyC.count() == 0
+        !CompanyC.find(eq("name", "Foo")).first()
+        CompanyC.withTenant("test1") { Serializable tenantId, Session s ->
             assert tenantId
             assert s
-            CompanyB.count() == 1
+            CompanyC.count() == 1
         }
 
         when:"each tenant is iterated over"
         Map tenantIds = [:]
-        CompanyB.eachTenant { String tenantId ->
-            tenantIds.put(tenantId, CompanyB.count())
+        CompanyC.eachTenant { String tenantId ->
+            tenantIds.put(tenantId, CompanyC.count())
         }
 
         then:"The result is correct"
@@ -98,12 +77,25 @@ class SingleTenancySpec extends Specification {
     }
 
     List getDomainClasses() {
-        [City, CompanyB]
+        [City, CompanyC]
+    }
+
+    static class MyResolver extends SystemPropertyTenantResolver implements AllTenantsResolver {
+        @Override
+        Iterable<Serializable> resolveTenantIds() {
+            ['test1','test2']
+        }
     }
 
 }
 @Entity
-class CompanyB implements MongoEntity<CompanyB>, MultiTenant {
+class CompanyC implements MongoEntity<CompanyC>, MultiTenant {
     ObjectId id
     String name
+    String parent
+
+    static mapping = {
+        tenantId name:'parent'
+    }
+
 }

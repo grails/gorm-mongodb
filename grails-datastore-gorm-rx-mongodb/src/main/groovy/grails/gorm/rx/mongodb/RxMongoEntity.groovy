@@ -1,5 +1,7 @@
 package grails.gorm.rx.mongodb
 
+import com.mongodb.async.client.FindIterable
+import com.mongodb.rx.client.FindObservable
 import com.mongodb.rx.client.MongoClient
 import com.mongodb.rx.client.MongoCollection
 import com.mongodb.rx.client.MongoDatabase
@@ -77,7 +79,17 @@ trait RxMongoEntity<D> implements RxEntity<D>, DynamicAttributes {
         RxMongoStaticApi<D> staticApi = (RxMongoStaticApi<D>)RxGormEnhancer.findStaticApi(this)
         return staticApi.getCollection()
     }
-
+    /**
+     * Finds all of the entities in the collection.
+     *
+     * @param filter the query filter
+     * @return the find iterable interface
+     * @mongodb.driver.manual tutorial/query-documents/ Find
+     */
+    static FindObservable<D> find(Bson filter) {
+        RxMongoStaticApi<D> staticApi = (RxMongoStaticApi<D>)RxGormEnhancer.findStaticApi(this)
+        staticApi.find(filter)
+    }
     /**
      * Creates a criteria builder instance
      */

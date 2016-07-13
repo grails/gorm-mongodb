@@ -1,10 +1,12 @@
 package grails.gorm.rx.mongodb.api
 
+import com.mongodb.rx.client.FindObservable
 import com.mongodb.rx.client.MongoClient
 import com.mongodb.rx.client.MongoCollection
 import com.mongodb.rx.client.MongoDatabase
 import grails.gorm.rx.api.RxGormStaticOperations
 import grails.gorm.rx.mongodb.MongoCriteriaBuilder
+import org.bson.conversions.Bson
 import rx.Observable
 
 /**
@@ -16,6 +18,12 @@ import rx.Observable
  */
 interface RxMongoStaticOperations<D> extends RxGormStaticOperations<D> {
 
+    /**
+     * Find an object for the given filter returning the find observable
+     * @param filter The filter
+     * @return the observable
+     */
+    FindObservable<D> find(Bson filter)
     /**
      * @return The {@MongoDatabase} in use
      */

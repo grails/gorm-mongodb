@@ -34,9 +34,11 @@ import org.grails.datastore.gorm.events.DefaultApplicationEventPublisher;
 import org.grails.datastore.gorm.events.DomainEventListener;
 import org.grails.datastore.gorm.mongo.MongoGormEnhancer;
 import org.grails.datastore.gorm.mongo.api.MongoStaticApi;
+import org.grails.datastore.gorm.multitenancy.MultiTenantEventListener;
 import org.grails.datastore.gorm.validation.constraints.MappingContextAwareConstraintFactory;
 import org.grails.datastore.gorm.validation.constraints.builtin.UniqueConstraint;
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry;
+import org.grails.datastore.gorm.validation.listener.ValidationEventListener;
 import org.grails.datastore.mapping.core.*;
 import org.grails.datastore.mapping.core.connections.*;
 import org.grails.datastore.mapping.core.exceptions.ConfigurationException;
@@ -621,6 +623,11 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     protected void registerEventListeners(ConfigurableApplicationEventPublisher eventPublisher) {
         eventPublisher.addApplicationListener(new DomainEventListener(this));
         eventPublisher.addApplicationListener(new AutoTimestampEventListener(this));
+        eventPublisher.addApplicationListener(new ValidationEventListener(this));
+
+        if(multiTenancyMode == MultiTenancySettings.MultiTenancyMode.MULTI) {
+            eventPublisher.addApplicationListener(new MultiTenantEventListener(this));
+        }
     }
 
     /**

@@ -3,8 +3,14 @@ package org.grails.datastore.gorm.mongo.api
 import com.mongodb.AggregationOptions
 import com.mongodb.MongoClient
 import com.mongodb.ReadPreference
+import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Projections
+import com.mongodb.client.model.TextSearchOptions
+import grails.gorm.multitenancy.Tenants
+import grails.mongodb.MongoEntity
 import grails.mongodb.api.MongoAllOperations
 import groovy.transform.CompileStatic
 import org.bson.Document
@@ -15,11 +21,12 @@ import org.grails.datastore.gorm.mongo.MongoCriteriaBuilder
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.engine.EntityPersister
+import org.grails.datastore.mapping.engine.internal.MappingUtils
 import org.grails.datastore.mapping.mongo.AbstractMongoSession
 import org.grails.datastore.mapping.mongo.MongoCodecSession
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.query.MongoQuery
-import org.grails.datastore.mapping.query.api.BuildableCriteria
+import org.grails.datastore.mapping.multitenancy.MultiTenancySettings
 import org.springframework.transaction.PlatformTransactionManager
 
 /**
@@ -33,6 +40,26 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
 
     MongoStaticApi(Class<D> persistentClass, Datastore datastore, List<FinderMethod> finders, PlatformTransactionManager transactionManager) {
         super(persistentClass, datastore, finders, transactionManager)
+    }
+
+    FindIterable<D> find(Bson filter) {
+        withSession { AbstractMongoSession session ->
+            def entity = session.mappingContext.getPersistentEntity(persistentClass.name)
+            FindIterable<D> findIterable = session.getCollection(entity)
+                                                .withDocumentClass(persistentClass)
+                                                .find(filter)
+            findIterable = addMultiTenantFilterIfNecessary(findIterable)
+            return findIterable
+        }
+    }
+
+    protected <FT> FindIterable<FT> addMultiTenantFilterIfNecessary(FindIterable<FT> findIterable) {
+        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.MULTI) {
+            return findIterable.filter(
+                    Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass()))
+            )
+        }
+        return findIterable
     }
 
     @Override
@@ -133,7 +160,7 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
                         .withCodecRegistry(datastore.getCodecRegistry())
             }
 
-            List<Document> newPipeline = cleanPipeline(pipeline)
+            List<? extends Bson> newPipeline = preparePipeline(pipeline)
             def aggregateIterable = mongoCollection.aggregate(newPipeline)
             if(options.allowDiskUse) {
                 aggregateIterable.allowDiskUse(options.allowDiskUse)
@@ -151,7 +178,7 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
     List<D> aggregate(List pipeline, AggregationOptions options, ReadPreference readPreference) {
         (List<D>)withSession( { AbstractMongoSession session ->
             def persistentEntity = session.mappingContext.getPersistentEntity(persistentClass.name)
-            List<Document> newPipeline = cleanPipeline(pipeline)
+            List<? extends Bson> newPipeline = preparePipeline(pipeline)
             def mongoCollection = session.getCollection(persistentEntity)
                     .withReadPreference(readPreference)
             def aggregateIterable = mongoCollection.aggregate(newPipeline)
@@ -173,16 +200,21 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
                         .withDocumentClass(persistentEntity.javaClass)
                         .withCodecRegistry(datastore.codecRegistry)
             }
-            def searchArgs = ['$search': query]
+            Bson search
             if(options.language) {
-                searchArgs['$language'] = options.language.toString()
+                search = Filters.text(query, new TextSearchOptions().language(options.language.toString()))
             }
-            def cursor = coll.find((Bson)new Document((Map<String,Object>)['$text': searchArgs]))
+            else {
+                search = Filters.text(query)
+            }
+
+            FindIterable cursor = coll.find(search)
 
             int offset = options.offset instanceof Number ? ((Number)options.offset).intValue() : 0
             int max = options.max instanceof Number ? ((Number)options.max).intValue() : -1
             if(offset > 0) cursor.skip(offset)
             if(max > -1) cursor.limit(max)
+            cursor = addMultiTenantFilterIfNecessary(cursor)
             new MongoQuery.MongoResultList(cursor.iterator(), offset, (EntityPersister)session.getPersister(persistentEntity))
         } )
     }
@@ -201,33 +233,43 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
             }
             EntityPersister persister = (EntityPersister)session.getPersister(persistentEntity)
 
-            def searchArgs = ['$search': query]
+            Bson search
             if(options.language) {
-                searchArgs['$language'] = options.language.toString()
+                search = Filters.text(query, new TextSearchOptions().language(options.language.toString()))
+            }
+            else {
+                search = Filters.text(query)
             }
 
-            def score = new Document((Map<String,Object>)[score: ['$meta': 'textScore']])
-            def cursor = coll.find((Bson)new Document((Map<String,Object>)['$text': searchArgs]))
-                    .projection((Bson)score)
-                    .sort((Bson)score)
-                    .limit(limit)
 
+            def score = Projections.metaTextScore("score")
+            FindIterable cursor = coll.find(search)
+                                            .projection(score)
+                                            .sort(score)
+                                            .limit(limit)
+
+            cursor = addMultiTenantFilterIfNecessary(cursor)
             new MongoQuery.MongoResultList(cursor.iterator(), 0, persister)
         } )
     }
 
     @Override
     Document getDbo(D instance) {
-        return null
+        return ((MongoEntity)instance).dbo
     }
 
 
     @CompileStatic
-    private static List<Document> cleanPipeline(List pipeline) {
-        List<Document> newPipeline = new ArrayList<Document>()
+    private List<Bson> preparePipeline(List pipeline) {
+        List<Bson> newPipeline = new ArrayList<Bson>()
+        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.MULTI) {
+            newPipeline.add(
+                    Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass()))
+            )
+        }
         for (o in pipeline) {
-            if (o instanceof Document) {
-                newPipeline << (Document)o
+            if (o instanceof Bson) {
+                newPipeline << (Bson)o
             } else if (o instanceof Map) {
                 newPipeline << new Document((Map) o)
             }

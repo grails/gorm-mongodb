@@ -79,7 +79,9 @@ class MongoCodecSession extends AbstractMongoSession {
     public MongoCodecSession(MongoDatastore datastore, MappingContext mappingContext, ApplicationEventPublisher publisher, boolean stateless) {
         super(datastore, mappingContext, publisher, stateless);
 
-        setFlushMode( datastore.getDefaultFlushMode() );
+
+        FlushModeType defaultFlushMode = datastore.getDefaultFlushMode()
+        setFlushMode(defaultFlushMode);
     }
 
     @Override

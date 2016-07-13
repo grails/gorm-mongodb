@@ -10,6 +10,7 @@ import org.bson.types.Binary
 import org.bson.types.ObjectId
 import org.grails.datastore.bson.codecs.PropertyDecoder
 import org.grails.datastore.mapping.engine.EntityAccess
+import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.model.types.Simple
 
 /**
@@ -25,7 +26,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
         }
 
         @Override
-        void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+        void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
             entityAccess.setProperty( property.name, reader.readString())
         }
     }
@@ -37,7 +38,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
         BsonType bsonType()
 
-        void decode(BsonReader reader, Simple property, EntityAccess entityAccess)
+        void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess)
     }
 
     static {
@@ -52,7 +53,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             }
 
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
 
                 BsonRegularExpression regularExpression = reader.readRegularExpression()
                 entityAccess.setProperty( property.name, regularExpression.pattern )
@@ -60,7 +61,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
         })
         def convertingIntReader =  new TypeDecoder() {
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
                 entityAccess.setProperty( property.name, reader.readInt32() )
             }
 
@@ -80,7 +81,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
         def intDecoder = new TypeDecoder() {
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
                 entityAccess.setPropertyNoConversion( property.name, reader.readInt32() )
             }
 
@@ -95,7 +96,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
         def longDecoder = new TypeDecoder() {
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
                 entityAccess.setPropertyNoConversion( property.name, reader.readInt64() )
             }
 
@@ -107,7 +108,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
         def convertingLongDecoder = new TypeDecoder() {
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
                 entityAccess.setProperty( property.name, reader.readInt64() )
             }
 
@@ -124,7 +125,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
         def doubleDecoder = new TypeDecoder() {
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
                 entityAccess.setPropertyNoConversion( property.name, reader.readDouble() )
             }
 
@@ -136,7 +137,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
         def convertingDoubleDecoder = new TypeDecoder() {
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
                 entityAccess.setPropertyNoConversion( property.name, reader.readDouble() )
             }
 
@@ -153,7 +154,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
         def booleanDecoder = new TypeDecoder() {
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
                 entityAccess.setPropertyNoConversion( property.name, reader.readBoolean() )
             }
 
@@ -170,7 +171,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
         def binaryDecoder = new TypeDecoder() {
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
                 def binary = reader.readBinaryData()
                 entityAccess.setPropertyNoConversion(property.name, binary.data)
             }
@@ -186,7 +187,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
         SIMPLE_TYPE_DECODERS[Date] = new TypeDecoder() {
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
                 def time = reader.readDateTime()
                 entityAccess.setPropertyNoConversion( property.name, new Date(time))
             }
@@ -204,7 +205,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             }
 
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
                 def time = reader.readDateTime()
                 def calendar = new GregorianCalendar()
                 calendar.setTimeInMillis(time)
@@ -214,7 +215,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
         SIMPLE_TYPE_DECODERS[Binary] = new TypeDecoder() {
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
 
                 entityAccess.setPropertyNoConversion(
                         property.name,
@@ -235,7 +236,7 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
             }
 
             @Override
-            void decode(BsonReader reader, Simple property, EntityAccess entityAccess) {
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
 
                 entityAccess.setPropertyNoConversion(
                         property.name,

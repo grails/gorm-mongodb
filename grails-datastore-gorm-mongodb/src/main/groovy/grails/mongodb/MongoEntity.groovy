@@ -18,6 +18,7 @@ package grails.mongodb
 import com.mongodb.AggregationOptions
 import com.mongodb.MongoClient
 import com.mongodb.ReadPreference
+import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import grails.mongodb.api.MongoAllOperations
@@ -107,6 +108,16 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
 
         }
         return dbo
+    }
+    /**
+     * Finds all of the entities in the collection.
+     *
+     * @param filter the query filter
+     * @return the find iterable interface
+     * @mongodb.driver.manual tutorial/query-documents/ Find
+     */
+    static FindIterable<D> find(Bson filter) {
+        currentMongoStaticApi().find(filter)
     }
 
     /**

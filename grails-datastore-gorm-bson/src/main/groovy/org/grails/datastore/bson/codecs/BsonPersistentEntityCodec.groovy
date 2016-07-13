@@ -35,6 +35,8 @@ class BsonPersistentEntityCodec implements Codec {
     static {
         ENCODERS[Identity] = new IdentityEncoder()
         DECODERS[Identity] = new IdentityDecoder()
+        ENCODERS[TenantId] = new TenantIdEncoder()
+        DECODERS[TenantId] = new TenantIdDecoder()
         ENCODERS[Simple] = new SimpleEncoder()
         DECODERS[Simple] = new SimpleDecoder()
         ENCODERS[Embedded] = new EmbeddedEncoder()

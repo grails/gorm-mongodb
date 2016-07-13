@@ -32,6 +32,7 @@ import org.grails.datastore.mapping.mongo.config.MongoAttribute
 import org.grails.datastore.mapping.mongo.config.MongoCollection
 import org.grails.datastore.mapping.mongo.config.MongoMappingContext
 import org.grails.datastore.mapping.mongo.config.MongoSettings
+import org.grails.datastore.mapping.mongo.connections.AbstractMongoConnectionSourceSettings
 import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec
 import org.grails.datastore.mapping.query.Query
 import org.grails.datastore.mapping.reflect.EntityReflector
@@ -43,6 +44,7 @@ import org.grails.datastore.rx.mongodb.api.RxMongoStaticApi
 import org.grails.datastore.rx.mongodb.client.DelegatingRxMongoDatastoreClient
 import org.grails.datastore.rx.mongodb.connections.MongoConnectionSourceFactory
 import org.grails.datastore.rx.mongodb.connections.MongoConnectionSourceSettings
+import org.grails.datastore.rx.mongodb.connections.MongoConnectionSourceSettingsBuilder
 import org.grails.datastore.rx.mongodb.engine.codecs.RxPersistentEntityCodec
 import org.grails.datastore.rx.mongodb.extensions.MongoExtensions
 import org.grails.datastore.rx.mongodb.query.RxMongoQuery
@@ -121,7 +123,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param mappingContext The mapping context
      */
     RxMongoDatastoreClient(ConnectionSources<MongoClient, MongoConnectionSourceSettings> connectionSources, Class...classes) {
-        this(connectionSources, initializeMappingContext( connectionSources.baseConfiguration, connectionSources.defaultConnectionSource.settings.database, classes ))
+        this(connectionSources, initializeMappingContext(connectionSources.defaultConnectionSource.settings, classes ))
     }
 
     /**
@@ -143,7 +145,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
      */
     RxMongoDatastoreClient(MongoClient mongoClient, String databaseName, PropertyResolver configuration, Class...classes) {
-        this(mongoClient, initializeMappingContext(configuration,databaseName, classes), configuration)
+        this(mongoClient, initializeMappingContext(buildSettings(configuration).databaseName(databaseName), classes), configuration)
     }
 
     /**
@@ -240,7 +242,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
      * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
      */
     RxMongoDatastoreClient(MongoClientSettings clientSettings, String databaseName, ObservableAdapter observableAdapter, PropertyResolver configuration,  Class...classes) {
-        this(createMongoClient(clientSettings, observableAdapter), initializeMappingContext(configuration, databaseName, classes), configuration)
+        this(createMongoClient(clientSettings, observableAdapter), databaseName, configuration, classes)
     }
 
     /**
@@ -347,8 +349,8 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     }
 
     protected static InMemoryConnectionSources<MongoClient, MongoConnectionSourceSettings> createDefaultConnectionSources(MongoClient mongoClient, PropertyResolver configuration) {
-
-        MongoConnectionSourceSettings settings = new MongoConnectionSourceSettings(options: MongoClientSettings.builder(mongoClient.settings))
+        MongoConnectionSourceSettings settings = buildSettings(configuration)
+        settings.options(MongoClientSettings.builder(mongoClient.settings))
         new InMemoryConnectionSources<MongoClient, MongoConnectionSourceSettings>(
                 new DefaultConnectionSource<MongoClient, MongoConnectionSourceSettings>(ConnectionSource.DEFAULT, mongoClient, settings),
                 new MongoConnectionSourceFactory(),
@@ -356,11 +358,14 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
         )
     }
 
-    protected static MongoMappingContext initializeMappingContext(PropertyResolver configuration, String defaultDatabaseName, Class... classes) {
-        MongoMappingContext mongoMappingContext = new MongoMappingContext(
-                configuration.getProperty(MongoSettings.SETTING_DATABASE_NAME, defaultDatabaseName),
-                configuration.getProperty(MongoSettings.SETTING_DEFAULT_MAPPING, Closure, null),
-        )
+    protected static MongoConnectionSourceSettings buildSettings(PropertyResolver configuration) {
+        MongoConnectionSourceSettingsBuilder builder = new MongoConnectionSourceSettingsBuilder(configuration)
+        MongoConnectionSourceSettings settings = builder.build()
+        settings
+    }
+
+    protected static MongoMappingContext initializeMappingContext(AbstractMongoConnectionSourceSettings connectionSourceSettings, Class... classes) {
+        MongoMappingContext mongoMappingContext = new MongoMappingContext(connectionSourceSettings, classes)
         // disable versioning by default
         ((AbstractGormMappingFactory)mongoMappingContext.mappingFactory).setVersionByDefault(false)
         mongoMappingContext.addPersistentEntities(classes)

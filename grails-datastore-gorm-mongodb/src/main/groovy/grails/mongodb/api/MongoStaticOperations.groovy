@@ -2,10 +2,13 @@ package grails.mongodb.api
 
 import com.mongodb.AggregationOptions
 import com.mongodb.ReadPreference
+import com.mongodb.client.AggregateIterable
+import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import grails.gorm.api.GormStaticOperations
 import org.bson.Document
+import org.bson.conversions.Bson
 import org.grails.datastore.gorm.mongo.MongoCriteriaBuilder
 /**
  * Static operations for GORM for MongoDB
@@ -14,6 +17,16 @@ import org.grails.datastore.gorm.mongo.MongoCriteriaBuilder
  * @since 6.0
  */
 interface MongoStaticOperations<D> extends GormStaticOperations<D> {
+
+    /**
+     * Find an entity for the given filter
+     *
+     * @param filter The filter
+     *
+     * @return The FindIterable
+     */
+    FindIterable<D> find(Bson filter)
+
     /**
      * @return Custom MongoDB criteria builder
      */

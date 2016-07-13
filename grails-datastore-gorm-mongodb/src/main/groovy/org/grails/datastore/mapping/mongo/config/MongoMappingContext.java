@@ -49,6 +49,7 @@ import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.types.Identity;
 import org.grails.datastore.mapping.mongo.MongoConstants;
 import org.grails.datastore.mapping.mongo.MongoDatastore;
+import org.grails.datastore.mapping.mongo.connections.AbstractMongoConnectionSourceSettings;
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettings;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
@@ -103,6 +104,35 @@ public class MongoMappingContext extends DocumentMappingContext {
      */
     public MongoMappingContext(String defaultDatabaseName, Closure defaultMapping, Class...classes) {
         super(defaultDatabaseName, defaultMapping);
+        initialize(classes);
+
+    }
+
+    /**
+     * Constructs a new {@link MongoMappingContext} for the given arguments
+     *
+     * @param configuration The configuration
+     * @param classes The persistent classes
+     * @deprecated  Use {@link #MongoMappingContext(AbstractMongoConnectionSourceSettings, Class[])} instead
+     *
+     */
+    @Deprecated
+    public MongoMappingContext(PropertyResolver configuration, Class...classes) {
+        this(getDefaultDatabaseName(configuration), configuration.getProperty(MongoSettings.SETTING_DEFAULT_MAPPING, Closure.class, null), classes);
+    }
+
+    /**
+     * Construct a new context for the given settings and classes
+     *
+     * @param settings The settings
+     * @param classes The classes
+     */
+    public MongoMappingContext(AbstractMongoConnectionSourceSettings settings, Class... classes) {
+        super(settings.getDatabase(), settings);
+        initialize(classes);
+    }
+
+    private void initialize(Class[] classes) {
         registerMongoTypes();
         final ConverterRegistry converterRegistry = getConverterRegistry();
         converterRegistry.addConverter(new Converter<String, ObjectId>() {
@@ -134,30 +164,6 @@ public class MongoMappingContext extends DocumentMappingContext {
         }
 
         addPersistentEntities(classes);
-
-    }
-
-    /**
-     * Constructs a new {@link MongoMappingContext} for the given arguments
-     *
-     * @param configuration The configuration
-     * @param classes The persistent classes
-     * @deprecated  Use {@link #MongoMappingContext(MongoConnectionSourceSettings, Class[])} instead
-     *
-     */
-    @Deprecated
-    public MongoMappingContext(PropertyResolver configuration, Class...classes) {
-        this(getDefaultDatabaseName(configuration), configuration.getProperty(MongoSettings.SETTING_DEFAULT_MAPPING, Closure.class, null), classes);
-    }
-
-    /**
-     * Construct a new context for the given settings and classes
-     *
-     * @param settings The settings
-     * @param classes The classes
-     */
-    public MongoMappingContext(MongoConnectionSourceSettings settings, Class... classes) {
-        this(settings.getDatabase(), settings.getDefault().getMapping(), classes );
     }
 
     /**
