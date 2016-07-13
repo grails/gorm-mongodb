@@ -26,6 +26,7 @@ import org.grails.datastore.gorm.plugin.support.PersistenceContextInterceptorAgg
 import org.grails.datastore.gorm.support.AbstractDatastorePersistenceContextInterceptor
 import org.grails.datastore.gorm.support.DatastorePersistenceContextInterceptor
 import org.grails.datastore.mapping.mongo.MongoDatastore
+import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceFactory
 import org.grails.datastore.mapping.validation.BeanFactoryValidatorRegistry
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
@@ -91,7 +92,8 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
                 eventPublisher = new DefaultApplicationEventPublisher()
             }
             if(mongo == null) {
-                mongoDatastore(MongoDatastore, configuration, eventPublisher, collectMappedClasses(DATASTORE_TYPE))
+                mongoConnectionSourceFactory(MongoConnectionSourceFactory)
+                mongoDatastore(MongoDatastore, configuration, ref('mongoConnectionSourceFactory'), eventPublisher, collectMappedClasses(DATASTORE_TYPE))
                 mongo(mongoDatastore:"getMongoClient")
             }
             else {

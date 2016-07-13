@@ -303,6 +303,16 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
         this(new ConnectionString(connectionString), databaseName, classes)
     }
 
+    /**
+     * Creates a new RxMongoDatastoreClient from the given configuration which is supplied by a property resolver
+     *
+     * @param configuration The configuration resolver
+     * @param databaseName The default database name
+     * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
+     */
+    RxMongoDatastoreClient(PropertyResolver configuration, MongoConnectionSourceFactory connectionSourceFactory, Class...classes) {
+        this( ConnectionSourcesInitializer.create(connectionSourceFactory, configuration), classes)
+    }
 
     /**
      * Creates a new RxMongoDatastoreClient from the given configuration which is supplied by a property resolver

@@ -175,61 +175,6 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     }
 
     /**
-     * Runs the initialization sequence
-     * @param settings
-     */
-    protected MongoGormEnhancer initialize(MongoConnectionSourceSettings settings) {
-        getMappingContext().addMappingContextListener(this);
-        initializeConverters(this.mappingContext);
-        registerEventListeners(this.eventPublisher);
-
-        this.mappingContext.addMappingContextListener(new MappingContext.Listener() {
-            @Override
-            public void persistentEntityAdded(PersistentEntity entity) {
-                gormEnhancer.registerEntity(entity);
-                registerEntity(entity);
-            }
-        });
-
-        buildIndex();
-
-        return new MongoGormEnhancer(this, transactionManager, settings) {
-            @Override
-            protected <D> MongoStaticApi<D> getStaticApi(Class<D> cls, String qualifier) {
-                MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);
-                return new MongoStaticApi<>(cls, mongoDatastore, getFinders(), transactionManager);
-            }
-
-            @Override
-            protected <D> GormInstanceApi<D> getInstanceApi(Class<D> cls, String qualifier) {
-                MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);
-                return new GormInstanceApi<>(cls,mongoDatastore);
-            }
-
-            private <D> MongoDatastore getDatastoreForQualifier(Class<D> cls, String qualifier) {
-                String defaultConnectionSourceName = ConnectionSourcesSupport.getDefaultConnectionSourceName(getMappingContext().getPersistentEntity(cls.getName()));
-                boolean isDefaultQualifier = qualifier.equals(ConnectionSource.DEFAULT);
-                if(isDefaultQualifier && defaultConnectionSourceName.equals(ConnectionSource.DEFAULT)) {
-                    return MongoDatastore.this;
-                }
-                else {
-                    if(isDefaultQualifier) {
-                        qualifier = defaultConnectionSourceName;
-                    }
-                    ConnectionSource<MongoClient, MongoConnectionSourceSettings> connectionSource = connectionSources.getConnectionSource(qualifier);
-                    if(connectionSource == null) {
-                        throw new ConfigurationException("Invalid connection ["+defaultConnectionSourceName+"] configured for class ["+cls+"]");
-                    }
-
-                    return datastoresByConnectionSource.get(qualifier);
-                }
-            }
-        };
-
-
-    }
-
-    /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
      * @param connectionSources The {@link ConnectionSources} to use
@@ -251,7 +196,6 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         this(createDefaultConnectionSources(mongoClient, configuration, mappingContext), mappingContext, eventPublisher);
     }
 
-
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
@@ -262,6 +206,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     public MongoDatastore(MongoClient mongoClient, PropertyResolver configuration, ConfigurableApplicationEventPublisher eventPublisher, Class...classes) {
         this(mongoClient, configuration, createMappingContext(configuration, classes), eventPublisher);
     }
+
 
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
@@ -283,7 +228,6 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         this(mongoClient, mapToPropertyResolver(null), createMappingContext(mapToPropertyResolver(null), classes), new DefaultApplicationEventPublisher());
     }
 
-
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
@@ -295,6 +239,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     public MongoDatastore(MongoClientOptions.Builder clientOptions, PropertyResolver configuration, MongoMappingContext mappingContext, ConfigurableApplicationEventPublisher eventPublisher) {
         this(createMongoClient(configuration, clientOptions, mappingContext),  configuration, mappingContext,  eventPublisher);
     }
+
 
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
@@ -318,6 +263,18 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         this(ConnectionSourcesInitializer.create(new MongoConnectionSourceFactory(), configuration), mappingContext,  eventPublisher);
     }
 
+
+    /**
+     * Configures a new {@link MongoDatastore} for the given arguments
+     *
+     * @param configuration The configuration for the datastore
+     * @param eventPublisher The Spring ApplicationContext
+     * @param connectionSourceFactory The connection source factory to use
+     * @param classes The persistent classes
+     */
+    public MongoDatastore(PropertyResolver configuration, MongoConnectionSourceFactory connectionSourceFactory, ConfigurableApplicationEventPublisher eventPublisher, Class...classes) {
+        this(ConnectionSourcesInitializer.create(connectionSourceFactory, configuration), eventPublisher, classes);
+    }
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
@@ -326,7 +283,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * @param classes The persistent classes
      */
     public MongoDatastore(PropertyResolver configuration, ConfigurableApplicationEventPublisher eventPublisher, Class...classes) {
-        this(ConnectionSourcesInitializer.create(new MongoConnectionSourceFactory(), configuration), eventPublisher, classes);
+        this(configuration, new MongoConnectionSourceFactory(), eventPublisher, classes);
     }
 
     /**
@@ -339,7 +296,6 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         this(configuration, mappingContext, new DefaultApplicationEventPublisher());
     }
 
-
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
@@ -349,6 +305,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     public MongoDatastore(PropertyResolver configuration, Class...classes) {
         this(configuration, new DefaultApplicationEventPublisher(), classes);
     }
+
 
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
@@ -407,7 +364,6 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         return connectionSources;
     }
 
-
     /**
      * Builds the MongoDB index for this datastore
      */
@@ -419,6 +375,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             }
         }
     }
+
 
     /**
      * @return The default flush mode
@@ -570,6 +527,19 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
                 .withCodecRegistry(codecRegistry);
     }
 
+    /**
+     * @return The mapping context
+     */
+    @Override
+    public MongoMappingContext getMappingContext() {
+        return (MongoMappingContext) super.getMappingContext();
+    }
+
+
+    @Override
+    public boolean isSchemaless() {
+        return true;
+    }
 
     @Override
     protected Session createSession(PropertyResolver connDetails) {
@@ -585,16 +555,58 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     }
 
     /**
-     * @return The mapping context
+     * Runs the initialization sequence
+     * @param settings
      */
-    @Override
-    public MongoMappingContext getMappingContext() {
-        return (MongoMappingContext) super.getMappingContext();
-    }
+    protected MongoGormEnhancer initialize(MongoConnectionSourceSettings settings) {
+        getMappingContext().addMappingContextListener(this);
+        initializeConverters(this.mappingContext);
+        registerEventListeners(this.eventPublisher);
 
-    @Override
-    public boolean isSchemaless() {
-        return true;
+        this.mappingContext.addMappingContextListener(new MappingContext.Listener() {
+            @Override
+            public void persistentEntityAdded(PersistentEntity entity) {
+                gormEnhancer.registerEntity(entity);
+                registerEntity(entity);
+            }
+        });
+
+        buildIndex();
+
+        return new MongoGormEnhancer(this, transactionManager, settings) {
+            @Override
+            protected <D> MongoStaticApi<D> getStaticApi(Class<D> cls, String qualifier) {
+                MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);
+                return new MongoStaticApi<>(cls, mongoDatastore, getFinders(), transactionManager);
+            }
+
+            @Override
+            protected <D> GormInstanceApi<D> getInstanceApi(Class<D> cls, String qualifier) {
+                MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);
+                return new GormInstanceApi<>(cls,mongoDatastore);
+            }
+
+            private <D> MongoDatastore getDatastoreForQualifier(Class<D> cls, String qualifier) {
+                String defaultConnectionSourceName = ConnectionSourcesSupport.getDefaultConnectionSourceName(getMappingContext().getPersistentEntity(cls.getName()));
+                boolean isDefaultQualifier = qualifier.equals(ConnectionSource.DEFAULT);
+                if(isDefaultQualifier && defaultConnectionSourceName.equals(ConnectionSource.DEFAULT)) {
+                    return MongoDatastore.this;
+                }
+                else {
+                    if(isDefaultQualifier) {
+                        qualifier = defaultConnectionSourceName;
+                    }
+                    ConnectionSource<MongoClient, MongoConnectionSourceSettings> connectionSource = connectionSources.getConnectionSource(qualifier);
+                    if(connectionSource == null) {
+                        throw new ConfigurationException("Invalid connection ["+defaultConnectionSourceName+"] configured for class ["+cls+"]");
+                    }
+
+                    return datastoresByConnectionSource.get(qualifier);
+                }
+            }
+        };
+
+
     }
 
     @Override

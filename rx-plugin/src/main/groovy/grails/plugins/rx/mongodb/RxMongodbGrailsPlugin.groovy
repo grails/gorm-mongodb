@@ -6,6 +6,7 @@ import grails.plugins.Plugin
 import groovy.transform.CompileStatic
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.datastore.rx.mongodb.RxMongoDatastoreClient
+import org.grails.datastore.rx.mongodb.connections.MongoConnectionSourceFactory
 import org.grails.plugins.web.rx.mvc.RxResultTransformer
 
 /**
@@ -40,7 +41,11 @@ class RxMongodbGrailsPlugin extends Plugin {
             def classes = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE).findAll() { GrailsClass cls ->
                 RxMongoEntity.isAssignableFrom(cls.clazz)
             }.collect() { GrailsClass cls -> cls.clazz }
-            rxMongoDatastoreClient(RxMongoDatastoreClient, config, applicationName, classes as Class[])
+
+            rxMongoConnectionSourceFactory(MongoConnectionSourceFactory) {
+                databaseName = applicationName
+            }
+            rxMongoDatastoreClient(RxMongoDatastoreClient, config, ref("rxMongoConnectionSourceFactory"), classes as Class[])
             rxAsyncResultTransformer(RxResultTransformer)
         }
     }

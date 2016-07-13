@@ -1,7 +1,9 @@
 package org.grails.datastore.rx.mongodb.connections
 
+import com.mongodb.async.client.MongoClientSettings
 import com.mongodb.rx.client.MongoClient
 import com.mongodb.rx.client.MongoClients
+import com.mongodb.rx.client.ObservableAdapter
 import groovy.transform.CompileStatic
 import org.grails.datastore.mapping.core.connections.AbstractConnectionSourceFactory
 import org.grails.datastore.mapping.core.connections.ConnectionSource
@@ -9,6 +11,7 @@ import org.grails.datastore.mapping.core.connections.ConnectionSourceFactory
 import org.grails.datastore.mapping.core.connections.ConnectionSourceSettings
 import org.grails.datastore.mapping.core.connections.DefaultConnectionSource
 import org.grails.datastore.mapping.mongo.config.MongoSettings
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.PropertyResolver
 
 /**
@@ -20,6 +23,14 @@ import org.springframework.core.env.PropertyResolver
 @CompileStatic
 class MongoConnectionSourceFactory extends AbstractConnectionSourceFactory<MongoClient, MongoConnectionSourceSettings> {
 
+    @Autowired(required = false)
+    ObservableAdapter observableAdapter
+
+    @Autowired(required = false)
+    MongoClientSettings mongoClientSettings
+
+    String databaseName
+
     @Override
     Serializable getConnectionSourcesConfigurationKey() {
         return MongoSettings.SETTING_CONNECTIONS
@@ -29,17 +40,28 @@ class MongoConnectionSourceFactory extends AbstractConnectionSourceFactory<Mongo
     protected <F extends ConnectionSourceSettings> MongoConnectionSourceSettings buildSettings(String name, PropertyResolver configuration, F fallbackSettings, boolean isDefaultDataSource) {
         String prefix = isDefaultDataSource ? MongoSettings.PREFIX : MongoSettings.SETTING_CONNECTIONS + ".$name"
         MongoConnectionSourceSettingsBuilder settingsBuilder = new MongoConnectionSourceSettingsBuilder(configuration, prefix, fallbackSettings)
-        return settingsBuilder.build()
+
+
+        MongoConnectionSourceSettings settings = settingsBuilder.build()
+        if(observableAdapter != null) {
+            settings.observableAdapter(observableAdapter)
+        }
+        if(databaseName != null) {
+            settings.databaseName(databaseName)
+        }
+        return settings
     }
 
     @Override
     ConnectionSource<MongoClient, MongoConnectionSourceSettings> create(String name, MongoConnectionSourceSettings settings) {
         MongoClient client
+        MongoClientSettings mongoClientSettings = mongoClientSettings ?: settings.options.build()
+
         if(settings.observableAdapter != null) {
-            client = MongoClients.create(settings.options.build(), settings.observableAdapter)
+            client = MongoClients.create(mongoClientSettings, settings.observableAdapter)
         }
         else {
-            client = MongoClients.create(settings.options.build())
+            client = MongoClients.create(mongoClientSettings)
         }
         return new DefaultConnectionSource<MongoClient, MongoConnectionSourceSettings>(name, client, settings);
 
