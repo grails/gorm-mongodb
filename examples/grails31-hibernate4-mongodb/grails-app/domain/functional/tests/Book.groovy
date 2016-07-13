@@ -2,7 +2,7 @@ package functional.tests
 
 import grails.mongodb.MongoEntity
 
-class Book implements MongoEntity<Book> {
+class Book {
 
     String title
 
