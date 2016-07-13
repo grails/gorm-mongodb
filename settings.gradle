@@ -1,18 +1,24 @@
-// examples
-include 'examples/grails31-mongodb'
 
 // core
 include "grails-datastore-gorm-bson",
         "grails-datastore-gorm-mongodb",
         "grails-datastore-gorm-mongodb-ext",
         "grails-datastore-gorm-rx-bson",
-        "grails-datastore-gorm-rx-mongodb",
-        "boot-plugin", 
-        'grails2-plugin', 
-        'grails-plugin',
-        'rx-plugin',
-        'docs'
+        "grails-datastore-gorm-rx-mongodb"
 
+// documentation
+include 'docs'
+
+// plugins
+include "boot-plugin"
+include 'grails2-plugin'
+include 'grails-plugin'
+include 'rx-plugin'
+
+
+// examples
+include 'examples/grails31-mongodb'
+include 'examples/grails31-hibernate4-mongodb'
 
 
 findProject(':boot-plugin').name = 'gorm-mongodb-spring-boot'
