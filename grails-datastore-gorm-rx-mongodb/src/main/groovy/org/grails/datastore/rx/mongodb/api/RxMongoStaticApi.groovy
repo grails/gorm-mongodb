@@ -192,7 +192,7 @@ class RxMongoStaticApi<D> extends RxGormStaticApi<D> implements RxMongoAllOperat
 
     private List<Bson> preparePipeline(List pipeline) {
         List<Bson> newPipeline = new ArrayList<Bson>()
-        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.MULTI) {
+        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR) {
             newPipeline.add(
                     Filters.eq(MappingUtils.getTargetKey(entity.tenantId), Tenants.currentId((Class<RxDatastoreClient>) datastoreClient.getClass()))
             )
@@ -207,7 +207,7 @@ class RxMongoStaticApi<D> extends RxGormStaticApi<D> implements RxMongoAllOperat
         newPipeline
     }
     protected <FT> FindObservable<FT> addMultiTenantFilterIfNecessary(FindObservable<FT> findIterable) {
-        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.MULTI) {
+        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR) {
             return findIterable.filter(
                     Filters.eq(MappingUtils.getTargetKey(entity.tenantId), Tenants.currentId((Class<RxDatastoreClient>) datastoreClient.getClass()))
             )

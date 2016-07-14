@@ -18,7 +18,9 @@ package org.grails.datastore.mapping.mongo;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
+import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.IndexOptions;
+import grails.gorm.multitenancy.Tenants;
 import groovy.lang.Closure;
 import org.bson.Document;
 import org.bson.codecs.Codec;
@@ -51,9 +53,11 @@ import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceFacto
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettings;
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettingsBuilder;
 import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec;
+import org.grails.datastore.mapping.multitenancy.AllTenantsResolver;
 import org.grails.datastore.mapping.multitenancy.MultiTenancySettings;
 import org.grails.datastore.mapping.multitenancy.MultiTenantCapableDatastore;
 import org.grails.datastore.mapping.multitenancy.TenantResolver;
+import org.grails.datastore.mapping.multitenancy.exceptions.TenantNotFoundException;
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.PropertyResolver;
@@ -64,10 +68,7 @@ import javax.persistence.FlushModeType;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -126,13 +127,35 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
 
         this.connectionSources = connectionSources;
 
-        ConnectionSource<MongoClient, MongoConnectionSourceSettings> defaultConnectionSource = connectionSources.getDefaultConnectionSource();
+        final ConnectionSource<MongoClient, MongoConnectionSourceSettings> defaultConnectionSource = connectionSources.getDefaultConnectionSource();
         MongoConnectionSourceSettings settings = defaultConnectionSource.getSettings();
         MultiTenancySettings multiTenancySettings = settings.getMultiTenancy();
 
         this.mongo = defaultConnectionSource.getSource();
         this.multiTenancyMode = multiTenancySettings.getMode();
-        this.tenantResolver = multiTenancySettings.getTenantResolver();
+
+        if(multiTenancyMode == MultiTenancySettings.MultiTenancyMode.SCHEMA) {
+            final TenantResolver baseResolver = multiTenancySettings.getTenantResolver();
+            this.tenantResolver = new AllTenantsResolver() {
+                @Override
+                public Iterable<Serializable> resolveTenantIds() {
+                    List<Serializable> ids = new ArrayList<>();
+                    MongoIterable<String> databaseNames = defaultConnectionSource.getSource().listDatabaseNames();
+                    for (String databaseName : databaseNames) {
+                        ids.add(databaseName);
+                    }
+                    return ids;
+                }
+
+                @Override
+                public Serializable resolveTenantIdentifier() throws TenantNotFoundException {
+                    return baseResolver.resolveTenantIdentifier();
+                }
+            };
+        }
+        else {
+            this.tenantResolver = multiTenancySettings.getTenantResolver();
+        }
         this.eventPublisher = eventPublisher;
         this.defaultDatabase = settings.getDatabase();
         this.defaultFlushMode = settings.getFlushMode();
@@ -373,6 +396,9 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         for (PersistentEntity entity : this.mappingContext.getPersistentEntities()) {
             // Only create Mongo templates for entities that are mapped with Mongo
             if (!entity.isExternal()) {
+                if(entity.isMultiTenant() && multiTenancyMode == MultiTenancySettings.MultiTenancyMode.SCHEMA) continue;
+
+
                 initializeIndices(entity);
             }
         }
@@ -492,12 +518,17 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     }
 
     public String getDatabaseName(PersistentEntity entity) {
-        final String databaseName = mongoDatabases.get(entity);
-        if(databaseName == null) {
-            mongoDatabases.put(entity, defaultDatabase);
-            return defaultDatabase;
+        if(entity.isMultiTenant() && multiTenancyMode == MultiTenancySettings.MultiTenancyMode.SCHEMA) {
+            return Tenants.currentId(getClass()).toString();
         }
-        return databaseName;
+        else {
+            final String databaseName = mongoDatabases.get(entity);
+            if(databaseName == null) {
+                mongoDatabases.put(entity, defaultDatabase);
+                return defaultDatabase;
+            }
+            return databaseName;
+        }
     }
 
     /**
@@ -625,7 +656,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         eventPublisher.addApplicationListener(new AutoTimestampEventListener(this));
         eventPublisher.addApplicationListener(new ValidationEventListener(this));
 
-        if(multiTenancyMode == MultiTenancySettings.MultiTenancyMode.MULTI) {
+        if(multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR) {
             eventPublisher.addApplicationListener(new MultiTenantEventListener(this));
         }
     }
@@ -636,7 +667,6 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * @param entity The entity
      */
     protected void initializeIndices(final PersistentEntity entity) {
-
         final com.mongodb.client.MongoCollection<Document> collection = getCollection(entity);
         final ClassMapping<MongoCollection> classMapping = entity.getMapping();
         if (classMapping != null) {
@@ -820,7 +850,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
 
     @Override
     public MongoDatastore getDatastoreForTenantId(Serializable tenantId) {
-        if(getMultiTenancyMode() == MultiTenancySettings.MultiTenancyMode.SINGLE) {
+        if(getMultiTenancyMode() == MultiTenancySettings.MultiTenancyMode.DATABASE) {
             return this.datastoresByConnectionSource.get(tenantId.toString());
         }
         return this;

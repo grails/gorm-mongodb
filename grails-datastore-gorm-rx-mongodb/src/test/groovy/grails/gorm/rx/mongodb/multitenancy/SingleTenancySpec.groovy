@@ -20,7 +20,7 @@ class SingleTenancySpec extends Specification {
 
     void setupSpec() {
         Map config = [
-                "grails.gorm.multiTenancy.mode"               :"SINGLE",
+                "grails.gorm.multiTenancy.mode"               :"DATABASE",
                 "grails.gorm.multiTenancy.tenantResolverClass":SystemPropertyTenantResolver,
                 (MongoSettings.SETTING_URL)                   : "mongodb://localhost/defaultDb",
                 (MongoSettings.SETTING_CONNECTIONS)           : [

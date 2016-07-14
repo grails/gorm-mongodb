@@ -26,7 +26,7 @@ class MultiTenancySpec extends Specification{
 
     void setupSpec() {
         Map config = [
-                "grails.gorm.multiTenancy.mode"               :"MULTI",
+                "grails.gorm.multiTenancy.mode"               :"DISCRIMINATOR",
                 "grails.gorm.multiTenancy.tenantResolverClass":MyResolver,
                 (MongoSettings.SETTING_URL)                   : "mongodb://localhost/defaultDb",
         ]
