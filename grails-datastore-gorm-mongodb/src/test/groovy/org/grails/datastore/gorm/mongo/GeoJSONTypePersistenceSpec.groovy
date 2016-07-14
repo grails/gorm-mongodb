@@ -26,7 +26,7 @@ class GeoJSONTypePersistenceSpec extends GormDatastoreSpec {
             col << Point.valueOf(5,10)
             col << LineString.valueOf([ [ 40 , 5 ] , [ 41 , 6 ] ])
             def p = new Place(geometryCollection: col)
-            p.save(flush:true)
+            p.save(flush:true,validate:false)
             session.clear()
             p = Place.get(p.id)
 
@@ -43,7 +43,7 @@ class GeoJSONTypePersistenceSpec extends GormDatastoreSpec {
                     [ -73.9814, 40.7681 ]
             ])
             def p = new Place(multiPoint: mp)
-            p.save(flush:true)
+            p.save(flush:true,validate:false)
             session.clear()
             p = Place.findByMultiPoint(mp)
 
@@ -61,7 +61,7 @@ class GeoJSONTypePersistenceSpec extends GormDatastoreSpec {
                     [ [ -73.97880, 40.77247 ], [ -73.97036, 40.76811 ] ]
             ])
             def p = new Place(multiLineString: mls)
-            p.save(flush:true)
+            p.save(flush:true,validate:false)
             session.clear()
             p = Place.findByMultiLineString(mls)
 
@@ -77,7 +77,7 @@ class GeoJSONTypePersistenceSpec extends GormDatastoreSpec {
                     [ [ [  -73.958, 40.8003 ], [ -73.9498, 40.7968 ], [ -73.9737, 40.7648 ], [  -73.958, 40.8003 ] ] ]
             ])
             def p = new Place(multiPolygon: mp)
-            p.save(flush:true)
+            p.save(flush:true,validate:false)
             session.clear()
             p = Place.findByMultiPolygon(mp)
 
@@ -102,7 +102,7 @@ class GeoJSONTypePersistenceSpec extends GormDatastoreSpec {
                               circle: circle)
 
         when:"the entity is persisted and retrieved"
-            p.save(flush:true)
+            p.save(flush:true,validate:false)
             session.clear()
             p = Place.get(p.id)
 
@@ -121,7 +121,7 @@ class GeoJSONTypePersistenceSpec extends GormDatastoreSpec {
             def poly1 = Polygon.valueOf([ [0.0, 0.0], [3.0, 0.0], [3.0, 3.0], [0.0, 3.0], [0.0, 0.0] ])
             def poly2 = Polygon.valueOf([ [5.0, 5.0], [7.0, 5.0], [7.0, 7.0], [5.0, 7.0], [5.0, 5.0] ])
             def p = new Place(point: point)
-            p.save(flush:true)
+            p.save(flush:true,validate:false)
 
         expect:"A geoWithin query is executed to find a point within"
             Place.findByPointGeoWithin(poly1)
@@ -234,7 +234,7 @@ class GeoJSONTypePersistenceSpec extends GormDatastoreSpec {
     void "TestPolygonsPersist"(){
         when:
             Polygon p = Polygon.valueOf([ Point.valueOf(0,0), Point.valueOf(3,6), Point.valueOf(6,1), Point.valueOf(0,0)  ]) // points
-            Loc l = new Loc(shape:p).save(flush:true)
+            Loc l = new Loc(shape:p).save(flush:true,validate:false)
 
         then:
             p.asList() == [ [ [ 0 , 0 ] , [ 3 , 6 ] , [ 6 , 1 ] , [ 0 , 0 ] ] ]
@@ -243,7 +243,7 @@ class GeoJSONTypePersistenceSpec extends GormDatastoreSpec {
         
         when:
             p = Polygon.valueOf([ [ 0 , 0 ] , [ 3 , 6 ] , [ 6 , 1 ] , [ 0 , 0 ] ]) // number arrays as points
-            l = new Loc(shape:p).save(flush:true)
+            l = new Loc(shape:p).save(flush:true,validate:false)
 
         then:
             p.asList() == [ [ [ 0 , 0 ] , [ 3 , 6 ] , [ 6 , 1 ] , [ 0 , 0 ] ] ]
@@ -252,7 +252,7 @@ class GeoJSONTypePersistenceSpec extends GormDatastoreSpec {
 
         when:
             p = Polygon.valueOf([ [ [ 0 , 0 ] , [ 3 , 6 ] , [ 6 , 1 ] , [ 0 , 0 ] ] ]) // single ring with number arrays as points
-            l = new Loc(shape:p).save(flush:true)
+            l = new Loc(shape:p).save(flush:true,validate:false)
 
         then:
 
@@ -266,7 +266,7 @@ class GeoJSONTypePersistenceSpec extends GormDatastoreSpec {
                     [ [ 2 , 2 ] , [ 3 , 3 ] , [ 4 , 2 ] , [ 2 , 2 ] ]  // interior ring
                 ]
             )
-            l = new Loc(shape:p).save(flush:true)
+            l = new Loc(shape:p).save(flush:true,validate:false)
 
         then:
 
@@ -284,7 +284,7 @@ class GeoJSONTypePersistenceSpec extends GormDatastoreSpec {
                     [ Point.valueOf(2,2), Point.valueOf(3,3), Point.valueOf(4,2), Point.valueOf(2,2) ]  // interior ring
                 ]
             )
-            l = new Loc(shape:p).save(flush:true)
+            l = new Loc(shape:p).save(flush:true,validate:false)
 
         then:
 

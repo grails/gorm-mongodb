@@ -14,7 +14,7 @@ class BasicArraySpec extends GormDatastoreSpec{
 
     void "Test that arrays are saved correctly"() {
         when:"An entity with an array is saved"
-            Data data = new Data(str: "foo", strArray: ["foo", "bar"] as String[]).save(flush:true)
+            Data data = new Data(str: "foo", strArray: ["foo", "bar"] as String[]).save(flush:true, validate:false)
             session.clear()
             data = Data.findByStr("foo")
 
@@ -26,7 +26,7 @@ class BasicArraySpec extends GormDatastoreSpec{
 
     void "Test that arrays of convertible properties are saved correctly"() {
         when:"An entity with an array is saved"
-            Data data = new Data(str: "bar", locArray: [Locale.US, Locale.CANADA_FRENCH] as Locale[]).save(flush:true)
+            Data data = new Data(str: "bar", locArray: [Locale.US, Locale.CANADA_FRENCH] as Locale[]).save(flush:true,validate:false)
             session.clear()
             data = Data.findByStr("bar")
 
@@ -38,7 +38,7 @@ class BasicArraySpec extends GormDatastoreSpec{
 
     void "Test that byte arrays are saved as binary"() {
         when:"An entity with an array is saved"
-            Data data = new Data(str: "baz", byteArray: 'hello'.bytes).save(flush:true)
+            Data data = new Data(str: "baz", byteArray: 'hello'.bytes).save(flush:true,validate:false)
             session.clear()
             data = Data.findByStr("baz")
             Document dbo = data.dbo

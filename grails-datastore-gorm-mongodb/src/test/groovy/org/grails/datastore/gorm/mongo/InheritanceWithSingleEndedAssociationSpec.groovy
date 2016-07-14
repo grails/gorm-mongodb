@@ -17,8 +17,8 @@ class InheritanceWithSingleEndedAssociationSpec extends GormDatastoreSpec {
 
             def a = new NodeA(a: 'A')
             def b = new NodeB(b: 'B', childNode: a)
-            a.save()
-            b.save(flush:true)
+            a.save(validate:false)
+            b.save(flush:true,validate:false)
             session.clear()
 
         when:"The association is queried with the get method"

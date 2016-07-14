@@ -10,8 +10,8 @@ class IsNullSpec extends GormDatastoreSpec {
     @Issue('GPMONGODB-164')
     void "Test isNull works in a criteria query"() {
         given:"Some test data"
-            new Elephant(name: "Dumbo").save()
-            new Elephant(name: "Big Daddy", trunk:new Trunk(length: 10).save()).save(flush:true)
+            new Elephant(name: "Dumbo").save(validate:false)
+            new Elephant(name: "Big Daddy", trunk:new Trunk(length: 10).save()).save(flush:true,validate:false)
             session.clear()
 
         when:"A entity is queried with isNull"
@@ -36,8 +36,8 @@ class IsNullSpec extends GormDatastoreSpec {
     @Issue('GPMONGODB-164')
     void "Test isNull works in a dynamic finder"() {
         given:"Some test data"
-        new Elephant(name: "Dumbo").save()
-        new Elephant(name: "Big Daddy", trunk:new Trunk(length: 10).save()).save(flush:true)
+        new Elephant(name: "Dumbo").save(validate:false)
+        new Elephant(name: "Big Daddy", trunk:new Trunk(length: 10).save()).save(flush:true,validate:false)
         session.clear()
 
         when:"A entity is queried with isNull"

@@ -1,6 +1,7 @@
 package org.grails.datastore.gorm.mongo
 
 import grails.gorm.tests.GormDatastoreSpec
+import grails.mongodb.MongoEntity
 import grails.persistence.Entity
 import com.mongodb.DBRef
 import com.mongodb.DBObject
@@ -26,8 +27,8 @@ class EmbeddedWithNonEmbeddedCollectionsSpec extends GormDatastoreSpec{
         ship.crew.reserves << new Sailor(name:"Tristan", captain:captain)
         ship.crew.reserves << new Sailor(name:"Roger", captain:captain)
         captain.shipmates << new Sailor(name:"Jeff", captain: captain)
-        captain.save flush: true
-        ship.save flush:true
+        captain.save flush: true,validate:false
+        ship.save flush:true,validate:false
         session.clear()
 
         when:"The underlying Mongo document is queried"
@@ -68,7 +69,7 @@ class EmbeddedWithNonEmbeddedCollectionsSpec extends GormDatastoreSpec{
 }
 
 @Entity
-class Ship {
+class Ship implements MongoEntity<Ship> {
     String id
     String name
     Crew crew = new Crew()
@@ -76,7 +77,7 @@ class Ship {
 }
 
 @Entity
-class Crew {
+class Crew implements MongoEntity<Ship>{
     String id
     String name
     Sailor firstMate
