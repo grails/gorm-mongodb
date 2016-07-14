@@ -2,6 +2,8 @@
 
 This project implements [GORM](http://gorm.grails.org/latest/) for the MongoDB Document Database.
 
+NOTE: This source code here is for version 6.x and above. For prevoius versions' source see the relevant branch on the [Grails Data Mapping project](https://github.com/grails/grails-data-mapping/tree/5.x/grails-datastore-gorm-mongodb).
+
 For more information see the following links:
 
 * [Documentation](http://gorm.grails.org/latest/mongodb/manual)
