@@ -28,6 +28,7 @@ import org.grails.datastore.mapping.model.*
 import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.datastore.mapping.model.types.BasicTypeConverterRegistrar
 import org.grails.datastore.mapping.mongo.MongoConstants
+import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.config.MongoAttribute
 import org.grails.datastore.mapping.mongo.config.MongoCollection
 import org.grails.datastore.mapping.mongo.config.MongoMappingContext
@@ -106,6 +107,18 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
                 delegatingClient.targetDatabaseName = connectionSource.settings.database
                 datastoreClients.put(connectionSource.name, (RxDatastoreClient)delegatingClient)
             }
+
+            connectionSources.addListener(new ConnectionSourcesListener<MongoClient, MongoConnectionSourceSettings>() {
+                public void newConnectionSource(ConnectionSource<MongoClient,MongoConnectionSourceSettings> connectionSource) {
+                    DelegatingRxMongoDatastoreClient delegatingClient = new DelegatingRxMongoDatastoreClient(connectionSource, RxMongoDatastoreClient.this)
+                    delegatingClient.targetMongoClient = connectionSource.source
+                    delegatingClient.targetDatabaseName = connectionSource.settings.database
+                    datastoreClients.put(connectionSource.getName(), delegatingClient);
+                    for (PersistentEntity persistentEntity : mappingContext.getPersistentEntities()) {
+                        RxGormEnhancer.registerEntity(persistentEntity, RxMongoDatastoreClient.this);
+                    }
+                }
+            });
         }
 
 

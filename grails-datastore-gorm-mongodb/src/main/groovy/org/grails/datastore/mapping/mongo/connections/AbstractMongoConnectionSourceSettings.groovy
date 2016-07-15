@@ -59,6 +59,11 @@ abstract class AbstractMongoConnectionSourceSettings extends ConnectionSourceSet
     boolean stateless = false
 
     /**
+     * The collection name to use to resolve connections when using {@link MongoConnectionSources}
+     */
+    String connectionsCollection = "mongo.connections"
+
+    /**
      * @return Obtain the final URL whether from the connection string or the host/port setting
      */
     ConnectionString getUrl() {

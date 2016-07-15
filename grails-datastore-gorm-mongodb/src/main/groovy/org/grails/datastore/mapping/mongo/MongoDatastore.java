@@ -194,6 +194,23 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
                 }
                 datastoresByConnectionSource.put(connectionSource.getName(), childDatastore);
             }
+
+            connectionSources.addListener(new ConnectionSourcesListener<MongoClient, MongoConnectionSourceSettings>() {
+                public void newConnectionSource(ConnectionSource<MongoClient,MongoConnectionSourceSettings> connectionSource) {
+                    SingletonConnectionSources singletonConnectionSources = new SingletonConnectionSources(connectionSource, connectionSources.getBaseConfiguration());
+                    MongoDatastore childDatastore = new MongoDatastore(singletonConnectionSources, mappingContext, eventPublisher) {
+                        @Override
+                        protected MongoGormEnhancer initialize(MongoConnectionSourceSettings settings) {
+                            super.buildIndex();
+                            return null;
+                        }
+                    };
+                    datastoresByConnectionSource.put(connectionSource.getName(), childDatastore);
+                    for (PersistentEntity persistentEntity : mappingContext.getPersistentEntities()) {
+                        gormEnhancer.registerEntity(persistentEntity);
+                    }
+                }
+            });
         }
 
         this.gormEnhancer = initialize(settings);

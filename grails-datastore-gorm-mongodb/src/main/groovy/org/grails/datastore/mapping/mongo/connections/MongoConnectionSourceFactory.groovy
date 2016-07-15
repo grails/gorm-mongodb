@@ -46,5 +46,16 @@ class MongoConnectionSourceFactory extends AbstractConnectionSourceFactory<Mongo
         MongoClient client = builder != null ? new MongoClient(new MongoClientURI(settings.url.toString(), builder)) : new MongoClient(new MongoClientURI(settings.url.toString()))
         return new DefaultConnectionSource<MongoClient, MongoConnectionSourceSettings>(name, client, settings);
     }
+
+    @Override
+    def <F extends ConnectionSourceSettings> MongoConnectionSourceSettings buildRuntimeSettings(String name, PropertyResolver configuration, F fallbackSettings) {
+        MongoConnectionSourceSettingsBuilder settingsBuilder = new MongoConnectionSourceSettingsBuilder(configuration, "", fallbackSettings)
+        MongoClientOptions.Builder builder = clientOptionsBuilder ?: settingsBuilder.clientOptionsBuilder
+        MongoConnectionSourceSettings settings = settingsBuilder.build()
+        if(builder != null) {
+            settings.options = builder
+        }
+        return settings
+    }
 }
 
