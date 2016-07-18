@@ -1,10 +1,4 @@
-
-===== findByWithinBox
-
-
-
 ===== Purpose
-
 
 Executes a MongoDB `$within` query on legacy coordinate pairs
 
@@ -12,7 +6,6 @@ WARNING: The $within operator is considered legacy and replaced by $geoWithin. H
 
 
 ===== Examples
-
 
 [source,groovy]
 ----

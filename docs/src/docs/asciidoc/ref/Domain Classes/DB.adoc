@@ -1,24 +1,14 @@
+==== Purpose
 
-===== DB
-
-
-
-===== Purpose
-
-
-Returns the MongoDB http://api.mongodb.org/java/current/com/mongodb/DB.html[DB] object.
-
+Returns the MongoDB http://api.mongodb.com/java/current/com/mongodb/async/client/MongoDatabase.html[MongoDatabase] object.
 
 ===== Examples
 
-
 [source,java]
 ----
-def dbCollection = Book.DB.getCollection("books")
+MongoCollection dbCollection = Book.DB.getCollection("books")
 ----
-
 
 ===== Description
 
-
-The `DB` property allows access to the underlying MongoDB http://api.mongodb.org/java/current/com/mongodb/DB.html[DB] object, thus allowing easy access to the low-level MongoDB Java driver.
+The `DB` property allows access to the underlying MongoDB http://api.mongodb.com/java/current/com/mongodb/async/client/MongoDatabase.html[MongoDatabase] object, thus allowing easy access to the low-level MongoDB Java driver.

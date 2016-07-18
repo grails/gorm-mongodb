@@ -15,12 +15,11 @@ class Person {
 }
 ----
 
-Then you need to place the bootstrap logic somewhere in the loading sequence of your application which uses `MongoDbDataStoreSpringInitializer`:
+Then you need to place the bootstrap logic somewhere in the loading sequence of your application which uses `MongoDatastore`:
 
 [source,groovy]
 ----
-def initializer = new MongoDbDataStoreSpringInitializer(Person)
-def applicationContext = initializer.configure()
+def datastore = new MongoDatastore(Person)
 
 println Person.count()
 ----
@@ -29,13 +28,12 @@ For configuration you can either pass a map or an instance of the `org.springfra
 
 [source,groovy]
 ----
-def initializer = new MongoDbDataStoreSpringInitializer(['grails.mongodb.url':'http://myserver'], Person)
-def applicationContext = initializer.configure()
+def initializer = new MongoDatastore(['grails.mongodb.url':'http://myserver'], Person)
 
 println Person.count()
 ----
 
-If you are using Spring with an existing `ApplicationContext` you can instead call `configureForBeanDefinitionRegistry` prior to refreshing the context. You can pass the Spring `Environment` object to the constructor for configuration:
+If you are using Spring with an existing `ApplicationContext` you can instead call `MongoDbDataStoreSpringInitializer.configureForBeanDefinitionRegistry` prior to refreshing the context. You can pass the Spring `Environment` object to the constructor for configuration:
 
 [source,groovy]
 ----

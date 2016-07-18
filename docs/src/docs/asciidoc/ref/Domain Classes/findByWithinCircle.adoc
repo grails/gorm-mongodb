@@ -1,18 +1,10 @@
-
-===== findByWithinCircle
-
-
-
 ===== Purpose
-
 
 Executes a MongoDB `$within` query on legacy coordinate pairs
 
 WARNING: The $within operator is considered legacy and replaced by $geoWithin. Hence this method is deprecated and `findByGeoWithin` should be used instead
 
-
 ===== Examples
-
 
 [source,groovy]
 ----

@@ -1,16 +1,8 @@
-
-===== search
-
-
-
 ===== Purpose
 
-
-Executes a MongoDB http://docs.mongodb.org/manual/reference/operator/query/text/#op._S_text[$text] search query
-
+Executes a MongoDB https://docs.mongodb.com/manual/reference/operator/query/text/#op._S_text[$text] search query
 
 ===== Examples
-
 
 [source,groovy]
 ----
@@ -22,8 +14,6 @@ assert Product.search('"Coffee Cake"').size() == 1
 assert Product.search('tarta', [language:'es', offset:5, max:10])
 ----
 
-
 ===== Description
-
 
 The `search` method uses MongoDB's full text search support to perform full text search on a "text" index.

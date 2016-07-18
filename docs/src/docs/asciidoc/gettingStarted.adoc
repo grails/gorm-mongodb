@@ -12,7 +12,7 @@ For Grails 2.x you need to modify `BuildConfig.groovy`:
 [source,groovy,subs="attributes"]
 ----
 plugins {
- compile ':mongodb:{version}.RELEASE'
+    compile ':mongodb:{version}'
 }
 ----
 

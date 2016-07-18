@@ -1,5 +1,11 @@
 Below are the details of the changes across releases:
 
+==== 6.0
+
+* Multiple Data Sources Support
+* Multi Tenancy Support
+* RxGORM for MongoDB (Using MongoDB Rx Drivers)
+* Unified Configuration model
 
 ==== 5.0
 
@@ -12,9 +18,7 @@ Below are the details of the changes across releases:
 
 ==== 4.0
 
-
 * Grails 3 compatibility
-
 
 ==== 3.0
 
@@ -43,9 +47,9 @@ Below are the details of the changes across releases:
 * Support for dynamically switching which database or collection to persist to at runtime
 
 
-==== 1.2 
+==== 1.2
 
-	
+
 WARNING: MongoDB plugin 1.2 and above requires Grails 2.1.5 or 2.2.1 as a minimum Grails version, if you are using older versions of Grails you will need to stay with 1.1
 
 

@@ -1,113 +1,31 @@
-For many simple cases you can use the built in http://grails.org/doc/latest/guide/testing.html#unitTestingDomains[GORM unit testing] provided by Grails.
-
-For more complex cases a `grails.test.mixin.mongodb.MongoDbTestMixin` class is provided which can run tests against a running MongoDB instance or a mock instance (such as one provided by the <<ref-comfakemongofongo-Fongo,Fongo>> project).
-
-Example against a running MongoDB instance:
+To write tests with MongoDB and Spock you can use create a `MongoDatastore` within the `setupSpec` method:
 
 [source,groovy]
 ----
-import org.bson.types.ObjectId
+import spock.lang.*
+import grails.gorm.annotation.Entity
+import org.grails.datastore.mapping.mongo.MongoDatastore
 
-@Entity
+class ExampleSpec extends Specification { <1>
+
+    @Shared @AutoCleanup MongoDatastore mongoDatastore <2>
+    void setupSpec() {
+       mongoDatastore = new MongoDatastore(Person) <3>
+    }
+
+    void "test execute GORM standalone in a unit test"() {
+       // your logic here <4>
+    }
+}
+
+@Entity <5>
 class Person {
-    ObjectId id
-    Long version
-    String name
-}
-
-...
-
-import grails.test.mixin.mongodb.*
-
-@TestMixin(MongoDbTestMixin)
-class PersonSpec extends Specification{
-
-    void "Test count people"() {
-        given:"A mongo domain model"
-            mongoDomain(<<Person>>)
-
-        expect:"Count the number of people"
-            Person.count() == 0
-    }
+    ...
 }
 ----
 
-
-Example using <<ref-comfakemongofongo-Fongo,Fongo>>:
-
-[source,groovy]
-----
-import com.github.fakemongo.Fongo
-import grails.test.mixin.mongodb.*
-
-@TestMixin(MongoDbTestMixin)
-class PersonSpec extends Specification{
-
-    void "Test count people"() {
-        given:"A mongo domain model"
-            Fongo fongo = new Fongo("mongo server 1");
-            mongoDomain(fongo.mongo, <<Person>>)
-
-        expect:"Count the number of people"
-            Person.count() == 0
-    }
-}
-----
-
-
-This library dependency is required in `build.gradle` for adding support for `MongoDbTestMixin`.
-
-[source,groovy]
-----
-dependencies {
-        test 'org.grails:grails-datastore-test-support:5.0.0'
-    }
-----
-
-Fongo dependency example
-[source,groovy]
-----
-dependencies {
-        test 'com.github.fakemongo:fongo:1.5.4'
-    }
-----
-
-
-
-==== Configuring domain classes for MongoDbTestMixin tests with the Domain annotation
-
-
-The `grails.test.mixin.gorm.Domain` annotation is used to configure the list of domain classes that gets configured when the unit test runtime is initialized. 
-
-`Domain` annotations will be collected from several locations:
-
-* the annotations on the test class
-* the package annotations in the package-info.java/package-info.groovy file in the package of the test class
-* each super class of the test class and their respective package annotations
-* the possible http://docs.grails.org/latest/api/grails/test/runtime/SharedRuntime.html[SharedRuntime] class
-
-`Domain` annotations can be shared by adding them as package annotations to package-info.java/package-info.groovy files or by adding them to a `http://docs.grails.org/latest/api/grails/test/runtime/SharedRuntime.html[SharedRuntime]` class which has been added for the test.
-
-It's not possible to use DomainClassUnitTestMixin's `Mock` annotation in MongoDbTestMixin tests. Use the `Domain` annotation in the place of `Mock` in MongoDbTestMixin tests.
-
-Example:
-[source,groovy]
-----
-import grails.test.mixin.TestMixin
-import grails.test.mixin.gorm.Domain
-import spock.lang.Specification
-
-
-@Domain(Person)
-@TestMixin(MongoDbTestMixin)
-class DomainAnnotationSpec extends Specification{
-    void "should allow registering domains with Domain annotation"() {
-        given:
-            def person = new Person(name:'John Doe')
-            def personId = person.save(flush:true, failOnError:true)?.id
-        expect:"Dynamic finders to work"
-            Person.count() > 0
-            Person.get(personId).name == 'John Doe'
-    }
-}
-----
+<1> The test should extend `spock.lang.Specification`
+<2> The `Shared` annotation is used to indicate to Spock that the `MongoDatastore` is shared across all tests. The `AutoCleanup` annotation makes sure that `MongoDatastore` is shutdown when all tests finish executing.
+<3> Within the `setupSpec` method a new `MongoDatastore` is constructed with the classes to use as the argument to the constructor.
+<4> You then write your test logic within each method
+<5> You can inline domain classes within the unit test if you annotate them with `@Entity`

@@ -54,7 +54,7 @@ include::gettingStarted/springBoot.adoc[]
 include::gettingStarted/outsideGrails.adoc[]
 
 [[objectMapping]]
-== Mapping Domain Classes to MongoDB Collections
+== Mapping Domain Classes
 
 include::objectMapping.adoc[]
 
@@ -113,10 +113,18 @@ include::objectMapping/textSearch.adoc[]
 
 include::objectMapping/customTypes.adoc[]
 
+[[multipleDataSources]]
+== Multiple Data Sources
+include::multipleDataSources/index.adoc[]
+
 [[databaseSwitching]]
 == Switching Database or Collection at Runtime
 
 include::databaseSwitching.adoc[]
+
+[[multiTenancy]]
+== Multi-Tenancy
+include::multiTenancy/index.adoc[]
 
 [[stateless]]
 == Stateless Mode
@@ -236,12 +244,4 @@ include::ref/Domain Classes/withCollection.adoc[]
 ==== withDatabase
 
 include::ref/Domain Classes/withDatabase.adoc[]
-
-[[ref-testing]]
-=== Testing
-
-[[ref-testing-MongoDbTestMixin]]
-==== MongoDbTestMixin
-
-include::ref/Testing/MongoDbTestMixin.adoc[]
 

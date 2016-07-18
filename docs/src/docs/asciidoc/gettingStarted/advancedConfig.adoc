@@ -33,21 +33,7 @@ grails {
 }
 ----
 
-Available options and their descriptions are defined in the http://api.mongodb.org/java/current/com/mongodb/MongoClientOptions.html[MongoOptions] javadoc.
-
-In production scenarios you will typically use more than one MongoDB server in either http://docs.mongodb.org/manual/core/master-slave/[master/slave] or http://docs.mongodb.org/manual/replication/[replication] scenarios. The plugin allows you to configure http://docs.mongodb.org/manual/tutorial/deploy-replica-set/[replica sets]:
-
-[source,groovy]
-----
-grails {
-    mongodb {
-        replicaSet = [ "localhost:27017", "localhost:27018"]
-    }
-}
-----
-
-The replica sets are defined using a list of strings that conform to the MongoDB http://api.mongodb.org/java/current/com/mongodb/DBAddress.html[DBAddress] specification.
-
+Available options and their descriptions are defined in the http://api.mongodb.org/java/current/com/mongodb/MongoClientOptions.html[MongoClientOptions] javadoc.
 
 ==== MongoDB Connection Strings
 
@@ -58,33 +44,13 @@ Since 2.0, you can also use MongoDB http://docs.mongodb.org/manual/reference/con
 ----
 grails {
     mongodb {
-        connectionString = "mongodb://localhost/mydb"
+        url = "mongodb://localhost/mydb"
     }
 }
 ----
 
 Using MongoDB connection strings is currently the most flexible and recommended way to configure MongoDB connections.
 
-
-==== SSL Connections
-
-
-You can configure SSL connections by setting `ssl` to true in the `options` block:
-
-[source,groovy]
-----
-grails {
-    mongodb {
-        ...
-        options {
-            ssl = true
-            ...
-        }
-    }
-}
-----
-
-NOTE: Note you can also configure the `SSLSocketFactory` manually if necessary. All settings within the `options` block are propagated to the underlying http://docs.spring.io/spring-data/mongodb/docs/1.4.0.RELEASE/api/org/springframework/data/mongodb/core/MongoOptionsFactoryBean.html[MongoOptionsFactoryBean]
 
 
 ==== Configuration Options Guide
@@ -103,9 +69,8 @@ grails {
         password = ".." // the password to connect with
         stateless = false // whether to use stateless sessions by default
 
-        // Alternatively, using 'replicaSet' or 'connectionString'
-        // replicaSet = [ "localhost:27017", "localhost:27018"]
-        // connectionString = "mongodb://localhost/mydb"
+        // Alternatively, using  'url'
+        // url = "mongodb://localhost/mydb"
 
         options {
             connectionsPerHost = 10 // The maximum number of connections allowed per host

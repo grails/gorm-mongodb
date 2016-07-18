@@ -1,25 +1,18 @@
-
-===== mongo
-
-
-
 ===== Purpose
 
-
-A Spring bean that provides access to the lower level Mongo API based on GMongo
-
+Provides access to the native http://api.mongodb.com/java/current/com/mongodb/async/client/MongoClient.html[MongoClient] instance.
 
 ===== Examples
 
 
 [source,groovy]
 ----
-def mongo
+MongoClient mongo
 
-def foo = {
-    def mongo
-    def myAction = {
-        def db = mongo.getDB("mongo")
+class FooController {
+    MongoClient mongo
+    def myAction() {
+        MongoDatabase db = mongo.getDatabase("mongo")
         db.languages.insert([name: 'Groovy'])
     }
 }
@@ -28,5 +21,4 @@ def foo = {
 
 ===== Description
 
-
-See the <<ref-compoiatigmongo-GMongo,GMongo>> docs and the API for http://api.mongodb.org/java/current/[Mongo Java Driver] for API usage info.
+See the API for the http://api.mongodb.org/java/current/[Mongo Java Driver] for API usage info.

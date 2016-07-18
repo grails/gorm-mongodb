@@ -1,16 +1,8 @@
-
-===== findByGeoIntersects
-
-
-
 ===== Purpose
-
 
 Executes a MongoDB http://docs.mongodb.org/manual/reference/operator/query/geoIntersects/[$geoIntersects] query
 
-
 ===== Examples
-
 
 Given:
 
@@ -45,8 +37,6 @@ assert Entry.findByShapeGeoIntersects( [ $geometry : [type: "Polygon" ,
                                        ])
 ----
 
-
 ===== Description
-
 
 The $geoIntersects operator is a geospatial query operator that selects all locations that intersect with a GeoJSON object. See http://docs.mongodb.org/manual/reference/operator/query/geoIntersects/[$geoIntersects].
