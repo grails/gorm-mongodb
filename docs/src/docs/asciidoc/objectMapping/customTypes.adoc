@@ -1,6 +1,58 @@
 GORM for MongoDB will persist all common known Java types like String, Integer, URL etc., however if you want to persist one of your own classes that is not a domain class you can implement a custom user type.
 
-For example consider the following class:
+==== Custom Codecs
+
+GORM for MongoDB is built ontop of MongoDB's BSON encoding framework. This means it is possible to implement custom http://mongodb.github.io/mongo-java-driver/3.2/bson/codecs[Codecs] for encoding and decoding values to and from BSON.
+
+For example consider the following simple Groovy class:
+
+[source,groovy]
+----
+class Birthday {
+    Date date
+}
+----
+
+By default the encoding engine does not know how to represent this type as a BSON value. To make the encoding engine understand this type you have to implement a custom codec:
+
+
+[source,groovy]
+----
+import org.bson.*
+import org.bson.codecs.*
+
+class BirthdayCodec implements Codec<Birthday> {
+    Birthday decode(BsonReader reader, DecoderContext decoderContext) {
+        return new Birthday(date: new Date(reader.readDateTime())) <1>
+    }
+    void encode(BsonWriter writer, Birthday value, EncoderContext encoderContext) {
+        writer.writeDateTime(value.date.time) <2>
+    }
+    Class<Birthday> getEncoderClass() { Birthday } <3>
+}
+----
+
+<1> Decodes the `Birthday` type from the `BsonReader`
+<2> Encodes the `Birthday` type to the `BsonWriter`
+<3> Returns the type that is to be encoded. In this case `Birthday`.
+
+With that done you then need to register the custom `Codec`. There are two ways to achieve this.
+
+You can register a list of codecs in the `grails.mongodb.codecs` setting in `application.yml`:
+
+[source,yaml]
+----
+grails:
+    mongodb:
+        codecs:
+            - my.company.BirthdayCodec
+----
+
+Or you can create a `META-INF/services/org.bson.Codec` file containing the class name of the `Codec`
+
+==== Custom Types with GORM
+
+Another option is to define a GORM custom type. For example consider the following class:
 
 [source,groovy]
 ----
