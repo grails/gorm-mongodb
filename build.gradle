@@ -136,7 +136,9 @@ subprojects { project ->
 
     apply plugin: 'maven-publish'
     if(!isGrails2PluginProject) {
-        apply plugin: 'com.jfrog.bintray'
+        if(isGrails3PluginProject) {
+            apply plugin: 'com.jfrog.bintray'
+        }
         apply plugin: "io.github.groovylang.groovydoc"
 
 
@@ -250,7 +252,7 @@ subprojects { project ->
             }
         }
     }   
-    if(!isGrails2PluginProject) {        
+    if(isGrails3PluginProject) {
         bintray {
 
             def u = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
