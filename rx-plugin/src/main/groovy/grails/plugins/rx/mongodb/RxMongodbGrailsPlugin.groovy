@@ -8,6 +8,7 @@ import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.datastore.rx.mongodb.RxMongoDatastoreClient
 import org.grails.datastore.rx.mongodb.connections.MongoConnectionSourceFactory
 import org.grails.plugins.web.rx.mvc.RxResultTransformer
+import org.grails.datastore.gorm.plugin.support.*
 
 /**
  *
@@ -36,7 +37,9 @@ class RxMongodbGrailsPlugin extends Plugin {
 
     @Override
     Closure doWithSpring() {
-        {->
+        ConfigSupport.prepareConfig(config, applicationContext)
+
+        return {->
             def applicationName = grailsApplication.getMetadata().getApplicationName()
             def classes = grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE).findAll() { GrailsClass cls ->
                 RxMongoEntity.isAssignableFrom(cls.clazz)
