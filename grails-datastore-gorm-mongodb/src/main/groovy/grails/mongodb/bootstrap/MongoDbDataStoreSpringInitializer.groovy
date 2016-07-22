@@ -88,6 +88,9 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
             if(beanDefinitionRegistry instanceof ConfigurableApplicationContext){
                 eventPublisher = new ConfigurableApplicationContextEventPublisher((ConfigurableApplicationContext)beanDefinitionRegistry)
             }
+            else if(resourcePatternResolver.resourceLoader instanceof ConfigurableApplicationContext) {
+                eventPublisher = new ConfigurableApplicationContextEventPublisher((ConfigurableApplicationContext)resourcePatternResolver.resourceLoader)
+            }
             else {
                 eventPublisher = new DefaultApplicationEventPublisher()
             }
