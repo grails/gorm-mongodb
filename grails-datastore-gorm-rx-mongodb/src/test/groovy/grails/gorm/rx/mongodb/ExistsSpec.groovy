@@ -10,7 +10,7 @@ class ExistsSpec extends RxGormSpec {
 
     void "Test exists method"() {
         given:"An existing instance"
-        Simple s = new Simple().save().toBlocking().first()
+        Simple s = new Simple(name: "Foo").save().toBlocking().first()
 
         expect:
         Simple.exists(s.id).toBlocking().first()

@@ -21,7 +21,7 @@ class GeoJsonSpec extends RxGormSpec {
         col << Point.valueOf(5,10)
         col << LineString.valueOf([[40, 5 ], [41, 6 ] ])
         def p = new Place(geometryCollection: col)
-        p.save(flush:true).toBlocking().first()
+        p.save(flush:true, validate:false).toBlocking().first()
         p = Place.get(p.id).toBlocking().first()
 
         then:"The collection is correct"
@@ -37,7 +37,7 @@ class GeoJsonSpec extends RxGormSpec {
                 [ -73.9814, 40.7681 ]
         ])
         def p = new Place(multiPoint: mp)
-        p.save(flush:true).toBlocking().first()
+        p.save(flush:true, validate:false).toBlocking().first()
         p = Place.findByMultiPoint(mp).toBlocking().first()
 
         then:"The MultiPoint is persisted correctly"
@@ -54,7 +54,7 @@ class GeoJsonSpec extends RxGormSpec {
                 [ [ -73.97880, 40.77247 ], [ -73.97036, 40.76811 ] ]
         ])
         def p = new Place(multiLineString: mls)
-        p.save(flush:true).toBlocking().first()
+        p.save(flush:true, validate:false).toBlocking().first()
         p = Place.findByMultiLineString(mls).toBlocking().first()
 
         then:"The MultiPoint is persisted correctly"
@@ -69,7 +69,7 @@ class GeoJsonSpec extends RxGormSpec {
                 [ [ [  -73.958, 40.8003 ], [ -73.9498, 40.7968 ], [ -73.9737, 40.7648 ], [  -73.958, 40.8003 ] ] ]
         ])
         def p = new Place(multiPolygon: mp)
-        p.save(flush:true).toBlocking().first()
+        p.save(flush:true, validate:false).toBlocking().first()
         p = Place.findByMultiPolygon(mp).toBlocking().first()
 
         then:"The MultiPoint is persisted correctly"
@@ -93,7 +93,7 @@ class GeoJsonSpec extends RxGormSpec {
                 circle: circle)
 
         when:"the entity is persisted and retrieved"
-        p.save(flush:true).toBlocking().first()
+        p.save(flush:true, validate:false).toBlocking().first()
         p = Place.get(p.id).toBlocking().first()
 
         then:"The GeoJSON types are correctly loaded"
@@ -111,7 +111,7 @@ class GeoJsonSpec extends RxGormSpec {
         def poly1 = Polygon.valueOf([ [0.0, 0.0], [3.0, 0.0], [3.0, 3.0], [0.0, 3.0], [0.0, 0.0] ])
         def poly2 = Polygon.valueOf([ [5.0, 5.0], [7.0, 5.0], [7.0, 7.0], [5.0, 7.0], [5.0, 5.0] ])
         def p = new Place(point: point)
-        p.save(flush:true).toBlocking().first()
+        p.save(flush:true, validate:false).toBlocking().first()
 
         then:"A geoWithin query is executed to find a point within"
         Place.findByPointGeoWithin(poly1).toBlocking().first()
@@ -256,7 +256,7 @@ class GeoJsonSpec extends RxGormSpec {
     void "TestPolygonsPersist"(){
         when:
         Polygon p = Polygon.valueOf([ Point.valueOf(0,0), Point.valueOf(3,6), Point.valueOf(6,1), Point.valueOf(0,0)  ]) // points
-        Loc l = new Loc(shape:p).save(flush:true).toBlocking().first()
+        Loc l = new Loc(shape:p).save(flush:true, validate:false).toBlocking().first()
 
         then:
         p.asList() == [ [ [ 0 , 0 ] , [ 3 , 6 ] , [ 6 , 1 ] , [ 0 , 0 ] ] ]
@@ -265,7 +265,7 @@ class GeoJsonSpec extends RxGormSpec {
 
         when:
         p = Polygon.valueOf([ [ 0 , 0 ] , [ 3 , 6 ] , [ 6 , 1 ] , [ 0 , 0 ] ]) // number arrays as points
-        l = new Loc(shape:p).save(flush:true).toBlocking().first()
+        l = new Loc(shape:p).save(flush:true, validate:false).toBlocking().first()
 
         then:
         p.asList() == [ [ [ 0 , 0 ] , [ 3 , 6 ] , [ 6 , 1 ] , [ 0 , 0 ] ] ]
@@ -274,7 +274,7 @@ class GeoJsonSpec extends RxGormSpec {
 
         when:
         p = Polygon.valueOf([ [ [ 0 , 0 ] , [ 3 , 6 ] , [ 6 , 1 ] , [ 0 , 0 ] ] ]) // single ring with number arrays as points
-        l = new Loc(shape:p).save(flush:true).toBlocking().first()
+        l = new Loc(shape:p).save(flush:true, validate:false).toBlocking().first()
 
         then:
 
@@ -288,7 +288,7 @@ class GeoJsonSpec extends RxGormSpec {
                         [ [ 2 , 2 ] , [ 3 , 3 ] , [ 4 , 2 ] , [ 2 , 2 ] ]  // interior ring
                 ]
         )
-        l = new Loc(shape:p).save(flush:true).toBlocking().first()
+        l = new Loc(shape:p).save(flush:true, validate:false).toBlocking().first()
 
         then:
 
@@ -306,7 +306,7 @@ class GeoJsonSpec extends RxGormSpec {
                         [ Point.valueOf(2,2), Point.valueOf(3,3), Point.valueOf(4,2), Point.valueOf(2,2) ]  // interior ring
                 ]
         )
-        l = new Loc(shape:p).save(flush:true).toBlocking().first()
+        l = new Loc(shape:p).save(flush:true, validate:false).toBlocking().first()
 
         then:
 
