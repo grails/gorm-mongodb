@@ -425,7 +425,12 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
         final ConverterRegistry converterRegistry = mappingContext.getConverterRegistry();
         converterRegistry.addConverter(new Converter<String, ObjectId>() {
             public ObjectId convert(String source) {
-                return new ObjectId(source);
+                if(ObjectId.isValid(source)) {
+                    return new ObjectId(source);
+                }
+                else {
+                    return null
+                }
             }
         });
 

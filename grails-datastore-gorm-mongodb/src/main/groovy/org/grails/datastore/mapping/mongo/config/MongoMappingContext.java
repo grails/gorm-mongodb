@@ -137,7 +137,12 @@ public class MongoMappingContext extends DocumentMappingContext {
         final ConverterRegistry converterRegistry = getConverterRegistry();
         converterRegistry.addConverter(new Converter<String, ObjectId>() {
             public ObjectId convert(String source) {
-                return new ObjectId(source);
+                if(ObjectId.isValid(source)) {
+                    return new ObjectId(source);
+                }
+                else {
+                    return null;
+                }
             }
         });
 
