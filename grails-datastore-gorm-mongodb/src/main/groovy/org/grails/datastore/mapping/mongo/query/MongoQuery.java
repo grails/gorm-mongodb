@@ -420,17 +420,10 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
             }
             final Object dbObject;
             if (criteria.isEmpty()) {
-                if (entity.isRoot()) {
                     dbObject = collection
-                            .find()
+                            .find(createQueryObject(entity))
                             .limit(1)
                             .first();
-                } else {
-                    dbObject = collection.find(new Document(
-                            MongoEntityPersister.MONGO_CLASS_FIELD, entity.getDiscriminator()))
-                            .limit(1)
-                            .first();
-                }
             } else {
                 dbObject = collection.find(getMongoQuery())
                         .limit(1)
@@ -450,7 +443,6 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
 
         MongoCursor<Document> cursor;
         Document query = createQueryObject(entity);
-
 
         final List<Projection> projectionList = projections().getProjectionList();
         if (projectionList.isEmpty()) {
@@ -555,12 +547,30 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         return iterable;
     }
 
+    private Document getClassFieldDocument(final PersistentEntity entity) {
+        Object classFieldValue;
+        Collection<PersistentEntity> childEntities = entity.getMappingContext().getChildEntities(entity);
+        if (childEntities.size() > 0) {
+            HashMap classValue = new HashMap<String, ArrayList>();
+            ArrayList classes = new ArrayList<String>();
+            classes.add(entity.getDiscriminator());
+            for(PersistentEntity childEntity: childEntities) {
+                classes.add(childEntity.getDiscriminator());
+            }
+            classValue.put(MONGO_IN_OPERATOR, classes);
+            classFieldValue = classValue;
+        } else {
+            classFieldValue = entity.getDiscriminator();
+        }
+        return new Document(MongoEntityPersister.MONGO_CLASS_FIELD, classFieldValue);
+    }
+
     protected Document createQueryObject(PersistentEntity persistentEntity) {
         Document query;
         if (persistentEntity.isRoot()) {
             query = new Document();
         } else {
-            query = new Document(MongoEntityPersister.MONGO_CLASS_FIELD, persistentEntity.getDiscriminator());
+            query = getClassFieldDocument(persistentEntity);
         }
         return query;
     }
