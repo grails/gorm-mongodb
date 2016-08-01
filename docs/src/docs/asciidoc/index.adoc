@@ -146,6 +146,10 @@ include::transactions.adoc[]
 
 include::testing.adoc[]
 
+== Integration Testing
+
+include::integrationTesting.adoc[]
+
 [[reference]]
 == Reference
 
