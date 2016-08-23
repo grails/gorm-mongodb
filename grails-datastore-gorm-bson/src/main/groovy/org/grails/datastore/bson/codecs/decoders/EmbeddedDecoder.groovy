@@ -9,7 +9,9 @@ import org.grails.datastore.bson.codecs.PropertyDecoder
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
 import org.grails.datastore.mapping.engine.EntityAccess
 import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.Embedded
+import org.grails.datastore.mapping.reflect.EntityReflector
 
 /**
  * A {@PropertyDecoder} capable of decoding {@Embedded} association types
@@ -26,6 +28,17 @@ class EmbeddedDecoder implements PropertyDecoder<Embedded> {
         if(decoded instanceof DirtyCheckable) {
             decoded.trackChanges()
         }
+
+        if(property.isBidirectional()) {
+            Association inverseSide = property.getInverseSide()
+            EntityReflector associationReflector = property.getAssociatedEntity().getReflector()
+            associationReflector.setProperty(
+                    decoded,
+                    inverseSide.name,
+                    entityAccess.entity
+            )
+        }
+
         entityAccess.setPropertyNoConversion(
                 property.name,
                 decoded
