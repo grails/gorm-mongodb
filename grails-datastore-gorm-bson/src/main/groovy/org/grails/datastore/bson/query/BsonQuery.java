@@ -53,16 +53,17 @@ public abstract class BsonQuery extends Query {
     public static final String MAX_OPERATOR = "$max";
     public static final String SIZE_OPERATOR = "$size";
     public static final String NOT_OPERATOR = "$not";
+    public static final String NOR_OPERATOR = "$nor";
     public static final String EXISTS_OPERATOR = "$exists";
     public static final String WHERE_OPERATOR = "$where";
     public static final EncoderContext ENCODER_CONTEXT = EncoderContext.builder().build();
     public static final String ID_REFERENCE_SUFFIX = ".$id";
-    private static final String THIS_PREFIX = "this.";
 
+    private static final String THIS_PREFIX = "this.";
     protected static Map<Class, QueryHandler> queryHandlers = new HashMap<>();
     protected static Map<String, OperatorHandler> operatorHandlers = new HashMap<>();
-    protected static Map<Class, QueryHandler> negatedHandlers = new HashMap<>();
     protected static Map<Class, ProjectionHandler> groupByProjectionHandlers = new HashMap<>();
+
     protected static Map<Class, ProjectionHandler> projectProjectionHandlers = new HashMap<>();
 
     static {
@@ -258,10 +259,24 @@ public abstract class BsonQuery extends Query {
         queryHandlers.put(Negation.class, new QueryHandler<Negation>() {
             @SuppressWarnings("unchecked")
             public void handle(EmbeddedQueryEncoder queryEncoder, Negation criteria, Document query, PersistentEntity entity) {
+                List nor = new ArrayList();
+                query.put(NOR_OPERATOR, nor);
                 for (Criterion criterion : criteria.getCriteria()) {
-                    final QueryHandler queryHandler = negatedHandlers.get(criterion.getClass());
+                    Document negatedQuery = new Document();
+                    nor.add(negatedQuery);
+                    if(criterion instanceof PropertyCriterion) {
+                        PropertyCriterion pc = (PropertyCriterion) criterion;
+                        PersistentProperty property = entity.getPropertyByName(pc.getProperty());
+                        if (property instanceof Custom) {
+                            CustomTypeMarshaller customTypeMarshaller = ((Custom) property).getCustomTypeMarshaller();
+                            customTypeMarshaller.query(property, pc, query);
+                            continue;
+                        }
+                    }
+
+                    final QueryHandler queryHandler = queryHandlers.get(criterion.getClass());
                     if (queryHandler != null) {
-                        queryHandler.handle(queryEncoder, criterion, query, entity);
+                        queryHandler.handle(queryEncoder, criterion, negatedQuery, entity);
                     } else {
                         throw new UnsupportedOperationException("Query of type " + criterion.getClass().getSimpleName() + " cannot be negated");
                     }
@@ -337,96 +352,6 @@ public abstract class BsonQuery extends Query {
             }
         });
 
-
-        negatedHandlers.put(SizeEquals.class, new QueryHandler<SizeEquals>() {
-            @SuppressWarnings("unchecked")
-            public void handle(EmbeddedQueryEncoder queryEncoder, SizeEquals criterion, Document query, PersistentEntity entity) {
-                queryHandlers.get(SizeNotEquals.class).handle(queryEncoder, Restrictions.sizeNe(criterion.getProperty(), getNumber(criterion)), query, entity);
-            }
-        });
-
-        negatedHandlers.put(SizeNotEquals.class, new QueryHandler<SizeNotEquals>() {
-            @SuppressWarnings("unchecked")
-            public void handle(EmbeddedQueryEncoder queryEncoder, SizeNotEquals criterion, Document query, PersistentEntity entity) {
-                queryHandlers.get(SizeEquals.class).handle(queryEncoder, Restrictions.sizeEq(criterion.getProperty(), getNumber(criterion)), query, entity);
-            }
-        });
-
-        negatedHandlers.put(SizeGreaterThan.class, new QueryHandler<SizeGreaterThan>() {
-            @SuppressWarnings("unchecked")
-            public void handle(EmbeddedQueryEncoder queryEncoder, SizeGreaterThan criterion, Document query, PersistentEntity entity) {
-                queryHandlers.get(SizeLessThan.class).handle(queryEncoder, Restrictions.sizeLt(criterion.getProperty(), getNumber(criterion)), query, entity);
-            }
-        });
-
-        negatedHandlers.put(SizeLessThan.class, new QueryHandler<SizeLessThan>() {
-            @SuppressWarnings("unchecked")
-            public void handle(EmbeddedQueryEncoder queryEncoder, SizeLessThan criterion, Document query, PersistentEntity entity) {
-                queryHandlers.get(SizeGreaterThan.class).handle(queryEncoder, Restrictions.sizeGt(criterion.getProperty(), getNumber(criterion)), query, entity);
-            }
-        });
-
-        negatedHandlers.put(Equals.class, new QueryHandler<Equals>() {
-            @SuppressWarnings("unchecked")
-            public void handle(EmbeddedQueryEncoder queryEncoder, Equals criterion, Document query, PersistentEntity entity) {
-                queryHandlers.get(NotEquals.class).handle(queryEncoder, Restrictions.ne(criterion.getProperty(), criterion.getValue()), query, entity);
-            }
-        });
-
-        negatedHandlers.put(NotEquals.class, new QueryHandler<NotEquals>() {
-            @SuppressWarnings("unchecked")
-            public void handle(EmbeddedQueryEncoder queryEncoder, NotEquals criterion, Document query, PersistentEntity entity) {
-                queryHandlers.get(Equals.class).handle(queryEncoder, Restrictions.eq(criterion.getProperty(), criterion.getValue()), query, entity);
-            }
-        });
-
-        negatedHandlers.put(In.class, new QueryHandler<In>() {
-            public void handle(EmbeddedQueryEncoder queryEncoder, In in, Document query, PersistentEntity entity) {
-                Object nativePropertyValue = getInListQueryValues(entity, in);
-                String property = getPropertyName(entity, in);
-                Document inQuery = getOrCreatePropertyQuery(query, property);
-                inQuery.put(NIN_OPERATOR, nativePropertyValue);
-                query.put(property, inQuery);
-            }
-        });
-
-        negatedHandlers.put(Between.class, new QueryHandler<Between>() {
-            public void handle(EmbeddedQueryEncoder queryEncoder, Between between, Document query, PersistentEntity entity) {
-                String property = getPropertyName(entity, between);
-                Document betweenQuery = getOrCreatePropertyQuery(query, property);
-                betweenQuery.put(LTE_OPERATOR, between.getFrom());
-                betweenQuery.put(GTE_OPERATOR, between.getTo());
-                query.put(property, betweenQuery);
-            }
-        });
-
-        negatedHandlers.put(GreaterThan.class, new QueryHandler<GreaterThan>() {
-            @SuppressWarnings("unchecked")
-            public void handle(EmbeddedQueryEncoder queryEncoder, GreaterThan criterion, Document query, PersistentEntity entity) {
-                queryHandlers.get(LessThan.class).handle(queryEncoder, Restrictions.lt(criterion.getProperty(), criterion.getValue()), query, entity);
-            }
-        });
-
-        negatedHandlers.put(GreaterThanEquals.class, new QueryHandler<GreaterThanEquals>() {
-            @SuppressWarnings("unchecked")
-            public void handle(EmbeddedQueryEncoder queryEncoder, GreaterThanEquals criterion, Document query, PersistentEntity entity) {
-                queryHandlers.get(LessThanEquals.class).handle(queryEncoder, Restrictions.lte(criterion.getProperty(), criterion.getValue()), query, entity);
-            }
-        });
-
-        negatedHandlers.put(LessThan.class, new QueryHandler<LessThan>() {
-            @SuppressWarnings("unchecked")
-            public void handle(EmbeddedQueryEncoder queryEncoder, LessThan criterion, Document query, PersistentEntity entity) {
-                queryHandlers.get(GreaterThan.class).handle(queryEncoder, Restrictions.gt(criterion.getProperty(), criterion.getValue()), query, entity);
-            }
-        });
-
-        negatedHandlers.put(LessThanEquals.class, new QueryHandler<LessThanEquals>() {
-            @SuppressWarnings("unchecked")
-            public void handle(EmbeddedQueryEncoder queryEncoder, LessThanEquals criterion, Document query, PersistentEntity entity) {
-                queryHandlers.get(GreaterThanEquals.class).handle(queryEncoder, Restrictions.gte(criterion.getProperty(), criterion.getValue()), query, entity);
-            }
-        });
 
         operatorHandlers.put(GT_OPERATOR, new OperatorHandler() {
             @Override
