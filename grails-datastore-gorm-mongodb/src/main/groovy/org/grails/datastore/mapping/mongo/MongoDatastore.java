@@ -557,7 +557,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     public String getCollectionName(PersistentEntity entity) {
         final String collectionName = mongoCollections.get(entity);
         if(collectionName == null) {
-            final String decapitalizedName = entity.getDecapitalizedName();
+            final String decapitalizedName = entity.isRoot() ? entity.getDecapitalizedName() : entity.getRootEntity().getDecapitalizedName();
             mongoCollections.put(entity, decapitalizedName);
             return decapitalizedName;
         }
@@ -830,7 +830,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     }
 
     protected void registerEntity(PersistentEntity entity) {
-        String collectionName = entity.getDecapitalizedName();
+        String collectionName = entity.isRoot() ? entity.getDecapitalizedName() : entity.getRootEntity().getDecapitalizedName();
         String databaseName = this.defaultDatabase;
 
         MongoCollection collectionMapping = (MongoCollection)entity.getMapping().getMappedForm();
