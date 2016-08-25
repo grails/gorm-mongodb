@@ -43,6 +43,8 @@ import org.grails.datastore.mapping.document.config.DocumentMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.config.GormProperties
+import org.grails.datastore.mapping.model.types.Association
+import org.grails.datastore.mapping.model.types.ToOne
 import org.grails.datastore.mapping.mongo.engine.MongoCodecEntityPersister
 import org.grails.datastore.mapping.mongo.engine.MongoEntityPersister
 import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec
@@ -311,6 +313,15 @@ class MongoCodecSession extends AbstractMongoSession {
         final MongoCollection collection = getCollection(entity)
         final updateOptions = new UpdateOptions()
         updateOptions.upsert(false)
+        for (Association association in entity.associations) {
+            String associationName = association.name
+            if(association instanceof ToOne && properties.containsKey(associationName)) {
+                def value = properties.get(associationName)
+                if(value != null) {
+                    properties.put(associationName, association.associatedEntity.reflector.getIdentifier(value))
+                }
+            }
+        }
         final UpdateResult updateResult = collection.updateMany(nativeQuery, new Document(MONGO_SET_OPERATOR, properties), updateOptions)
         if(updateResult.wasAcknowledged()) {
             try {
