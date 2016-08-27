@@ -48,34 +48,8 @@ grails:
 
 WARNING: When switching from mapping to codec with an existing database, there are several conditions that may require manual changes.
 
-1. Embedded bi-directional one to many associations will need a back-reference created if one does not exist.
-2. The version property of all documents, including embedded, may need to have it's type changed.
-3. The codec engine is more strict about data types than the mapping engine. For example, data stored in mongo as an `INT32` could be converted to a `BigDecimal`. This is no longer possible and the data will need to be changed. Other examples include strings like "1470924116786" could be converted to `Date` objects in the mapping engine, but will not work in the codec engine. While testing your application, you can identify these types of issues by the error message that will occur.
-
-Here is an example of an embedded bi-directional one to many relationship that may require manual migration:
-
-[source,groovy]
-----
-class Bar {
-    static belongsTo = [fooBar: Foo]
-}
-class Foo {
-    static hasMany = [bars: Bar]
-    static embedded = ['bars']
-}
-----
-
-An example script to set that back reference would be:
-
-[source,javascript]
-----
-db.foo.find({"$where": "this.bars && this.bars.length > 0"}).forEach(function(foo) {
-    for (var i = 0; i < foo.bars.length; i++) {
-        foo.bars[i].fooBar = foo._id;
-    }
-    db.foo.save(foo);
-});
-----
+1. The version property of all documents, including embedded, may need to have it's type changed.
+2. The codec engine is more strict about data types than the mapping engine. For example, data stored in mongo as an `INT32` could be converted to a `BigDecimal`. This is no longer possible and the data will need to be changed. Other examples include strings like "1470924116786" could be converted to `Date` objects in the mapping engine, but will not work in the codec engine. While testing your application, you can identify these types of issues by the error message that will occur. The error will occur at `AbstractBsonReader.verifyBSONType`. The easiest way to determine which property is the culprit, is to debug your application and put a breakpoint on that method. The variable `currentName` will contain the property causing the error.
 
 An example script to update the version property of top level documents is:
 
