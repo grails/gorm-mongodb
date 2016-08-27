@@ -3,12 +3,14 @@ package org.grails.datastore.gorm.mongo
 import grails.gorm.annotation.Entity
 import grails.gorm.tests.GormDatastoreSpec
 import grails.gorm.tests.Plant
+import grails.mongodb.MongoEntity
 import org.grails.datastore.gorm.query.transform.ApplyDetachedCriteriaTransform
 import spock.lang.IgnoreIf
 
 /**
  * Created by graemerocher on 20/03/14.
  */
+@ApplyDetachedCriteriaTransform
 class BatchUpdateDeleteSpec extends GormDatastoreSpec {
 
 
@@ -69,10 +71,16 @@ class BatchUpdateDeleteSpec extends GormDatastoreSpec {
         BatchUser.where { address == addressA }.updateAll(address: addressB)
         session.flush()
 
+        boolean addressBUserCount = BatchUser.where { address == addressB }.count() == 3
+        boolean addressAUserCount = BatchUser.where { address == addressA }.count() == 0
+
         then:
         BatchUser.count() == 3
-        BatchUser.where { address == addressB }.count() == 3
-        BatchUser.where { address == addressA }.count() == 0
+        addressAUserCount
+        addressBUserCount
+
+
+
     }
 
     @Override
@@ -92,7 +100,7 @@ class BatchUpdateDeleteSpec extends GormDatastoreSpec {
 
 
 @Entity
-class BatchAddress {
+class BatchAddress implements MongoEntity<BatchAddress> {
     Long id
     String name
     static mapping = {
@@ -101,7 +109,7 @@ class BatchAddress {
 }
 
 @Entity
-class BatchUser {
+class BatchUser implements MongoEntity<BatchUser> {
     Long id
     BatchAddress address
     static mapping = {
