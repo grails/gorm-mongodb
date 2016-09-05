@@ -8,11 +8,15 @@ import grails.gorm.tests.GormDatastoreSpec
  */
 class WhereQueryInCriteriaSpec extends GormDatastoreSpec {
 
-    void "test where query in with list on right side"() {
-        given:
+    private void buildTestData() {
         new InCritOwner(name: "Foo 1").addToDogs(name: "Chapter 1").addToDogs(name: "Chapter 2").save(flush: true, failOnError: true)
         new InCritOwner(name: "Foo 2").addToDogs(name: "Chapter 3").addToDogs(name: "Chapter 4").save(flush: true, failOnError: true)
         session.clear()
+    }
+
+    void "test where query in with list on right side"() {
+        given:
+        buildTestData()
         List<InCritOwner> owners = InCritOwner.where {
             name in ['Foo 1']
         }.list()
@@ -24,9 +28,7 @@ class WhereQueryInCriteriaSpec extends GormDatastoreSpec {
 
     void "test where query in with list of domains on right side"() {
         given:
-        new InCritOwner(name: "Foo 1").addToDogs(name: "Chapter 1").addToDogs(name: "Chapter 2").save(flush: true, failOnError: true)
-        new InCritOwner(name: "Foo 2").addToDogs(name: "Chapter 3").addToDogs(name: "Chapter 4").save(flush: true, failOnError: true)
-        session.clear()
+        buildTestData()
         def ownerList = [InCritOwner.findByName('Foo 2')]
         List<InCritDog> dogs = InCritDog.where {
             owner in ownerList
@@ -40,9 +42,7 @@ class WhereQueryInCriteriaSpec extends GormDatastoreSpec {
 
     void "test where query in with list on left side"() {
         given:
-        new InCritOwner(name: "Foo 1").addToDogs(name: "Chapter 1").addToDogs(name: "Chapter 2").save(flush: true, failOnError: true)
-        new InCritOwner(name: "Foo 2").addToDogs(name: "Chapter 3").addToDogs(name: "Chapter 4").save(flush: true, failOnError: true)
-        session.clear()
+        buildTestData()
         def dogList = [InCritDog.findByName('Chapter 3'), InCritDog.findByName('Chapter 4')]
         List<InCritOwner> owners = InCritOwner.where {
             dogs in dogList
