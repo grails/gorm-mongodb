@@ -627,7 +627,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             @Override
             protected <D> MongoStaticApi<D> getStaticApi(Class<D> cls, String qualifier) {
                 MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);
-                return new MongoStaticApi<>(cls, mongoDatastore, getFinders(), transactionManager);
+                return new MongoStaticApi<>(cls, mongoDatastore, createDynamicFinders(mongoDatastore), transactionManager);
             }
 
             @Override
