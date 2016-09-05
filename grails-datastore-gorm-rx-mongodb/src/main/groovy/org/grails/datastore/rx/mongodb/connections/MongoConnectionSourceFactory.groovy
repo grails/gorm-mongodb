@@ -47,7 +47,9 @@ class MongoConnectionSourceFactory extends AbstractConnectionSourceFactory<Mongo
             settings.observableAdapter(observableAdapter)
         }
         if(databaseName != null) {
-            settings.databaseName(databaseName)
+            if(settings.getDatabase().equals(MongoSettings.DEFAULT_DATABASE_NAME)) {
+                settings.databaseName(databaseName)
+            }
         }
         return settings
     }

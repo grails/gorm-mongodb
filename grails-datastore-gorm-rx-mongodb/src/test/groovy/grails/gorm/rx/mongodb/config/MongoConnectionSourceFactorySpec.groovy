@@ -16,6 +16,27 @@ import spock.lang.Specification
  */
 class MongoConnectionSourceFactorySpec extends Specification {
 
+    void "Test that the configured database name is used if unspecified"() {
+        when:"A factory instance"
+        MongoConnectionSourceFactory factory = new MongoConnectionSourceFactory()
+        factory.setDatabaseName("foo")
+
+        ConnectionSources<MongoClient, MongoConnectionSourceSettings> sources = ConnectionSourcesInitializer.create(factory, DatastoreUtils.createPropertyResolver(
+                (MongoSettings.SETTING_URL): "mongodb://localhost"
+        ))
+
+        then:"The correct database name is used"
+        sources.defaultConnectionSource.settings.database == 'foo'
+
+        when:"A database name is specified"
+        sources = ConnectionSourcesInitializer.create(factory, DatastoreUtils.createPropertyResolver(
+                (MongoSettings.SETTING_URL): "mongodb://localhost/bar"
+        ))
+
+        then:"The correct database name is used"
+        sources.defaultConnectionSource.settings.database == 'bar'
+    }
+
     void "Test MongoDB connection sources factory creates the correct configuration"() {
         when:"A factory instance"
         MongoConnectionSourceFactory factory = new MongoConnectionSourceFactory()

@@ -9,7 +9,10 @@ import org.grails.datastore.mapping.config.Settings
  * @since 6.0
  */
 interface MongoSettings extends Settings {
-
+    /**
+     * The default database name if none is specified
+     */
+    String DEFAULT_DATABASE_NAME = "test"
     /**
      * The prefix
      */

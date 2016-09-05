@@ -27,7 +27,7 @@ abstract class AbstractMongoConnectionSourceSettings extends ConnectionSourceSet
     /**
      * The default database name
      */
-    String databaseName = "test"
+    String databaseName = DEFAULT_DATABASE_NAME
 
 
     /**
