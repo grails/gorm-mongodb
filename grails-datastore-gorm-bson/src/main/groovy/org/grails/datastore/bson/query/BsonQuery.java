@@ -17,6 +17,7 @@ import org.grails.datastore.mapping.model.PersistentProperty;
 import org.grails.datastore.mapping.model.types.Custom;
 import org.grails.datastore.mapping.model.types.Embedded;
 import org.grails.datastore.mapping.model.types.ToOne;
+import org.grails.datastore.mapping.proxy.ProxyHandler;
 import org.grails.datastore.mapping.query.Query;
 import org.grails.datastore.mapping.query.Restrictions;
 import org.grails.datastore.mapping.reflect.EntityReflector;
@@ -744,8 +745,14 @@ public abstract class BsonQuery extends Query {
             if (mappingContext.isPersistentEntity(value)) {
                 PersistentEntity pe = mappingContext.getPersistentEntity(
                         value.getClass().getName());
-                EntityReflector reflector = mappingContext.getEntityReflector(pe);
-                values.add(reflector.getIdentifier(value));
+                ProxyHandler proxyHandler = mappingContext.getProxyHandler();
+                if(proxyHandler.isProxy(value)) {
+                    values.add(proxyHandler.getIdentifier(value));
+                }
+                else {
+                    EntityReflector reflector = mappingContext.getEntityReflector(pe);
+                    values.add(reflector.getIdentifier(value));
+                }
             } else {
                 values.add(value);
             }
