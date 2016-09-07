@@ -9,6 +9,26 @@ import spock.lang.Issue
 
 class InListQuerySpec extends GormDatastoreSpec {
 
+    @Issue('https://github.com/grails/gorm-mongodb/issues/11')
+    void "Test that in list works for where queries and single-ended associations"() {
+        given:"Some test data"
+        createPets()
+        session.clear()
+
+        when:"An in query is defined via a where query"
+        def saurapod = PetType.findByName('Saurapod')
+        def tyrannosaur = PetType.findByName('Tyrannosaur')
+        def species = [saurapod, tyrannosaur]
+        def results = Pet.where {
+           type in species
+        }.list()
+
+        then:"The results are correct"
+        results.size() == 2
+        results.find() { Pet pet -> pet.name == 'T-rex'}
+        results.find() { Pet pet -> pet.name == 'Dino'}
+    }
+
     @Issue("GPMONGODB-160")
     void "Test that ne works for a single-ended association"() {
         given:"Some test data"
