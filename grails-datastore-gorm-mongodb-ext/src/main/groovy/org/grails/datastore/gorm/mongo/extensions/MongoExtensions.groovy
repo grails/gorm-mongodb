@@ -145,7 +145,7 @@ class MongoExtensions {
      * @param name The collection name
      * @return A {@link DBCollection}
      */
-    static Object getProperty(DB db, String name) {
+    static Object propertyMissing(DB db, String name) {
         db.getCollection(name)
     }
 
@@ -156,7 +156,7 @@ class MongoExtensions {
      * @param name The collection name
      * @return A {@link DBCollection}
      */
-    static Object getProperty(MongoDatabase db, String name) {
+    static Object propertyMissing(MongoDatabase db, String name) {
         db.getCollection(name)
     }
 
