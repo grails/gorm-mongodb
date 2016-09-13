@@ -4,6 +4,8 @@ build/
 target/
 *.zip
 grails2-plugin/plugins/
+grails2-plugin/plugin.xml
+secring.gpg
 
 # Ignore Gradle GUI config
 gradle-app.setting
