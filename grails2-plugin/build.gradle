@@ -29,6 +29,10 @@ configurations.all { Configuration c ->
                 !details.requested.name.contains('bson')) {
                 details.useVersion(gormVersion)
             }
+            else if(details.requested.group == 'org.grails' &&
+                    details.requested.name == 'grails-async') {
+                details.useVersion(grailsVersion)   
+            }
         }        
     }
     resolutionStrategy.dependencySubstitution {
