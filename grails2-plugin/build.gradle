@@ -23,10 +23,13 @@ configurations.all { Configuration c ->
 
     resolutionStrategy {
         eachDependency { DependencyResolveDetails details ->
-            if(details.requested.group == 'org.grails' && !details.requested.name.startsWith('grails-datastore')) {
-                details.useVersion(grailsVersion)
+            if(details.requested.group == 'org.grails' && 
+                details.requested.name.startsWith('grails-datastore') &&
+                !details.requested.name.contains('mongodb') &&
+                !details.requested.name.contains('bson')) {
+                details.useVersion(gormVersion)
             }
-        }
+        }        
     }
     resolutionStrategy.dependencySubstitution {
         // Substitute project and module dependencies
