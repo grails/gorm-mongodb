@@ -95,7 +95,9 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
                 eventPublisher = new DefaultApplicationEventPublisher()
             }
             if(mongo == null) {
-                mongoConnectionSourceFactory(MongoConnectionSourceFactory)
+                mongoConnectionSourceFactory(MongoConnectionSourceFactory) { bean ->
+                    bean.autowire = true
+                }
                 mongoDatastore(MongoDatastore, configuration, ref('mongoConnectionSourceFactory'), eventPublisher, collectMappedClasses(DATASTORE_TYPE))
                 mongo(mongoDatastore:"getMongoClient")
             }
