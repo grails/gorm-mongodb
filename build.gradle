@@ -17,7 +17,7 @@ buildscript {
 println "GORM VERSION = ${project.gormVersion}"
 
 group "org.grails"
-version "6.0.0.RC2"
+version "6.0.0.BUILD-SNAPSHOT"
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
