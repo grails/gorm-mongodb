@@ -48,28 +48,38 @@ class MongoExtensions {
 
 
     static <T> T asType(Document document, Class<T> cls) {
-        def datastore = GormEnhancer.findDatastore(cls)
-        AbstractMongoSession session = (AbstractMongoSession)datastore.currentSession
-        if (session != null) {
-            return session.decode(cls, document)
-        }
-        else if(cls.name == 'grails.converters.JSON') {
-            return cls.newInstance( document )
+        if(Document.isAssignableFrom(cls)) {
+            return (T)document
         }
         else {
-            throw new IllegalArgumentException("Cannot convert DBOject [$document] to writer type $cls. Type is not a persistent entity")
+            def datastore = GormEnhancer.findDatastore(cls)
+            AbstractMongoSession session = (AbstractMongoSession)datastore.currentSession
+            if (session != null) {
+                return session.decode(cls, document)
+            }
+            else if(cls.name == 'grails.converters.JSON') {
+                return cls.newInstance( document )
+            }
+            else {
+                throw new IllegalArgumentException("Cannot convert DBOject [$document] to writer type $cls. Type is not a persistent entity")
+            }
         }
     }
 
     static <T> T asType(FindIterable iterable, Class<T> cls) {
-        def datastore = GormEnhancer.findDatastore(cls)
-        AbstractMongoSession session = (AbstractMongoSession)datastore.currentSession
-
-        if (session != null) {
-            return session.decode(cls, iterable)
+        if(FindIterable.isAssignableFrom(cls)) {
+            return (T)iterable
         }
         else {
-            throw new IllegalArgumentException("Cannot convert DBOject [$iterable] to writer type $cls. Type is not a persistent entity")
+            def datastore = GormEnhancer.findDatastore(cls)
+            AbstractMongoSession session = (AbstractMongoSession)datastore.currentSession
+
+            if (session != null) {
+                return session.decode(cls, iterable)
+            }
+            else {
+                throw new IllegalArgumentException("Cannot convert DBOject [$iterable] to writer type $cls. Type is not a persistent entity")
+            }
         }
     }
 
