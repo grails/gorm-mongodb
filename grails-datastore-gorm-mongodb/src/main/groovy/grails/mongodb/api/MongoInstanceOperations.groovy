@@ -13,8 +13,10 @@ interface MongoInstanceOperations<D> extends GormInstanceOperations<D> {
     /**
      * Return the DBObject instance for the entity
      *
+     * @deprecated use dynamic properties instead
      * @param instance The instance
      * @return The DBObject instance
      */
+    @Deprecated
     Document getDbo(D instance)
 }
