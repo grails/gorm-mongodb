@@ -88,12 +88,12 @@ include::objectMapping/dynamicAttributes.adoc[]
 
 include::objectMapping/geoSpatial.adoc[]
 
-[[2dsphere]]
+[[twodsphere]]
 ==== Geospacial 2D Sphere Support
 
 include::objectMapping/geoSpatial/2dsphere.adoc[]
 
-[[2dindex]]
+[[twodindex]]
 ==== Geospacial 2D Index Support
 
 include::objectMapping/geoSpatial/2dindex.adoc[]

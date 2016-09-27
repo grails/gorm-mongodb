@@ -76,13 +76,15 @@ If you attempt to reference this class from a domain class it will not automatic
 
 [source,groovy]
 ----
-import org.bson.*
-import org.grails.datastore.mapping.engine.types.AbstractMappingAwareCustomTypeMarshaller;
-import org.grails.datastore.mapping.model.PersistentProperty;
-import org.grails.datastore.mapping.mongo.query.MongoQuery;
-import org.grails.datastore.mapping.query.Query;
+import groovy.transform.InheritConstructors
+import org.bson.Document
+import org.grails.datastore.mapping.engine.types.AbstractMappingAwareCustomTypeMarshaller
+import org.grails.datastore.mapping.model.PersistentProperty
+import org.grails.datastore.mapping.mongo.query.MongoQuery
+import org.grails.datastore.mapping.query.Query
 
-class BirthdayType extends AbstractMappingAwareCustomTypeMarshaller<Birthday, Document, Document>(Birthday) {
+@InheritConstructors
+class BirthdayType extends AbstractMappingAwareCustomTypeMarshaller<Birthday, Document, Document> {
    @Override
    protected Object writeInternal(PersistentProperty property, String key, Birthday value, Document nativeTarget) {
        final converted = value.date.time
