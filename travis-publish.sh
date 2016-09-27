@@ -51,9 +51,9 @@ if [[ $TRAVIS_REPO_SLUG == "grails/gorm-mongodb" && $TRAVIS_PULL_REQUEST == 'fal
         version="$TRAVIS_TAG"
         version=${version:1}
 
-#         mkdir -p latest/mongodb
-#         cp -r ../docs/build/docs/. ./latest/mongodb/
-#         git add latest/mongodb/*
+        mkdir -p latest/mongodb
+        cp -r ../docs/build/docs/. ./latest/mongodb/
+        git add latest/mongodb/*
 
         majorVersion=${version:0:4}
         majorVersion="${majorVersion}x"
