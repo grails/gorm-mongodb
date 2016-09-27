@@ -2,9 +2,11 @@
 
 Returns the MongoDB http://api.mongodb.com/java/current/org/bson/Document.html[Document] for an instance of a domain class
 
+WARNING: Using the `Document` object directly is discouraged, because it's inefficient. It's better to use <<dynamicAttributes>>.
+
 ===== Examples
 
-[source,java]
+[source,groovy]
 ----
 def b = Book.get(1)
 
