@@ -179,10 +179,10 @@ To register a custom type in a grails application simply register it as Spring b
 
 [source,groovy]
 ----
-import com.example.BirthdayType
+import com.example.*
 
 // Place your Spring DSL code here
 beans = {
-  birthdayType(BirthdayType)
+  birthdayType(BirthdayType, Birthday)
 }
 ----
