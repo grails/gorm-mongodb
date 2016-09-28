@@ -42,6 +42,7 @@ asciidoctor {
                 'icons'         : 'font',
                 'reproducible'  : '',
                 'version'       : project.version,
+                'pluginVersion' : project.version - '.RELEASE',
                 'sourcedir'     : "${project.projectDir}/src/main/groovy"
 }
 

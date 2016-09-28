@@ -122,13 +122,6 @@ subprojects { project ->
         return
     }       
 
-    if(isPluginProject) {
-        group "org.grails.plugins"
-    }
-    else {
-        group "org.grails"        
-    }
-
     if(isGrails3PluginProject) {
         apply plugin: "org.grails.grails-plugin"       
     }

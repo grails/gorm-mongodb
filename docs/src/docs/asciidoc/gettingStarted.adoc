@@ -3,7 +3,7 @@ To get started with GORM for MongoDB you need configure it as a dependency in `b
 [source,groovy,subs="attributes"]
 ----
 dependencies {
-    compile 'org.grails.plugins:mongodb:{version}'
+    compile 'org.grails.plugins:mongodb:{pluginVersion}'
 }
 ----
 
@@ -12,7 +12,7 @@ For Grails 2.x you need to modify `BuildConfig.groovy`:
 [source,groovy,subs="attributes"]
 ----
 plugins {
-    compile ':mongodb:{version}'
+    compile ':mongodb:{pluginVersion}'
 }
 ----
 
