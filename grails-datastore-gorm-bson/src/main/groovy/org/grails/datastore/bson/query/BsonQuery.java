@@ -7,6 +7,7 @@ import org.bson.Document;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.codehaus.groovy.runtime.NullObject;
+import org.grails.datastore.bson.codecs.CodecCustomTypeMarshaller;
 import org.grails.datastore.mapping.config.Property;
 import org.grails.datastore.mapping.core.Session;
 import org.grails.datastore.mapping.engine.internal.MappingUtils;
@@ -823,8 +824,10 @@ public abstract class BsonQuery extends Query {
                     PersistentProperty property = entity.getPropertyByName(pc.getProperty());
                     if (property instanceof Custom) {
                         CustomTypeMarshaller customTypeMarshaller = ((Custom) property).getCustomTypeMarshaller();
-                        customTypeMarshaller.query(property, pc, query);
-                        continue;
+                        if(!(customTypeMarshaller instanceof CodecCustomTypeMarshaller)) {
+                            customTypeMarshaller.query(property, pc, query);
+                            continue;
+                        }
                     }
                 }
                 queryHandler.handle(queryEncoder, criterion, dbo, entity);

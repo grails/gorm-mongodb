@@ -163,7 +163,8 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         this.codecEngine = settings.getEngine().equals(MongoConstants.CODEC_ENGINE);
         codecRegistry = CodecRegistries.fromRegistries(
                 MongoClient.getDefaultCodecRegistry(),
-                CodecRegistries.fromProviders(new CodecExtensions(), new PersistentEntityCodeRegistry())
+                CodecRegistries.fromProviders(new CodecExtensions(), new PersistentEntityCodeRegistry()),
+                mappingContext.getCodecRegistry()
         );
 
         DatastoreTransactionManager datastoreTransactionManager = new DatastoreTransactionManager();

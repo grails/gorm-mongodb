@@ -6,6 +6,8 @@ import groovy.transform.AutoClone
 import groovy.transform.CompileStatic
 import groovy.transform.builder.Builder
 import groovy.transform.builder.SimpleStrategy
+import org.bson.codecs.Codec
+import org.bson.codecs.configuration.CodecRegistry
 import org.grails.datastore.mapping.core.connections.ConnectionSourceSettings
 import org.grails.datastore.mapping.mongo.MongoConstants
 import org.grails.datastore.mapping.mongo.config.MongoSettings
@@ -62,6 +64,16 @@ abstract class AbstractMongoConnectionSourceSettings extends ConnectionSourceSet
      * The collection name to use to resolve connections when using {@link MongoConnectionSources}
      */
     String connectionsCollection = "mongo.connections"
+
+    /**
+     * Custom MongoDB codecs
+     */
+    List<Class<? extends Codec>> codecs = []
+
+    /**
+     * An additional codec registry
+     */
+    CodecRegistry codecRegistry
 
     /**
      * @return Obtain the final URL whether from the connection string or the host/port setting

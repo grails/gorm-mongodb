@@ -122,10 +122,6 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
         }
 
 
-        for(Codec codec in ConfigurationUtils.findServices(this.configuration, MongoSettings.SETTING_CODECS, Codec ) ){
-            this.entityCodecs.put(codec.encoderClass.name, codec )
-        }
-
         initialize(mappingContext)
     }
 
@@ -406,6 +402,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     protected CodecRegistry createCodeRegistry() {
         CodecRegistries.fromRegistries(
                 com.mongodb.async.client.MongoClients.getDefaultCodecRegistry(),
+                mappingContext.getCodecRegistry(),
                 CodecRegistries.fromProviders(new CodecExtensions(), this)
         )
     }

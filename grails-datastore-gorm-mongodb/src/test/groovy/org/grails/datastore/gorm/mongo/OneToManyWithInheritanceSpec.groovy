@@ -1,6 +1,7 @@
 package org.grails.datastore.gorm.mongo
 
 import grails.gorm.tests.GormDatastoreSpec
+import grails.mongodb.MongoEntity
 import grails.persistence.Entity
 
 class OneToManyWithInheritanceSpec extends GormDatastoreSpec {
@@ -31,19 +32,19 @@ class OneToManyWithInheritanceSpec extends GormDatastoreSpec {
 }
 
 @Entity
-class Donkey extends Animal {
+class Donkey extends Animal implements MongoEntity<Donkey> {
     String name
 }
 
 @Entity
-class Animal {
+class Animal implements MongoEntity<Animal> {
     String id
     Set carrots = []
     static hasMany = [carrots:Carrot]
 }
 
 @Entity
-class Carrot {
+class Carrot implements MongoEntity<Carrot> {
     Long id
     Integer leaves
     Animal animal

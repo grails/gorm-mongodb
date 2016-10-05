@@ -2,9 +2,22 @@ package grails.mongodb.bootstrap
 
 import com.mongodb.DB
 import com.mongodb.Mongo
+import com.mongodb.MongoClient
+import grails.mongodb.MongoEntity
 import grails.mongodb.geo.Point
 import grails.persistence.Entity
+import org.bson.Document
+import org.grails.datastore.gorm.mongo.Birthday
+import org.grails.datastore.gorm.mongo.BirthdayCodec
+import org.grails.datastore.mapping.engine.types.AbstractMappingAwareCustomTypeMarshaller
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.mongo.MongoDatastore
+import org.grails.datastore.mapping.mongo.config.MongoMappingContext
+import org.grails.datastore.mapping.query.Query
+import org.springframework.beans.factory.support.BeanDefinitionBuilder
+import org.springframework.context.annotation.AnnotationConfigApplicationContext
+import org.springframework.context.support.GenericApplicationContext
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -18,8 +31,8 @@ class MongoDbDataStoreSpringInitializerSpec extends Specification{
         when:"the initializer used to setup GORM for MongoDB"
             def initializer = new MongoDbDataStoreSpringInitializer(Person)
             def applicationContext = initializer.configure()
-            def mongo = applicationContext.getBean(Mongo)
-            mongo.getDB(MongoDbDataStoreSpringInitializer.DEFAULT_DATABASE_NAME).dropDatabase()
+            def mongo = applicationContext.getBean(MongoClient)
+            mongo.getDatabase(MongoDbDataStoreSpringInitializer.DEFAULT_DATABASE_NAME).drop()
 
         then:"GORM for MongoDB is initialized correctly"
             Person.count() == 0
@@ -35,6 +48,8 @@ class MongoDbDataStoreSpringInitializerSpec extends Specification{
         then:"GORM for MongoDB is initialized correctly"
         mongoDatastore.getDefaultDatabase() == 'foo'
 
+        cleanup:
+        mongoDatastore.destroy()
     }
 
     @Issue('GPMONGODB-339')
@@ -65,6 +80,7 @@ class MongoDbDataStoreSpringInitializerSpec extends Specification{
             def initializer = new MongoDbDataStoreSpringInitializer(Person)
             def applicationContext = initializer.configure()
             def mongo = applicationContext.getBean(Mongo)
+            Person.DB.drop()
 
         when:"we try to persist an invalid object"
             def p = new Person().save(flush:true)
@@ -84,17 +100,87 @@ class MongoDbDataStoreSpringInitializerSpec extends Specification{
             p.home != null
 
     }
+
+
+    void "Test custom codecs from Spring"() {
+        given:"the initializer used to setup GORM for MongoDB"
+        def initializer = new MongoDbDataStoreSpringInitializer(Person)
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext()
+        applicationContext.beanFactory.registerSingleton("birthdayCodec", new BirthdayCodec())
+
+        initializer.configureForBeanDefinitionRegistry(applicationContext)
+        applicationContext.refresh()
+        Person.DB.drop()
+
+        when:"we persist an object with a custom type "
+        def birthday = new Birthday(new Date())
+        def p = new Person(name: "Bob", home: Point.valueOf(10, 10), birthday: birthday).save(flush:true)
+
+        then:"The object was persisted successfully"
+        Person.findByBirthday(birthday).birthday == birthday
+        !Person.findByBirthday(new Birthday(new Date() - 7))
+    }
+
+    void "Test custom type marshallers from Spring"() {
+        given:"the initializer used to setup GORM for MongoDB"
+        def initializer = new MongoDbDataStoreSpringInitializer(Person)
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext()
+        applicationContext.beanFactory.registerSingleton("birthdayMarshaller", new BirthdayCustomTypeMarshaller())
+
+        initializer.configureForBeanDefinitionRegistry(applicationContext)
+        applicationContext.refresh()
+        Person.DB.drop()
+
+        when:"we persist an object with a custom type "
+        def birthday = new Birthday(new Date())
+        new Person(name: "Bob", home: Point.valueOf(10, 10), birthday: birthday).save(flush:true)
+
+        then:"The object was persisted successfully"
+        Person.first().birthday == birthday
+        Person.findByBirthday(birthday).birthday == birthday
+        !Person.findByBirthday(new Birthday(new Date() - 7))
+    }
 }
 
 
 @Entity
-class Person {
+class Person implements MongoEntity<Person> {
     Long id
     Long version
     String name
     Point home
+    Birthday birthday
 
     static constraints = {
         name blank:false
+        birthday nullable: true
+    }
+}
+
+class BirthdayCustomTypeMarshaller extends AbstractMappingAwareCustomTypeMarshaller<Birthday, Document, Document> {
+
+    BirthdayCustomTypeMarshaller() {
+        super(Birthday)
+    }
+
+    @Override
+    boolean supports(MappingContext context) {
+        return context instanceof MongoMappingContext
+    }
+
+    @Override
+    protected Object writeInternal(PersistentProperty property, String key, Birthday value, Document nativeTarget) {
+        nativeTarget.put(key, value.date)
+        return nativeTarget
+    }
+
+    @Override
+    protected Birthday readInternal(PersistentProperty property, String key, Document nativeSource) {
+        return new Birthday(nativeSource.getDate(key))
+    }
+
+    @Override
+    protected void queryInternal(PersistentProperty property, String key, Query.PropertyCriterion value, Document nativeQuery) {
+        nativeQuery.put(key, value.getValue().date)
     }
 }

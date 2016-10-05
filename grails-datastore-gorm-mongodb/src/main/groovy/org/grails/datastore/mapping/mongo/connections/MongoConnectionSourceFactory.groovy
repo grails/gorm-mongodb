@@ -4,12 +4,15 @@ import com.mongodb.MongoClient
 import com.mongodb.MongoClientOptions
 import com.mongodb.MongoClientURI
 import groovy.transform.CompileStatic
+import org.bson.codecs.Codec
+import org.bson.codecs.configuration.CodecRegistries
+import org.bson.codecs.configuration.CodecRegistry
 import org.grails.datastore.mapping.core.connections.AbstractConnectionSourceFactory
 import org.grails.datastore.mapping.core.connections.ConnectionSource
-import org.grails.datastore.mapping.core.connections.ConnectionSourceFactory
 import org.grails.datastore.mapping.core.connections.ConnectionSourceSettings
 import org.grails.datastore.mapping.core.connections.DefaultConnectionSource
 import org.grails.datastore.mapping.mongo.config.MongoSettings
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.PropertyResolver
 
 /**
@@ -21,7 +24,22 @@ import org.springframework.core.env.PropertyResolver
 @CompileStatic
 class MongoConnectionSourceFactory extends AbstractConnectionSourceFactory<MongoClient, MongoConnectionSourceSettings> {
 
+    /**
+     * The client options builder
+     */
     MongoClientOptions.Builder clientOptionsBuilder
+
+    /**
+     * An optional additional registry
+     */
+    @Autowired(required = false)
+    CodecRegistry codecRegistry
+
+    /**
+     * Optional additional codecs
+     */
+    @Autowired(required = false)
+    List<Codec> codecs = []
 
     @Override
     Serializable getConnectionSourcesConfigurationKey() {
@@ -36,6 +54,14 @@ class MongoConnectionSourceFactory extends AbstractConnectionSourceFactory<Mongo
         MongoConnectionSourceSettings settings = settingsBuilder.build()
         if(builder != null) {
             settings.options = builder
+        }
+
+        if(isDefaultDataSource) {
+            CodecRegistry codecRegistry = CodecRegistries.fromCodecs(codecs as List<? extends Codec<?>>)
+            if(this.codecRegistry != null) {
+                codecRegistry = CodecRegistries.fromRegistries(codecRegistry, this.codecRegistry)
+            }
+            settings.codecRegistry = codecRegistry
         }
         return settings
     }

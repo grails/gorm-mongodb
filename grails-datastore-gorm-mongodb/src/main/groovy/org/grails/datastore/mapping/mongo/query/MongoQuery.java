@@ -25,6 +25,7 @@ import org.bson.BsonDocumentWriter;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.grails.datastore.bson.codecs.CodecCustomTypeMarshaller;
 import org.grails.datastore.bson.query.BsonQuery;
 import org.grails.datastore.bson.query.EmbeddedQueryEncoder;
 import org.grails.datastore.gorm.mongo.geo.GeoJSONType;
@@ -632,8 +633,10 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                     PersistentProperty property = entity.getPropertyByName(pc.getProperty());
                     if (property instanceof Custom) {
                         CustomTypeMarshaller customTypeMarshaller = ((Custom) property).getCustomTypeMarshaller();
-                        customTypeMarshaller.query(property, pc, query);
-                        continue;
+                        if(!(customTypeMarshaller instanceof CodecCustomTypeMarshaller)) {
+                            customTypeMarshaller.query(property, pc, query);
+                            continue;
+                        }
                     }
                 }
                 queryHandler.handle(queryEncoder, criterion, dbo, entity);

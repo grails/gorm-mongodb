@@ -1,6 +1,7 @@
 package org.grails.datastore.gorm.mongo
 
 import grails.gorm.tests.GormDatastoreSpec
+import grails.mongodb.MongoEntity
 import grails.persistence.Entity
 
 import org.bson.types.ObjectId
@@ -45,7 +46,7 @@ class CustomTypeMarshallingSpec extends GormDatastoreSpec {
 }
 
 @Entity
-class Person {
+class Person implements MongoEntity<Person> {
     ObjectId id
     String name
     Birthday birthday

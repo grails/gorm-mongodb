@@ -7,6 +7,7 @@ import org.bson.Document
 import org.bson.codecs.Codec
 import org.bson.codecs.EncoderContext
 import org.bson.codecs.configuration.CodecRegistry
+import org.grails.datastore.bson.codecs.CodecCustomTypeMarshaller
 import org.grails.datastore.bson.codecs.PropertyEncoder
 import org.grails.datastore.mapping.engine.EntityAccess
 import org.grails.datastore.mapping.engine.internal.MappingUtils
@@ -29,17 +30,23 @@ class CustomTypeEncoder implements PropertyEncoder<Custom> {
 
     protected static void encode(CodecRegistry codecRegistry, EncoderContext encoderContext, BsonWriter writer, PersistentProperty property, CustomTypeMarshaller marshaller, value) {
         String targetName = MappingUtils.getTargetKey(property)
-        def document = new Document()
-        marshaller.write(property, value, document)
+        if(marshaller instanceof CodecCustomTypeMarshaller) {
+            writer.writeName(targetName)
+            Codec codec = marshaller.codec
+            codec.encode(writer,value, encoderContext)
+        }
+        else {
+            def document = new Document()
+            marshaller.write(property, value, document)
 
-        Object converted = document.get(targetName)
-        if(converted != null) {
-            Codec codec = (Codec) codecRegistry.get(converted.getClass())
-            if (codec) {
-                writer.writeName(targetName)
-                codec.encode(writer, converted, encoderContext)
+            Object converted = document.get(targetName)
+            if(converted != null) {
+                Codec codec = (Codec) codecRegistry.get(converted.getClass())
+                if (codec) {
+                    writer.writeName(targetName)
+                    codec.encode(writer, converted, encoderContext)
+                }
             }
-
         }
     }
 }

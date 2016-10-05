@@ -18,22 +18,25 @@ class CustomCodecSpec extends Specification {
 
     @AutoCleanup @Shared MongoDatastore datastore = new MongoDatastore(['grails.mongodb.codecs':[BirthdayCodec]], Person)
 
-    @NotYetImplemented
     void "Test custom codecs"() {
         when:"A new person is saved"
-        new Person(name: "Fred", birthday: new Birthday(new Date())).save(flush:true)
+        Person.DB.drop()
+        def birthday = new Birthday(new Date())
+        new Person(name: "Fred", birthday: birthday).save(flush:true)
 
         Person p = Person.first()
 
         then:"The result is correct"
         p.name == "Fred"
         p.birthday
+        Person.findByBirthday(birthday)
+        !Person.findByBirthday(new Birthday(new Date() - 7))
     }
 }
 
 class BirthdayCodec implements Codec<Birthday> {
     Birthday decode(BsonReader reader, DecoderContext decoderContext) {
-        return new Birthday(date: new Date(reader.readDateTime()))
+        return new Birthday(new Date(reader.readDateTime()))
     }
     void encode(BsonWriter writer, Birthday value, EncoderContext encoderContext) {
         writer.writeDateTime(value.date.time)

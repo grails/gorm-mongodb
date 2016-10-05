@@ -18,15 +18,14 @@ import com.mongodb.MongoClientURI;
 import groovy.lang.Closure;
 
 import java.beans.PropertyDescriptor;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import org.bson.Document;
+import org.bson.codecs.Codec;
+import org.bson.codecs.configuration.CodecConfigurationException;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.bson.types.Binary;
 import org.bson.types.Code;
@@ -36,21 +35,19 @@ import org.grails.datastore.bson.codecs.CodecExtensions;
 import org.grails.datastore.gorm.mongo.geo.*;
 import org.grails.datastore.gorm.mongo.simple.EnumType;
 import org.grails.datastore.mapping.config.AbstractGormMappingFactory;
+import org.grails.datastore.mapping.config.ConfigurationUtils;
+import org.grails.datastore.mapping.core.connections.ConnectionSourceSettings;
 import org.grails.datastore.mapping.document.config.Attribute;
 import org.grails.datastore.mapping.document.config.Collection;
 import org.grails.datastore.mapping.document.config.DocumentMappingContext;
-import org.grails.datastore.mapping.model.AbstractClassMapping;
-import org.grails.datastore.mapping.model.ClassMapping;
-import org.grails.datastore.mapping.model.EmbeddedPersistentEntity;
-import org.grails.datastore.mapping.model.MappingContext;
-import org.grails.datastore.mapping.model.MappingFactory;
-import org.grails.datastore.mapping.model.PersistentEntity;
+import org.grails.datastore.mapping.model.*;
 
+import org.grails.datastore.mapping.model.types.Custom;
 import org.grails.datastore.mapping.model.types.Identity;
 import org.grails.datastore.mapping.mongo.MongoConstants;
 import org.grails.datastore.mapping.mongo.MongoDatastore;
 import org.grails.datastore.mapping.mongo.connections.AbstractMongoConnectionSourceSettings;
-import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettings;
+import org.grails.datastore.bson.codecs.CodecCustomTypeMarshaller;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.env.PropertyResolver;
@@ -86,6 +83,9 @@ public class MongoMappingContext extends DocumentMappingContext {
             byte[].class.getName(),
             Byte.class.getName()
     )));
+
+    private CodecRegistry codecRegistry;
+    private Map<Class, Boolean> hasCodecCache = new HashMap<>();
 
     public MongoMappingContext(String defaultDatabaseName) {
         this(defaultDatabaseName, null);
@@ -132,6 +132,37 @@ public class MongoMappingContext extends DocumentMappingContext {
         initialize(classes);
     }
 
+    /**
+     * @return The codec registry for this mapping context
+     */
+    public CodecRegistry getCodecRegistry() {
+        return codecRegistry;
+    }
+
+    @Override
+    protected void initialize(ConnectionSourceSettings settings) {
+        super.initialize(settings);
+
+        AbstractMongoConnectionSourceSettings mongoConnectionSourceSettings = (AbstractMongoConnectionSourceSettings) settings;
+        List<Class<? extends Codec>> codecClasses = mongoConnectionSourceSettings.getCodecs();
+
+        Iterable<Codec> codecList = ConfigurationUtils.findServices(codecClasses, Codec.class);
+        List<Codec<?>> codecs = new ArrayList<>();
+        for (Codec codec : codecList) {
+            codecs.add(codec);
+        }
+
+        if(mongoConnectionSourceSettings.getCodecRegistry() != null) {
+            this.codecRegistry = CodecRegistries.fromRegistries(
+                    mongoConnectionSourceSettings.getCodecRegistry(),
+                    CodecRegistries.fromCodecs(codecs)
+            );
+        }
+        else {
+            this.codecRegistry = CodecRegistries.fromCodecs(codecs);
+        }
+    }
+
     private void initialize(Class[] classes) {
         registerMongoTypes();
         final ConverterRegistry converterRegistry = getConverterRegistry();
@@ -169,6 +200,7 @@ public class MongoMappingContext extends DocumentMappingContext {
         }
 
         addPersistentEntities(classes);
+        hasCodecCache.clear();
     }
 
     /**
@@ -215,15 +247,51 @@ public class MongoMappingContext extends DocumentMappingContext {
         }
 
         @Override
+        public boolean isCustomType(Class<?> propertyType) {
+            return super.isCustomType(propertyType) || hasCodecForType(propertyType);
+        }
+
+        @Override
+        public Custom<MongoAttribute> createCustom(PersistentEntity owner, MappingContext context, final PropertyDescriptor pd) {
+            if(hasCodecForType(pd.getPropertyType())) {
+                CodecCustomTypeMarshaller customTypeMarshaller = new CodecCustomTypeMarshaller(codecRegistry.get(pd.getPropertyType()), MongoMappingContext.this);
+                return new Custom<MongoAttribute>(owner, context, pd, customTypeMarshaller) {
+                    PropertyMapping<MongoAttribute> propertyMapping = createPropertyMapping(this, owner);
+                    public PropertyMapping<MongoAttribute> getMapping() {
+                        return propertyMapping;
+                    }
+                };
+            }
+            else {
+                return super.createCustom(owner, context, pd);
+            }
+        }
+
+        @Override
         public boolean isSimpleType(Class propType) {
             if (propType == null) return false;
             if (propType.isArray()) {
                 return isSimpleType(propType.getComponentType()) || super.isSimpleType(propType);
             }
-            return isMongoNativeType(propType) || super.isSimpleType(propType);
+            return isMongoNativeType(propType)  || super.isSimpleType(propType);
         }
     }
 
+    private boolean hasCodecForType(Class propType) {
+        if(hasCodecCache.containsKey(propType)) {
+            return hasCodecCache.get(propType);
+        }
+        else {
+            Boolean hasCodec;
+            try {
+                hasCodec = codecRegistry.get(propType) != null;
+            } catch (CodecConfigurationException e) {
+                hasCodec = false;
+            }
+            hasCodecCache.put(propType, hasCodec);
+            return hasCodec;
+        }
+    }
 
 
     protected void registerMongoTypes() {

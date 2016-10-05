@@ -5,6 +5,9 @@ import com.mongodb.rx.client.MongoClient
 import com.mongodb.rx.client.MongoClients
 import com.mongodb.rx.client.ObservableAdapter
 import groovy.transform.CompileStatic
+import org.bson.codecs.Codec
+import org.bson.codecs.configuration.CodecRegistries
+import org.bson.codecs.configuration.CodecRegistry
 import org.grails.datastore.mapping.core.connections.AbstractConnectionSourceFactory
 import org.grails.datastore.mapping.core.connections.ConnectionSource
 import org.grails.datastore.mapping.core.connections.ConnectionSourceFactory
@@ -31,6 +34,18 @@ class MongoConnectionSourceFactory extends AbstractConnectionSourceFactory<Mongo
 
     String databaseName
 
+    /**
+     * An optional additional registry
+     */
+    @Autowired(required = false)
+    CodecRegistry codecRegistry
+
+    /**
+     * Optional additional codecs
+     */
+    @Autowired(required = false)
+    List<Codec> codecs = []
+
     @Override
     Serializable getConnectionSourcesConfigurationKey() {
         return MongoSettings.SETTING_CONNECTIONS
@@ -50,6 +65,14 @@ class MongoConnectionSourceFactory extends AbstractConnectionSourceFactory<Mongo
             if(settings.getDatabase().equals(MongoSettings.DEFAULT_DATABASE_NAME)) {
                 settings.databaseName(databaseName)
             }
+        }
+
+        if(isDefaultDataSource) {
+            CodecRegistry codecRegistry = CodecRegistries.fromCodecs(codecs as List<? extends Codec<?>>)
+            if(this.codecRegistry != null) {
+                codecRegistry = CodecRegistries.fromRegistries(codecRegistry, this.codecRegistry)
+            }
+            settings.codecRegistry = codecRegistry
         }
         return settings
     }
