@@ -26,7 +26,7 @@ import spock.lang.Specification
  * Base class for MongoDB tests
  *
  * @author Álvaro Sánchez-Mariscal
- * @since 6.0.2
+ * @since 6.0.1
  */
 @CompileStatic
 abstract class MongoSpec extends Specification {
@@ -47,6 +47,11 @@ abstract class MongoSpec extends Specification {
 
     abstract MongoClient getMongoClient()
 
+    /**
+     * @return The domain classes
+     */
+    protected List<Class> getDomainClasses() { [] }
+
     void setupSpec() {
         MongoClient mongoClient = getMongoClient()
         PropertySourcesLoader loader = new PropertySourcesLoader()
@@ -54,14 +59,16 @@ abstract class MongoSpec extends Specification {
         loader.load resourceLoader.getResource("application.yml") as Resource
         loader.load resourceLoader.getResource("application.groovy") as Resource
         Config config = new PropertySourcesConfig(loader.propertySources)
-        List<Class> domainClasses = []
-        ClassPathScanningCandidateComponentProvider componentProvider = new ClassPathScanningCandidateComponentProvider(false)
-        componentProvider.addIncludeFilter(new AnnotationTypeFilter(Entity))
+        List<Class> domainClasses = getDomainClasses()
+        if (!domainClasses) {
+            ClassPathScanningCandidateComponentProvider componentProvider = new ClassPathScanningCandidateComponentProvider(false)
+            componentProvider.addIncludeFilter(new AnnotationTypeFilter(Entity))
 
-        for (BeanDefinition candidate in componentProvider.findCandidateComponents(config.getProperty('grails.codegen.defaultPackage'))) {
-            Class persistentEntity = Class.forName(candidate.beanClassName)
-            domainClasses << persistentEntity
-            mappingContext.addPersistentEntity(persistentEntity)
+            for (BeanDefinition candidate in componentProvider.findCandidateComponents(config.getProperty('grails.codegen.defaultPackage'))) {
+                Class persistentEntity = Class.forName(candidate.beanClassName)
+                domainClasses << persistentEntity
+                mappingContext.addPersistentEntity(persistentEntity)
+            }
         }
         mongoDatastore = new MongoDatastore(mongoClient, config, (Class[])domainClasses.toArray())
     }
