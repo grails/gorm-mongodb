@@ -2,7 +2,7 @@
 grails:
     profile: web
     codegen:
-        defaultPackage: hibernate4
+        defaultPackage: "functional.tests"
 info:
     app:
         name: '@info.app.name@'
