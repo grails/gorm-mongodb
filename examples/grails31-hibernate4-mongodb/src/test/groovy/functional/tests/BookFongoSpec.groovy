@@ -4,6 +4,7 @@ import com.github.fakemongo.Fongo
 import com.mongodb.MongoClient
 import grails.test.mongodb.MongoSpec
 
+
 class BookFongoSpec extends MongoSpec {
 
     @Override
@@ -11,10 +12,12 @@ class BookFongoSpec extends MongoSpec {
         return new Fongo(getClass().name).mongo
     }
 
+    //tag::getDomainClasses[]
     @Override
     protected List<Class> getDomainClasses() {
         [Book]
     }
+    //end::getDomainClasses[]
 
     void "Test low-level API extensions"() {
         when:
