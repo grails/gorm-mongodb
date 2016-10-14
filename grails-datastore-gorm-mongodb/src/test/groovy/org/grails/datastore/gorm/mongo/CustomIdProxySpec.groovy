@@ -21,6 +21,7 @@ class CustomIdProxySpec extends GormDatastoreSpec{
         then:
         t.company instanceof EntityProxy
         !t.company.isInitialized()
+        t.company.slug == 'mycompany'
     }
 
     @Override
