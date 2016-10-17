@@ -45,7 +45,12 @@ abstract class MongoSpec extends Specification {
         return ctx
     }()
 
-    abstract MongoClient getMongoClient()
+    /**
+     * @return The default mongo client
+     */
+    MongoClient getMongoClient() {
+        return new MongoClient()
+    }
 
     /**
      * @return The domain classes

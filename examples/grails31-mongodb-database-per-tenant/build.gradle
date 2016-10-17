@@ -1,0 +1,19 @@
+dependencies {
+    compile "org.springframework.boot:spring-boot-starter-logging"
+    compile "org.springframework.boot:spring-boot-autoconfigure"
+    compile "org.springframework.boot:spring-boot-starter-actuator"
+    compile "org.springframework.boot:spring-boot-starter-tomcat"
+    compile "javax.servlet:javax.servlet-api:3.1.0"
+    compile "org.grails:grails-core:$grailsVersion"
+    compile "org.grails:grails-dependencies:$grailsVersion"
+    compile "org.grails:grails-web-boot:$grailsVersion"
+    compile project(":grails-plugin")
+    runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.8.2"
+    runtime "com.h2database:h2"
+    runtime "org.grails.plugins:scaffolding:3.1.2"
+    testCompile "org.grails:grails-plugin-testing:$grailsVersion"
+    testCompile "org.grails.plugins:geb:1.0.2"
+    testCompile "com.github.fakemongo:fongo:2.0.9"
+    testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1"
+    testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
+}
