@@ -30,6 +30,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.grails.datastore.bson.codecs.CodecExtensions;
 import org.grails.datastore.gorm.GormEnhancer;
 import org.grails.datastore.gorm.GormInstanceApi;
+import org.grails.datastore.gorm.GormValidationApi;
 import org.grails.datastore.gorm.events.AutoTimestampEventListener;
 import org.grails.datastore.gorm.events.ConfigurableApplicationEventPublisher;
 import org.grails.datastore.gorm.events.DefaultApplicationEventPublisher;
@@ -635,6 +636,12 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             protected <D> GormInstanceApi<D> getInstanceApi(Class<D> cls, String qualifier) {
                 MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);
                 return new GormInstanceApi<>(cls,mongoDatastore);
+            }
+
+            @Override
+            protected <D> GormValidationApi<D> getValidationApi(Class<D> cls, String qualifier) {
+                MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);
+                return new GormValidationApi<>(cls, mongoDatastore);
             }
 
             private <D> MongoDatastore getDatastoreForQualifier(Class<D> cls, String qualifier) {

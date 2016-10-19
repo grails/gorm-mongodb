@@ -2,17 +2,28 @@ package functional.tests
 
 import grails.gorm.multitenancy.Tenants
 import grails.test.mixin.integration.Integration
+import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.multitenancy.exceptions.TenantNotFoundException
 import org.grails.datastore.mapping.multitenancy.resolvers.SystemPropertyTenantResolver
+import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Specification
+
+import java.util.function.Consumer
 
 /**
  * Created by graemerocher on 17/10/16.
  */
 @Integration
 class BookSpec extends Specification {
+    @Autowired
+    MongoDatastore mongoDatastore
 
     void "Test database per tenant"() {
+        setup:
+        mongoDatastore.mongoClient.listDatabaseNames().forEach( { String name ->
+            mongoDatastore.mongoClient.getDatabase(name).drop()
+        } as Consumer)
+
         when:"A query is executed"
         Book.list()
 
@@ -36,19 +47,19 @@ class BookSpec extends Specification {
         tenants.contains("test2")
         tenants.contains("test1")
 
-//        when:"An object is saved"
-//        Tenants.withCurrent{
-//            new Book(title: "The Stand").save(flush:true)
-//        }
-//
-//        then:"The count is correct"
-//        Book.count() == 1
-//
-//        when:"We switch to another tenant"
-//        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "test2")
-//
-//        then:"The count is correct"
-//        Book.count == 0
+        when:"An object is saved"
+        Tenants.withCurrent{
+            new Book(title: "The Stand").save(flush:true)
+        }
+
+        then:"The count is correct"
+        Book.count() == 1
+
+        when:"We switch to another tenant"
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "test2")
+
+        then:"The count is correct"
+        Book.count == 0
 
 
         cleanup:
