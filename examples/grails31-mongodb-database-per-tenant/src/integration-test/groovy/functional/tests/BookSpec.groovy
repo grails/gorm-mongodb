@@ -1,5 +1,6 @@
 package functional.tests
 
+import com.mongodb.Block
 import grails.gorm.multitenancy.Tenants
 import grails.test.mixin.integration.Integration
 import org.grails.datastore.mapping.mongo.MongoDatastore
@@ -8,7 +9,6 @@ import org.grails.datastore.mapping.multitenancy.resolvers.SystemPropertyTenantR
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Specification
 
-import java.util.function.Consumer
 
 /**
  * Created by graemerocher on 17/10/16.
@@ -22,7 +22,7 @@ class BookSpec extends Specification {
         setup:
         mongoDatastore.mongoClient.listDatabaseNames().forEach( { String name ->
             mongoDatastore.mongoClient.getDatabase(name).drop()
-        } as Consumer)
+        } as Block)
 
         when:"A query is executed"
         Book.list()
