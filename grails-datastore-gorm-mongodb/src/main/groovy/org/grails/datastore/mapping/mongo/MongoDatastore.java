@@ -178,7 +178,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         if(!(connectionSources instanceof SingletonConnectionSources)) {
 
             Iterable<ConnectionSource<MongoClient, MongoConnectionSourceSettings>> allConnectionSources = connectionSources.getAllConnectionSources();
-            for (ConnectionSource<MongoClient, MongoConnectionSourceSettings> connectionSource : allConnectionSources) {
+            for (final ConnectionSource<MongoClient, MongoConnectionSourceSettings> connectionSource : allConnectionSources) {
                 SingletonConnectionSources singletonConnectionSources = new SingletonConnectionSources(connectionSource, connectionSources.getBaseConfiguration());
                 MongoDatastore childDatastore;
 
@@ -192,19 +192,28 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
                             super.buildIndex();
                             return null;
                         }
+                        @Override
+                        public String toString() {
+                            return "MongoDatastore: " + connectionSource.getName();
+                        }
                     };
                 }
                 datastoresByConnectionSource.put(connectionSource.getName(), childDatastore);
             }
 
             connectionSources.addListener(new ConnectionSourcesListener<MongoClient, MongoConnectionSourceSettings>() {
-                public void newConnectionSource(ConnectionSource<MongoClient,MongoConnectionSourceSettings> connectionSource) {
-                    SingletonConnectionSources singletonConnectionSources = new SingletonConnectionSources(connectionSource, connectionSources.getBaseConfiguration());
+                public void newConnectionSource(final ConnectionSource<MongoClient,MongoConnectionSourceSettings> connectionSource) {
+                    final SingletonConnectionSources singletonConnectionSources = new SingletonConnectionSources(connectionSource, connectionSources.getBaseConfiguration());
                     MongoDatastore childDatastore = new MongoDatastore(singletonConnectionSources, mappingContext, eventPublisher) {
                         @Override
                         protected MongoGormEnhancer initialize(MongoConnectionSourceSettings settings) {
                             super.buildIndex();
                             return null;
+                        }
+
+                        @Override
+                        public String toString() {
+                            return "MongoDatastore: " + connectionSource.getName();
                         }
                     };
                     datastoresByConnectionSource.put(connectionSource.getName(), childDatastore);
