@@ -48,7 +48,7 @@ grails:
             - my.company.BirthdayCodec
 ----
 
-Or you can create a `META-INF/services/org.bson.Codec` file containing the class name of the `Codec`
+Or you can create a `META-INF/services/org.bson.codecs.Codec` file containing the fully qualified class name of the `Codec`. If there are multiple codec classes you would like to register, put each one on a separate line.
 
 ==== Custom Types with GORM
 
