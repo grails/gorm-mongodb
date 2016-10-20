@@ -61,6 +61,7 @@ import org.grails.datastore.mapping.multitenancy.TenantResolver;
 import org.grails.datastore.mapping.multitenancy.exceptions.TenantNotFoundException;
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.core.env.PropertyResolver;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -481,6 +482,20 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         this.codecRegistry = CodecRegistries.fromRegistries(
                 this.codecRegistry,
                 CodecRegistries.fromCodecs(codecs));
+    }
+
+    /**
+     * The message source used for validation messages
+     *
+     * @param messageSource The message source
+     */
+    @Autowired(required = false)
+    public void setMessageSource(MessageSource messageSource) {
+        if(messageSource != null) {
+            this.mappingContext.setValidatorRegistry(
+                    new DefaultValidatorRegistry(this.mappingContext, connectionSources.getBaseConfiguration(), messageSource)
+            );
+        }
     }
 
     /**
