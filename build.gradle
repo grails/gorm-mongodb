@@ -49,6 +49,13 @@ subprojects { project ->
         apply plugin:"org.grails.grails-web"
         apply plugin:"org.grails.grails-gsp"
 
+        tasks.withType(Test) {
+            testLogging {
+                showStandardStreams = true
+                exceptionFormat = 'full'
+            }
+        }
+
         return
     }
 
