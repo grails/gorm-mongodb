@@ -102,6 +102,7 @@ class EmbeddedAssociationSpec extends GormDatastoreSpec {
         when:"The embedded association is set to null"
             i.address = null
             i.save(flush:true)
+            println i.errors
             session.clear()
             i = Individual.get(i.id)
 
@@ -316,6 +317,10 @@ class Individual {
 
     static mapping = {
         name index:true
+    }
+
+    static constraints = {
+        address nullable:true
     }
 }
 

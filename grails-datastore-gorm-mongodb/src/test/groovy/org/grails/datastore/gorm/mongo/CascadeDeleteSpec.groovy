@@ -16,7 +16,7 @@ class CascadeDeleteSpec extends GormDatastoreSpec {
 
         when:"An owner with a child object is saved"
             def u = new CascadeUser(name:"user2")
-            def s = new CascadeUserSettings()
+            def s = new CascadeUserSettings(user: u)
             u.settings = [s] as Set
 
             u.save(flush:true)
