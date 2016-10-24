@@ -83,35 +83,42 @@ include::objectMapping/writeConcern.adoc[]
 
 include::objectMapping/dynamicAttributes.adoc[]
 
-[[geoSpatial]]
-=== Geospacial Querying
-
-include::objectMapping/geoSpatial.adoc[]
-
-[[twodsphere]]
-==== Geospacial 2D Sphere Support
-
-include::objectMapping/geoSpatial/2dsphere.adoc[]
-
-[[twodindex]]
-==== Geospacial 2D Index Support
-
-include::objectMapping/geoSpatial/2dindex.adoc[]
-
-[[geoJson]]
-==== GeoJSON Data Models
-
-include::objectMapping/geoSpatial/geoJson.adoc[]
-
-[[textSearch]]
-=== Full Text Search
-
-include::objectMapping/textSearch.adoc[]
-
 [[customTypes]]
 === Custom User Types
 
 include::objectMapping/customTypes.adoc[]
+
+[[querying]]
+== Querying
+
+[[queryingBasicsl]]
+=== Basic Querying
+include::querying/queryingBasics.adoc[]
+
+[[geoSpatial]]
+=== Geospacial Querying
+
+include::querying/geoSpatial.adoc[]
+
+[[twodsphere]]
+==== Geospacial 2D Sphere Support
+
+include::querying/geoSpatial/2dsphere.adoc[]
+
+[[twodindex]]
+==== Geospacial 2D Index Support
+
+include::querying/geoSpatial/2dindex.adoc[]
+
+[[geoJson]]
+==== GeoJSON Data Models
+
+include::querying/geoSpatial/geoJson.adoc[]
+
+[[textSearch]]
+=== Full Text Search
+
+include::querying/textSearch.adoc[]
 
 [[multipleDataSources]]
 == Multiple Data Sources

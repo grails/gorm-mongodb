@@ -1,6 +1,7 @@
 package org.grails.datastore.gorm.mongo
 
 import grails.gorm.tests.GormDatastoreSpec
+import grails.mongodb.MongoEntity
 import grails.persistence.Entity
 import org.bson.types.ObjectId
 import spock.lang.*
@@ -42,7 +43,7 @@ class TestSearchSpec extends GormDatastoreSpec{
 }
 
 @Entity
-class Product {
+class Product implements MongoEntity<Product>{
     ObjectId id
     String title
 
