@@ -6,6 +6,7 @@ import grails.mongodb.MongoEntity
 import org.bson.types.ObjectId
 import org.grails.datastore.gorm.mongo.City
 import org.grails.datastore.mapping.core.Session
+import org.grails.datastore.mapping.core.connections.ConnectionSource
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.config.MongoSettings
 import org.grails.datastore.mapping.multitenancy.exceptions.TenantNotFoundException
@@ -98,8 +99,25 @@ class SingleTenancySpec extends Specification {
         tenantIds == [test1:1, test2:0]
     }
 
+    void "Test tenant mapped to all"() {
+        setup:
+        CompanyD.eachTenant {
+            CompanyD.DB.drop()
+        }
+
+        when:"each tenant is iterated over"
+        Map tenantIds = [:]
+        CompanyB.eachTenant { String tenantId ->
+            tenantIds.put(tenantId, CompanyB.count())
+        }
+
+        then:"The result is correct"
+        tenantIds == [test1:0, test2:0]
+
+    }
+
     List getDomainClasses() {
-        [City, CompanyB]
+        [City, CompanyB, CompanyD]
     }
 
 }
@@ -107,4 +125,14 @@ class SingleTenancySpec extends Specification {
 class CompanyB implements MongoEntity<CompanyB>, MultiTenant {
     ObjectId id
     String name
+}
+
+@Entity
+class CompanyD implements MongoEntity<CompanyC>, MultiTenant {
+    ObjectId id
+    String name
+
+    static mapping = {
+        connections ConnectionSource.ALL
+    }
 }

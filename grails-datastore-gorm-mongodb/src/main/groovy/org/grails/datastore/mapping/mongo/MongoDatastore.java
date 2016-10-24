@@ -670,6 +670,10 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
 
             private <D> MongoDatastore getDatastoreForQualifier(Class<D> cls, String qualifier) {
                 String defaultConnectionSourceName = ConnectionSourcesSupport.getDefaultConnectionSourceName(getMappingContext().getPersistentEntity(cls.getName()));
+                if(defaultConnectionSourceName.equals(ConnectionSource.ALL)) {
+                    defaultConnectionSourceName = ConnectionSource.DEFAULT;
+                }
+
                 boolean isDefaultQualifier = qualifier.equals(ConnectionSource.DEFAULT);
                 if(isDefaultQualifier && defaultConnectionSourceName.equals(ConnectionSource.DEFAULT)) {
                     return MongoDatastore.this;
