@@ -14,4 +14,8 @@ class Individual implements RxMongoEntity<Individual> {
     static mapping = {
         name index:true
     }
+
+    static constraints = {
+        address nullable: true
+    }
 }
