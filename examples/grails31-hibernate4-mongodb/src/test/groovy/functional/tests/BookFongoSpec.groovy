@@ -8,7 +8,7 @@ import grails.test.mongodb.MongoSpec
 class BookFongoSpec extends MongoSpec {
 
     @Override
-    MongoClient getMongoClient() {
+    MongoClient createMongoClient() {
         return new Fongo(getClass().name).mongo
     }
 
@@ -21,7 +21,7 @@ class BookFongoSpec extends MongoSpec {
 
     void "Test low-level API extensions"() {
         when:
-        def db = mongoClient.getDatabase("test")
+        def db = createMongoClient().getDatabase("test")
         db.drop()
         // Insert a document
         db['languages'].insert([name: 'Groovy'])

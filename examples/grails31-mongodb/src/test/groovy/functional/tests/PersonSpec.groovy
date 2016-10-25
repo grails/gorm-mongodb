@@ -9,7 +9,7 @@ import grails.test.mongodb.MongoSpec
  */
 class PersonSpec extends MongoSpec {
     @Override
-    MongoClient getMongoClient() {
+    MongoClient createMongoClient() {
         return new Fongo(getClass().name).mongo
     }
 

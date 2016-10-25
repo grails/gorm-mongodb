@@ -15,6 +15,7 @@ import org.grails.io.support.ResourceLoader
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.env.PropertySourcesLoader
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
+import org.springframework.core.env.PropertyResolver
 import org.springframework.core.io.Resource
 import org.springframework.core.type.filter.AnnotationTypeFilter
 import org.springframework.transaction.support.TransactionSynchronizationManager
@@ -48,8 +49,8 @@ abstract class MongoSpec extends Specification {
     /**
      * @return The default mongo client
      */
-    MongoClient getMongoClient() {
-        return new MongoClient()
+    MongoClient createMongoClient() {
+        return null
     }
 
     /**
@@ -58,7 +59,6 @@ abstract class MongoSpec extends Specification {
     protected List<Class> getDomainClasses() { [] }
 
     void setupSpec() {
-        MongoClient mongoClient = getMongoClient()
         PropertySourcesLoader loader = new PropertySourcesLoader()
         ResourceLoader resourceLoader = new DefaultResourceLoader()
         loader.load resourceLoader.getResource("application.yml") as Resource
@@ -75,7 +75,12 @@ abstract class MongoSpec extends Specification {
                 mappingContext.addPersistentEntity(persistentEntity)
             }
         }
-        mongoDatastore = new MongoDatastore(mongoClient, config, (Class[])domainClasses.toArray())
+        MongoClient mongoClient = createMongoClient()
+        if (mongoClient) {
+            mongoDatastore = new MongoDatastore(mongoClient, config, (Class[])domainClasses.toArray())
+        } else {
+            mongoDatastore = new MongoDatastore((PropertyResolver) config, (Class[])domainClasses.toArray())
+        }
     }
 
     void setup() {
