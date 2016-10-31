@@ -31,8 +31,6 @@ class EmbeddedAssociationSpec extends GormDatastoreSpec {
             i != null
             i.name == "Bob"
             i.name == "Bob"
-
-
     }
 
     @IgnoreIf({System.getenv('TRAVIS')})
@@ -305,6 +303,25 @@ class EmbeddedAssociationSpec extends GormDatastoreSpec {
         then:"The correct results are returned"
             results.size() == 1
             results[0].name == 'Ed'
+    }
+
+    void "Test overwrite an embedded property with a previously saved instance"() {
+        given:"A domain with an embedded association"
+        def address = new Address(postCode: "30483")
+        new Address(postCode: "44512").save(flush: true)
+        def i = new Individual(name:"Bob", address: address)
+        i.save(flush:true)
+        session.clear()
+        i = Individual.first()
+        i.address = Address.findByPostCode("44512")
+        i.save(flush:true)
+        session.clear()
+
+        when:"We query to get the embedded instance"
+        i = Individual.first()
+
+        then:"the result is correct"
+        i.address.postCode == "44512"
     }
 }
 
