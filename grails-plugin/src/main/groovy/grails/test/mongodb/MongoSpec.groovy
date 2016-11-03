@@ -10,13 +10,12 @@ import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.mongo.MongoDatastore
-import org.grails.io.support.DefaultResourceLoader
-import org.grails.io.support.ResourceLoader
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.env.PropertySourcesLoader
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
 import org.springframework.core.env.PropertyResolver
-import org.springframework.core.io.Resource
+import org.springframework.core.io.DefaultResourceLoader
+import org.springframework.core.io.ResourceLoader
 import org.springframework.core.type.filter.AnnotationTypeFilter
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import spock.lang.AutoCleanup
@@ -61,8 +60,8 @@ abstract class MongoSpec extends Specification {
     void setupSpec() {
         PropertySourcesLoader loader = new PropertySourcesLoader()
         ResourceLoader resourceLoader = new DefaultResourceLoader()
-        loader.load resourceLoader.getResource("application.yml") as Resource
-        loader.load resourceLoader.getResource("application.groovy") as Resource
+        loader.load resourceLoader.getResource("application.yml")
+        loader.load resourceLoader.getResource("application.groovy")
         Config config = new PropertySourcesConfig(loader.propertySources)
         List<Class> domainClasses = getDomainClasses()
         if (!domainClasses) {
