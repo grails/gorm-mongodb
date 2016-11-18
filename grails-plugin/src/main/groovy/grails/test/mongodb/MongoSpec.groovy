@@ -2,21 +2,16 @@ package grails.test.mongodb
 
 import com.mongodb.MongoClient
 import grails.config.Config
-import grails.persistence.Entity
 import groovy.transform.CompileStatic
 import org.grails.config.PropertySourcesConfig
 import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.core.Session
-import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.mongo.MongoDatastore
-import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.env.PropertySourcesLoader
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
 import org.springframework.core.env.PropertyResolver
 import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.core.io.ResourceLoader
-import org.springframework.core.type.filter.AnnotationTypeFilter
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import spock.lang.AutoCleanup
 import spock.lang.Shared
@@ -38,12 +33,12 @@ abstract class MongoSpec extends Specification {
     @Shared
     Session session
 
-    @Shared
-    MappingContext mappingContext = {
-        def ctx = new KeyValueMappingContext("test")
-        ctx.setCanInitializeEntities(true)
-        return ctx
-    }()
+    /**
+     * @return Obtains the mapping context
+     */
+    MappingContext getMappingContext() {
+        mongoDatastore.getMappingContext()
+    }
 
     /**
      * @return The default mongo client
@@ -65,20 +60,21 @@ abstract class MongoSpec extends Specification {
         Config config = new PropertySourcesConfig(loader.propertySources)
         List<Class> domainClasses = getDomainClasses()
         if (!domainClasses) {
-            ClassPathScanningCandidateComponentProvider componentProvider = new ClassPathScanningCandidateComponentProvider(false)
-            componentProvider.addIncludeFilter(new AnnotationTypeFilter(Entity))
-
-            for (BeanDefinition candidate in componentProvider.findCandidateComponents(config.getProperty('grails.codegen.defaultPackage'))) {
-                Class persistentEntity = Class.forName(candidate.beanClassName)
-                domainClasses << persistentEntity
-                mappingContext.addPersistentEntity(persistentEntity)
+            def packageToScan = getPackageToScan(config)
+            MongoClient mongoClient = createMongoClient()
+            if (mongoClient) {
+                mongoDatastore = new MongoDatastore(mongoClient, config, Package.getPackage(packageToScan))
+            } else {
+                mongoDatastore = new MongoDatastore((PropertyResolver) config, Package.getPackage(packageToScan))
             }
         }
-        MongoClient mongoClient = createMongoClient()
-        if (mongoClient) {
-            mongoDatastore = new MongoDatastore(mongoClient, config, (Class[])domainClasses.toArray())
-        } else {
-            mongoDatastore = new MongoDatastore((PropertyResolver) config, (Class[])domainClasses.toArray())
+        else {
+            MongoClient mongoClient = createMongoClient()
+            if (mongoClient) {
+                mongoDatastore = new MongoDatastore(mongoClient, config, (Class[])domainClasses.toArray())
+            } else {
+                mongoDatastore = new MongoDatastore((PropertyResolver) config, (Class[])domainClasses.toArray())
+            }
         }
     }
 
@@ -94,4 +90,13 @@ abstract class MongoSpec extends Specification {
         }
     }
 
+    /**
+     * Obtains the default package to scan
+     *
+     * @param config The configuration
+     * @return The package to scan
+     */
+    protected String getPackageToScan(Config config) {
+        config.getProperty('grails.codegen.defaultPackage', getClass().package.name)
+    }
 }

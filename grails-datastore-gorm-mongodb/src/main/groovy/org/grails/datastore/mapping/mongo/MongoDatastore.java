@@ -38,6 +38,7 @@ import org.grails.datastore.gorm.events.DomainEventListener;
 import org.grails.datastore.gorm.mongo.MongoGormEnhancer;
 import org.grails.datastore.gorm.mongo.api.MongoStaticApi;
 import org.grails.datastore.gorm.multitenancy.MultiTenantEventListener;
+import org.grails.datastore.gorm.utils.ClasspathEntityScanner;
 import org.grails.datastore.gorm.validation.constraints.MappingContextAwareConstraintFactory;
 import org.grails.datastore.gorm.validation.constraints.builtin.UniqueConstraint;
 import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry;
@@ -276,6 +277,17 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * Configures a new {@link MongoDatastore} for the given arguments
      *
      * @param mongoClient The {@link MongoClient} instance
+     * @param packages The packages to scan
+     */
+    public MongoDatastore(MongoClient mongoClient, PropertyResolver configuration, Package...packages) {
+        this(mongoClient, configuration, createMappingContext(configuration, new ClasspathEntityScanner().scan(packages)), new DefaultApplicationEventPublisher());
+    }
+
+
+    /**
+     * Configures a new {@link MongoDatastore} for the given arguments
+     *
+     * @param mongoClient The {@link MongoClient} instance
      * @param classes The persistent classes
      */
     public MongoDatastore(MongoClient mongoClient, Class...classes) {
@@ -409,6 +421,46 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      */
     public MongoDatastore(Class...classes) {
         this(mapToPropertyResolver(null), classes);
+    }
+
+    /**
+     * Construct a Mongo datastore scanning the given packages
+     *
+     * @param packagesToScan The packages to scan
+     */
+    public MongoDatastore(Package...packagesToScan) {
+        this(new ClasspathEntityScanner().scan(packagesToScan));
+    }
+
+    /**
+     * Construct a Mongo datastore scanning the given packages
+     *
+     * @param configuration The configuration
+     * @param packagesToScan The packages to scan
+     */
+    public MongoDatastore(PropertyResolver configuration, Package...packagesToScan) {
+        this(configuration, new ClasspathEntityScanner().scan(packagesToScan));
+    }
+
+    /**
+     * Construct a Mongo datastore scanning the given packages
+     *
+     * @param configuration The configuration
+     * @param packagesToScan The packages to scan
+     */
+    public MongoDatastore(Map<String,Object> configuration, Package...packagesToScan) {
+        this(DatastoreUtils.createPropertyResolver(configuration), packagesToScan);
+    }
+
+    /**
+     * Construct a Mongo datastore scanning the given packages
+     *
+     * @param configuration The configuration
+     * @param eventPublisher The event publisher
+     * @param packagesToScan The packages to scan
+     */
+    public MongoDatastore(PropertyResolver configuration, ConfigurableApplicationEventPublisher eventPublisher,  Package...packagesToScan) {
+        this(configuration, eventPublisher, new ClasspathEntityScanner().scan(packagesToScan));
     }
 
     /**
