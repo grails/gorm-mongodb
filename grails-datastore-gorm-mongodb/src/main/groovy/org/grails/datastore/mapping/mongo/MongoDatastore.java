@@ -395,6 +395,15 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     }
 
     /**
+     * Creates a MongoDatastore with the given configuration
+     *
+     * @param configuration The configuration
+     */
+    public MongoDatastore(Map<String, Object> configuration ) {
+        this(configuration, new Class[0]);
+    }
+
+    /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
      * @param configuration The configuration
