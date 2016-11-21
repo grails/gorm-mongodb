@@ -6,6 +6,7 @@ import groovy.transform.CompileStatic
 import org.grails.config.PropertySourcesConfig
 import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.core.Session
+import org.grails.datastore.mapping.core.exceptions.ConfigurationException
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.springframework.boot.env.PropertySourcesLoader
@@ -62,10 +63,15 @@ abstract class MongoSpec extends Specification {
         if (!domainClasses) {
             def packageToScan = getPackageToScan(config)
             MongoClient mongoClient = createMongoClient()
+            def pkg = Package.getPackage(packageToScan)
+            if(pkg == null) {
+                throw new ConfigurationException("Package to scan [$packageToScan] cannot be found on the classpath")
+            }
+
             if (mongoClient) {
-                mongoDatastore = new MongoDatastore(mongoClient, config, Package.getPackage(packageToScan))
+                mongoDatastore = new MongoDatastore(mongoClient, config, pkg)
             } else {
-                mongoDatastore = new MongoDatastore((PropertyResolver) config, Package.getPackage(packageToScan))
+                mongoDatastore = new MongoDatastore((PropertyResolver) config, pkg)
             }
         }
         else {
