@@ -122,6 +122,10 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
         currentMongoStaticApi().find(filter)
     }
 
+    static Number count(Bson filter) {
+        currentMongoStaticApi().count(filter)
+    }
+
     /**
      * @return Custom MongoDB criteria builder
      */

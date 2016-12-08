@@ -52,7 +52,26 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
             return findIterable
         }
     }
+    Number count(Bson filter) {
+        withSession { AbstractMongoSession session ->
+            def entity = session.mappingContext.getPersistentEntity(persistentClass.name)
 
+            if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR) {
+                return session.getCollection(entity)
+                              .count(
+                    Filters.and(
+                            Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass())),
+                            filter
+                    )
+                )
+            }
+            else {
+                return session.getCollection(entity)
+                        .count(filter)
+            }
+
+        }
+    }
     protected <FT> FindIterable<FT> addMultiTenantFilterIfNecessary(FindIterable<FT> findIterable) {
         if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR) {
             return findIterable.filter(
