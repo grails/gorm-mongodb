@@ -246,6 +246,22 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
             }
         }
+
+        SIMPLE_TYPE_DECODERS[BigDecimal] = new TypeDecoder() {
+            @Override
+            BsonType bsonType() {
+                BsonType.DECIMAL128
+            }
+
+            @Override
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
+
+                entityAccess.setPropertyNoConversion(
+                        property.name,
+                        reader.readDecimal128().bigDecimalValue()
+                )
+            }
+        }
     }
 
     @Override

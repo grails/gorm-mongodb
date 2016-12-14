@@ -6,6 +6,7 @@ import org.bson.BsonWriter
 import org.bson.codecs.EncoderContext
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.types.Binary
+import org.bson.types.Decimal128
 import org.bson.types.ObjectId
 import org.grails.datastore.bson.codecs.PropertyEncoder
 import org.grails.datastore.mapping.engine.EntityAccess
@@ -51,8 +52,18 @@ class SimpleEncoder implements PropertyEncoder<Simple> {
         SIMPLE_TYPE_ENCODERS[String] = DEFAULT_ENCODER
         SIMPLE_TYPE_ENCODERS[StringBuffer] = DEFAULT_ENCODER
         SIMPLE_TYPE_ENCODERS[StringBuilder] = DEFAULT_ENCODER
-        SIMPLE_TYPE_ENCODERS[BigInteger] = DEFAULT_ENCODER
-        SIMPLE_TYPE_ENCODERS[BigDecimal] = DEFAULT_ENCODER
+        SIMPLE_TYPE_ENCODERS[BigInteger] = new TypeEncoder() {
+            @Override
+            void encode(BsonWriter writer, PersistentProperty property, Object value) {
+                writer.writeDecimal128( new Decimal128(((BigInteger)value).toBigDecimal()) )
+            }
+        }
+        SIMPLE_TYPE_ENCODERS[BigDecimal] = new TypeEncoder() {
+            @Override
+            void encode(BsonWriter writer, PersistentProperty property, Object value) {
+                writer.writeDecimal128( new Decimal128( (BigDecimal)value ))
+            }
+        }
         SIMPLE_TYPE_ENCODERS[Byte] = smallNumberEncoder
         SIMPLE_TYPE_ENCODERS[byte.class] = smallNumberEncoder
         SIMPLE_TYPE_ENCODERS[Integer] = smallNumberEncoder

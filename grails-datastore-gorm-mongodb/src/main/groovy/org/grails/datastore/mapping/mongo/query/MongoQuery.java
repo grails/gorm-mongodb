@@ -581,7 +581,7 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
     public static void populateMongoQuery(final AbstractMongoSession session, Document query, Junction criteria, final PersistentEntity entity) {
         EmbeddedQueryEncoder queryEncoder;
         if(session instanceof MongoCodecSession) {
-            final MongoDatastore datastore = (MongoDatastore) session.getDatastore();
+            final MongoDatastore datastore = session.getDatastore();
             final CodecRegistry codecRegistry = datastore.getCodecRegistry();
             queryEncoder = new EmbeddedQueryEncoder() {
                 @Override

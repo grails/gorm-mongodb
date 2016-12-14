@@ -18,6 +18,8 @@ import com.mongodb.MongoClientURI;
 import groovy.lang.Closure;
 
 import java.beans.PropertyDescriptor;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -62,7 +64,7 @@ public class MongoMappingContext extends DocumentMappingContext {
     /**
      * Java types supported as mongo property types.
      */
-    private static final Set<String> MONGO_NATIVE_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+    private static final Set<String> MONGO_NATIVE_TYPES = new HashSet<>(Arrays.asList(
             Double.class.getName(),
             String.class.getName(),
             Document.class.getName(),
@@ -85,7 +87,8 @@ public class MongoMappingContext extends DocumentMappingContext {
             UUID.class.getName(),
             byte[].class.getName(),
             Byte.class.getName()
-    )));
+
+    ));
 
     private CodecRegistry codecRegistry;
     private Map<Class, Boolean> hasCodecCache = new HashMap<>();
@@ -147,6 +150,10 @@ public class MongoMappingContext extends DocumentMappingContext {
         super.initialize(settings);
 
         AbstractMongoConnectionSourceSettings mongoConnectionSourceSettings = (AbstractMongoConnectionSourceSettings) settings;
+        if(mongoConnectionSourceSettings.isDecimalType()) {
+            MONGO_NATIVE_TYPES.add(BigDecimal.class.getName());
+            MONGO_NATIVE_TYPES.add(BigInteger.class.getName());
+        }
         List<Class<? extends Codec>> codecClasses = mongoConnectionSourceSettings.getCodecs();
 
         Iterable<Codec> codecList = ConfigurationUtils.findServices(codecClasses, Codec.class);
@@ -169,6 +176,7 @@ public class MongoMappingContext extends DocumentMappingContext {
     private void initialize(Class[] classes) {
         registerMongoTypes();
         final ConverterRegistry converterRegistry = getConverterRegistry();
+
         converterRegistry.addConverter(new Converter<String, ObjectId>() {
             public ObjectId convert(String source) {
                 if(ObjectId.isValid(source)) {

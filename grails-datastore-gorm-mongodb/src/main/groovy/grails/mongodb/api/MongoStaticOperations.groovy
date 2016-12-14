@@ -6,6 +6,7 @@ import com.mongodb.client.AggregateIterable
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.FindOneAndDeleteOptions
 import grails.gorm.api.GormStaticOperations
 import org.bson.Document
 import org.bson.conversions.Bson
@@ -26,6 +27,22 @@ interface MongoStaticOperations<D> extends GormStaticOperations<D> {
      * @return The FindIterable
      */
     FindIterable<D> find(Bson filter)
+
+    /**
+     * Atomically find a document and remove it.
+     *
+     * @param filter the query filter to find the document with
+     * @return the document that was removed.  If no documents matched the query filter, then null will be returned
+     */
+    D findOneAndDelete(Bson filter)
+
+    /**
+     * Atomically find a document and remove it.
+     *
+     * @param filter the query filter to find the document with
+     * @return the document that was removed.  If no documents matched the query filter, then null will be returned
+     */
+    D findOneAndDelete(Bson filter, FindOneAndDeleteOptions options)
 
     /**
      * @return Custom MongoDB criteria builder

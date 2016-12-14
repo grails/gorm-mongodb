@@ -7,6 +7,7 @@ import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Filters
+import com.mongodb.client.model.FindOneAndDeleteOptions
 import com.mongodb.client.model.Projections
 import com.mongodb.client.model.TextSearchOptions
 import grails.gorm.multitenancy.Tenants
@@ -22,6 +23,7 @@ import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.engine.EntityPersister
 import org.grails.datastore.mapping.engine.internal.MappingUtils
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.mongo.AbstractMongoSession
 import org.grails.datastore.mapping.mongo.MongoCodecSession
 import org.grails.datastore.mapping.mongo.MongoDatastore
@@ -52,6 +54,23 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
             return findIterable
         }
     }
+
+    @Override
+    D findOneAndDelete(Bson filter, FindOneAndDeleteOptions options = null) {
+        withSession { AbstractMongoSession session ->
+            def entity = session.mappingContext.getPersistentEntity(persistentClass.name)
+            filter = wrapFilterWithMultiTenancy(filter)
+            MongoCollection<D> mongoCollection = session.getCollection(entity)
+                                                        .withDocumentClass(persistentClass)
+            D result = options ? mongoCollection
+                                    .findOneAndDelete(filter, options) :
+                                mongoCollection
+                                    .findOneAndDelete(filter)
+
+            return result
+        }
+    }
+
     Number count(Bson filter) {
         withSession { AbstractMongoSession session ->
             def entity = session.mappingContext.getPersistentEntity(persistentClass.name)
@@ -69,11 +88,20 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
                 return session.getCollection(entity)
                         .count(filter)
             }
-
         }
     }
+
+    protected Bson wrapFilterWithMultiTenancy(Bson filter) {
+        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR && persistentEntity.isMultiTenant()) {
+            filter = Filters.and(
+                    Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass())),
+                    filter
+            )
+        }
+        return filter
+    }
     protected <FT> FindIterable<FT> addMultiTenantFilterIfNecessary(FindIterable<FT> findIterable) {
-        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR) {
+        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR && persistentEntity.isMultiTenant()) {
             return findIterable.filter(
                     Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass()))
             )

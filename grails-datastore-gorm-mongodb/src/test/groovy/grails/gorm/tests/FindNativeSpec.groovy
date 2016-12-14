@@ -15,6 +15,7 @@ class FindNativeSpec extends GormDatastoreSpec {
 
     void "test native find method"() {
         setup:
+        Product.DB.drop()
         new Product(title: "cake").save()
         new Product(title: "coffee").save(flush:true)
 
@@ -37,6 +38,14 @@ class FindNativeSpec extends GormDatastoreSpec {
         then:"The results are correct"
         findIterable.size() == 1
         doc != null
+
+        when:"findAndDeleteOne is used"
+        Product p = Product.findOneAndDelete(eq("title", "coffee"))
+
+        then:"The right one was deleted"
+        Product.count == 1
+        Product.findByTitle("cake")
+        p.title == 'coffee'
     }
 
 

@@ -21,6 +21,7 @@ import com.mongodb.ReadPreference
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.FindOneAndDeleteOptions
 import grails.mongodb.api.MongoAllOperations
 import groovy.transform.CompileStatic
 import org.bson.Document
@@ -116,12 +117,37 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      *
      * @param filter the query filter
      * @return the find iterable interface
-     * @mongodb.driver.manual tutorial/query-documents/ Find
      */
     static FindIterable<D> find(Bson filter) {
         currentMongoStaticApi().find(filter)
     }
 
+    /**
+     * Atomically find a document and remove it.
+     *
+     * @param filter the query filter to find the document with
+     * @return the document that was removed.  If no documents matched the query filter, then null will be returned
+     */
+    static D findOneAndDelete(Bson filter) {
+        currentMongoStaticApi().findOneAndDelete(filter)
+    }
+
+    /**
+     * Atomically find a document and remove it.
+     *
+     * @param filter the query filter to find the document with
+     * @return the document that was removed.  If no documents matched the query filter, then null will be returned
+     */
+    static D findOneAndDelete(Bson filter, FindOneAndDeleteOptions options) {
+        currentMongoStaticApi().findOneAndDelete(filter)
+    }
+
+    /**
+     * Counts the number of the entities in the collection.
+     *
+     * @param filter the query filter
+     * @return the find iterable interface
+     */
     static Number count(Bson filter) {
         currentMongoStaticApi().count(filter)
     }
