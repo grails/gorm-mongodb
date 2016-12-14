@@ -10,5 +10,5 @@ dependencies {
     compile(project(":grails-datastore-gorm-bson"))
 
     compileOnly "org.mongodb:mongodb-driver:$mongodbDriverVersion"
-    compile 'org.mongodb:mongodb-driver-rx:1.2.0'
+    compile 'org.mongodb:mongodb-driver-rx:1.3.0'
 }

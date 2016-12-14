@@ -97,6 +97,13 @@ abstract class MongoSpec extends Specification {
     }
 
     /**
+     * @return Obtain the mongo client
+     */
+    MongoClient getMongoClient() {
+        mongoDatastore.getConnectionSources().defaultConnectionSource.source
+    }
+
+    /**
      * Obtains the default package to scan
      *
      * @param config The configuration

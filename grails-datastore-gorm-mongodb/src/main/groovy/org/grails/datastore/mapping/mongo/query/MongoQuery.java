@@ -286,7 +286,7 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                 String property = projection.getPropertyName();
                 String projectionValueKey = "countDistinct_" + property;
                 Document id = getIdObjectForGroupBy(groupBy);
-                id.put(property, "$" + property);
+                id.put(projectionValueKey, "$" + property);
                 return projectionValueKey;
             }
         });
@@ -316,8 +316,9 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                 String property = projection.getPropertyName();
                 projectObject.put(property, 1);
                 Document id = getIdObjectForGroupBy(groupBy);
-                id.put(property, "$" + property);
-                return property;
+                String projectedValueKey = property.replace('.', '_');
+                id.put(projectedValueKey, "$" + property);
+                return projectedValueKey;
             }
         });
 
@@ -327,10 +328,11 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                 String property = projection.getPropertyName();
                 projectObject.put(property, 1);
                 Document id = getIdObjectForGroupBy(groupBy);
-                id.put(property, "$" + property);
+                String projectedValueKey = property.replace('.', '_');
+                id.put(projectedValueKey, "$" + property);
                 // we add the id to the grouping to make it not distinct
                 id.put(MongoEntityPersister.MONGO_ID_FIELD, "$" + MongoEntityPersister.MONGO_ID_FIELD);
-                return property;
+                return projectedValueKey;
             }
         });
 
@@ -362,7 +364,7 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
     private static String addProjectionToGroupBy(Document projectObject, Document groupBy, PropertyProjection projection, String operator, String prefix) {
         projectObject.put(projection.getPropertyName(), 1);
         String property = projection.getPropertyName();
-        String projectionValueKey = prefix + property;
+        String projectionValueKey = prefix + property.replace('.','_');
         Document averageProjection = new Document(operator, "$" + property);
         groupBy.put(projectionValueKey, averageProjection);
         return projectionValueKey;

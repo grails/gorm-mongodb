@@ -18,6 +18,7 @@ package org.grails.datastore.bson.json;
 
 import org.bson.*;
 import org.bson.json.JsonWriterSettings;
+import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.springframework.util.Base64Utils;
 
@@ -183,6 +184,18 @@ public class JsonWriter extends AbstractBsonWriter {
                 writer.write(Long.toString(value));
                 writer.write(JsonToken.QUOTE);
             }
+        } catch (IOException e) {
+            throwBsonException(e);
+        }
+    }
+
+    @Override
+    protected void doWriteDecimal128(Decimal128 value) {
+        try {
+            writeNameHelper(getName());
+            writer.write(JsonToken.QUOTE);
+            writer.write(value.toString());
+            writer.write(JsonToken.QUOTE);
         } catch (IOException e) {
             throwBsonException(e);
         }
