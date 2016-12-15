@@ -31,6 +31,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.bson.types.*;
 import org.grails.datastore.bson.codecs.CodecExtensions;
+import org.grails.datastore.bson.codecs.encoders.SimpleEncoder;
 import org.grails.datastore.gorm.mongo.geo.*;
 import org.grails.datastore.gorm.mongo.simple.EnumType;
 import org.grails.datastore.mapping.config.AbstractGormMappingFactory;
@@ -150,6 +151,7 @@ public class MongoMappingContext extends DocumentMappingContext {
         if(mongoConnectionSourceSettings.isDecimalType()) {
             MONGO_NATIVE_TYPES.add(BigDecimal.class.getName());
             MONGO_NATIVE_TYPES.add(BigInteger.class.getName());
+            SimpleEncoder.enableBigDecimalEncoding();
         }
         List<Class<? extends Codec>> codecClasses = mongoConnectionSourceSettings.getCodecs();
 

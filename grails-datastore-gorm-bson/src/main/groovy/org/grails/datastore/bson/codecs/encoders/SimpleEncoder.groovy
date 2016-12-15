@@ -52,18 +52,6 @@ class SimpleEncoder implements PropertyEncoder<Simple> {
         SIMPLE_TYPE_ENCODERS[String] = DEFAULT_ENCODER
         SIMPLE_TYPE_ENCODERS[StringBuffer] = DEFAULT_ENCODER
         SIMPLE_TYPE_ENCODERS[StringBuilder] = DEFAULT_ENCODER
-        SIMPLE_TYPE_ENCODERS[BigInteger] = new TypeEncoder() {
-            @Override
-            void encode(BsonWriter writer, PersistentProperty property, Object value) {
-                writer.writeDecimal128( new Decimal128(((BigInteger)value).toBigDecimal()) )
-            }
-        }
-        SIMPLE_TYPE_ENCODERS[BigDecimal] = new TypeEncoder() {
-            @Override
-            void encode(BsonWriter writer, PersistentProperty property, Object value) {
-                writer.writeDecimal128( new Decimal128( (BigDecimal)value ))
-            }
-        }
         SIMPLE_TYPE_ENCODERS[Byte] = smallNumberEncoder
         SIMPLE_TYPE_ENCODERS[byte.class] = smallNumberEncoder
         SIMPLE_TYPE_ENCODERS[Integer] = smallNumberEncoder
@@ -132,6 +120,7 @@ class SimpleEncoder implements PropertyEncoder<Simple> {
         }
     }
 
+
     @Override
     void encode(BsonWriter writer, Simple property, Object value, EntityAccess parentAccess, EncoderContext encoderContext, CodecRegistry codecRegistry) {
         def type = property.type
@@ -154,4 +143,23 @@ class SimpleEncoder implements PropertyEncoder<Simple> {
             encoder.encode(writer, property, value)
         }
     }
+
+    /**
+     * Enables Decimal128 encoding for simple types
+     */
+    static void enableBigDecimalEncoding() {
+        SIMPLE_TYPE_ENCODERS[BigInteger] = new TypeEncoder() {
+            @Override
+            void encode(BsonWriter writer, PersistentProperty property, Object value) {
+                writer.writeDecimal128(new Decimal128(((BigInteger) value).toBigDecimal()))
+            }
+        }
+        SIMPLE_TYPE_ENCODERS[BigDecimal] = new TypeEncoder() {
+            @Override
+            void encode(BsonWriter writer, PersistentProperty property, Object value) {
+                writer.writeDecimal128(new Decimal128((BigDecimal) value))
+            }
+        }
+    }
+
 }
