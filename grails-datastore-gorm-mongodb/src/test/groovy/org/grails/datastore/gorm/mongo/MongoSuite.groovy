@@ -29,7 +29,7 @@ import grails.gorm.tests.OneToManySpec
  */
 @RunWith(Suite)
 @SuiteClasses([
-    AttachMethodSpec
+    InheritanceSpec
 ])
 class MongoSuite {
 }

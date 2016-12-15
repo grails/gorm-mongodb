@@ -7,6 +7,7 @@ import org.bson.BsonType
 import org.bson.codecs.DecoderContext
 import org.bson.codecs.configuration.CodecRegistry
 import org.bson.types.Binary
+import org.bson.types.Decimal128
 import org.bson.types.ObjectId
 import org.grails.datastore.bson.codecs.PropertyDecoder
 import org.grails.datastore.mapping.engine.EntityAccess
@@ -57,6 +58,19 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
 
                 BsonRegularExpression regularExpression = reader.readRegularExpression()
                 entityAccess.setProperty( property.name, regularExpression.pattern )
+            }
+        })
+
+        DEFAULT_DECODERS.put(BsonType.DECIMAL128, new TypeDecoder() {
+            @Override
+            BsonType bsonType() {
+                BsonType.DECIMAL128
+            }
+
+            @Override
+            void decode(BsonReader reader, PersistentProperty property, EntityAccess entityAccess) {
+                Decimal128 dec = reader.readDecimal128()
+                entityAccess.setProperty( property.name, dec )
             }
         })
         def convertingIntReader =  new TypeDecoder() {

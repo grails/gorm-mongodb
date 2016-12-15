@@ -29,10 +29,7 @@ import org.bson.codecs.configuration.CodecConfigurationException;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
-import org.bson.types.Binary;
-import org.bson.types.Code;
-import org.bson.types.ObjectId;
-import org.bson.types.Symbol;
+import org.bson.types.*;
 import org.grails.datastore.bson.codecs.CodecExtensions;
 import org.grails.datastore.gorm.mongo.geo.*;
 import org.grails.datastore.gorm.mongo.simple.EnumType;
@@ -205,6 +202,35 @@ public class MongoMappingContext extends DocumentMappingContext {
                 return source.getData();
             }
         });
+
+        converterRegistry.addConverter(new Converter<Decimal128, BigDecimal>() {
+            @Override
+            public BigDecimal convert(Decimal128 source) {
+                return source.bigDecimalValue();
+            }
+        });
+
+        converterRegistry.addConverter(new Converter<BigDecimal,Decimal128>() {
+            @Override
+            public Decimal128 convert(BigDecimal source) {
+                return new Decimal128(source);
+            }
+        });
+
+        converterRegistry.addConverter(new Converter<Decimal128, BigInteger>() {
+            @Override
+            public BigInteger convert(Decimal128 source) {
+                return source.bigDecimalValue().toBigInteger();
+            }
+        });
+
+        converterRegistry.addConverter(new Converter<BigInteger,Decimal128>() {
+            @Override
+            public Decimal128 convert(BigInteger source) {
+                return new Decimal128(new BigDecimal(source.toString()));
+            }
+        });
+
 
         for (Converter converter : CodecExtensions.getBsonConverters()) {
             converterRegistry.addConverter(converter);
