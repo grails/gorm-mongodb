@@ -243,7 +243,7 @@ class RxMongoQuery extends MongoQuery implements RxQuery {
         def observable = aggregateObservable.toObservable()
         observable = observable.map { Document d ->
             List projectedResults = []
-            for(def property in projectedKeys) {
+            for(property in projectedKeys) {
                 Object value = getProjectedValue(d, property.projectionKey);
                 if(value != null) {
                     projectedResults.add(value)
@@ -264,7 +264,7 @@ class RxMongoQuery extends MongoQuery implements RxQuery {
 
         if(singleResult) {
             return observable.switchIfEmpty(Observable.create({ Subscriber s ->
-                for(def property in projectedKeys) {
+                for(property in projectedKeys) {
                     if (property.projection instanceof Query.CountProjection) {
                         s.onNext(0)
                     }

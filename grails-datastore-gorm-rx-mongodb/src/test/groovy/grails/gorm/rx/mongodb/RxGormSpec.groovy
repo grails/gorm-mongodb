@@ -1,6 +1,6 @@
 package grails.gorm.rx.mongodb
 
-import org.grails.datastore.mapping.mongo.config.MongoMappingContext
+import org.grails.datastore.mapping.mongo.config.MongoSettings
 import org.grails.datastore.rx.mongodb.RxMongoDatastoreClient
 import spock.lang.Shared
 import spock.lang.Specification
@@ -15,7 +15,12 @@ abstract class RxGormSpec extends Specification {
     }
 
     protected RxMongoDatastoreClient createMongoDatastoreClient(List<Class> classes) {
-        new RxMongoDatastoreClient("test", classes as Class[])
+        def config = [(MongoSettings.SETTING_DATABASE_NAME): "test"]
+        // disable decimal type support on Travis, since MongoDB 3.4 support doesn't exist there yet
+        if(System.getenv('TRAVIS')) {
+            config.put(MongoSettings.SETTING_DECIMAL_TYPE, false)
+        }
+        new RxMongoDatastoreClient(config, classes as Class[])
     }
 
     void setup() {
