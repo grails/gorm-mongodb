@@ -3,7 +3,9 @@ package grails.gorm.rx.mongodb
 import grails.gorm.rx.mongodb.domains.City
 import grails.gorm.rx.mongodb.domains.Country
 import grails.gorm.rx.mongodb.domains.Location
+import spock.lang.IgnoreIf
 
+@IgnoreIf({System.getenv('TRAVIS')})
 class InheritanceSpec extends RxGormSpec {
 
     @Override

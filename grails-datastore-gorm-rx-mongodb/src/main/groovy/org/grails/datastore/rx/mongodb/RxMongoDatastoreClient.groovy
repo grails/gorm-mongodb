@@ -386,12 +386,12 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     }
 
     protected static MongoMappingContext initializeMappingContext(AbstractMongoConnectionSourceSettings connectionSourceSettings, Class... classes) {
-        MongoMappingContext mongoMappingContext = new MongoMappingContext(connectionSourceSettings, classes)
+        MongoMappingContext mongoMappingContext = new MongoMappingContext(connectionSourceSettings)
         // disable versioning by default
         ((AbstractGormMappingFactory)mongoMappingContext.mappingFactory).setVersionByDefault(false)
         mongoMappingContext.addPersistentEntities(classes)
         mongoMappingContext.initialize()
-        return mongoMappingContext;
+        return mongoMappingContext
     }
 
     /**
