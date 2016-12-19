@@ -1,5 +1,8 @@
 package test
 
+import grails.persistence.Entity
+
+@Entity
 class Book {
 
     String title
