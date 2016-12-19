@@ -1,8 +1,8 @@
 sudo: false
-cache:
-  directories:
-  - $HOME/.gradle
-  - $HOME/.m2/repository
+#cache:
+#  directories:
+#  - $HOME/.gradle
+#  - $HOME/.m2/repository
 jdk:
 - oraclejdk7
 addons:
