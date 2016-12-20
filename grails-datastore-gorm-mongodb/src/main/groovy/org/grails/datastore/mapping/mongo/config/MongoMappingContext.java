@@ -48,6 +48,7 @@ import org.grails.datastore.mapping.mongo.MongoConstants;
 import org.grails.datastore.mapping.mongo.MongoDatastore;
 import org.grails.datastore.mapping.mongo.connections.AbstractMongoConnectionSourceSettings;
 import org.grails.datastore.bson.codecs.CodecCustomTypeMarshaller;
+import org.grails.datastore.mapping.reflect.ClassUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.env.PropertyResolver;
@@ -59,6 +60,7 @@ import org.springframework.core.env.PropertyResolver;
  */
 @SuppressWarnings("rawtypes")
 public class MongoMappingContext extends DocumentMappingContext {
+    private static final String DECIMAL_TYPE_CLASS_NAME = "org.bson.types.Decimal128";
     /**
      * Java types supported as mongo property types.
      */
@@ -77,7 +79,7 @@ public class MongoMappingContext extends DocumentMappingContext {
             Integer.class.getName(),
             Code.class.getName(),
             "org.bson.types.BSONTimestamp",
-            "org.bson.types.Decimal128",
+            DECIMAL_TYPE_CLASS_NAME,
             "org.bson.types.CodeWScope",
             "org.bson.types.Code",
             "org.bson.types.Binary",
@@ -148,7 +150,7 @@ public class MongoMappingContext extends DocumentMappingContext {
         super.initialize(settings);
 
         AbstractMongoConnectionSourceSettings mongoConnectionSourceSettings = (AbstractMongoConnectionSourceSettings) settings;
-        if(mongoConnectionSourceSettings.isDecimalType()) {
+        if(mongoConnectionSourceSettings.isDecimalType() && ClassUtils.isPresent(DECIMAL_TYPE_CLASS_NAME)) {
             MONGO_NATIVE_TYPES.add(BigDecimal.class.getName());
             MONGO_NATIVE_TYPES.add(BigInteger.class.getName());
             SimpleEncoder.enableBigDecimalEncoding();
