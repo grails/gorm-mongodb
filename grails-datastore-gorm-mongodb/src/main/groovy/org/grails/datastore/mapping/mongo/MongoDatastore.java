@@ -41,8 +41,9 @@ import org.grails.datastore.gorm.multitenancy.MultiTenantEventListener;
 import org.grails.datastore.gorm.utils.ClasspathEntityScanner;
 import org.grails.datastore.gorm.validation.constraints.MappingContextAwareConstraintFactory;
 import org.grails.datastore.gorm.validation.constraints.builtin.UniqueConstraint;
-import org.grails.datastore.gorm.validation.constraints.registry.DefaultValidatorRegistry;
+import org.grails.datastore.gorm.validation.constraints.registry.ConstraintRegistry;
 import org.grails.datastore.gorm.validation.listener.ValidationEventListener;
+import org.grails.datastore.gorm.validation.registry.support.ValidatorRegistries;
 import org.grails.datastore.mapping.core.*;
 import org.grails.datastore.mapping.core.connections.*;
 import org.grails.datastore.mapping.core.exceptions.ConfigurationException;
@@ -61,8 +62,10 @@ import org.grails.datastore.mapping.multitenancy.MultiTenantCapableDatastore;
 import org.grails.datastore.mapping.multitenancy.TenantResolver;
 import org.grails.datastore.mapping.multitenancy.exceptions.TenantNotFoundException;
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager;
+import org.grails.datastore.mapping.validation.ValidatorRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.support.StaticMessageSource;
 import org.springframework.core.env.PropertyResolver;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -553,9 +556,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     @Autowired(required = false)
     public void setMessageSource(MessageSource messageSource) {
         if(messageSource != null) {
-            this.mappingContext.setValidatorRegistry(
-                    new DefaultValidatorRegistry(this.mappingContext, connectionSources.getBaseConfiguration(), messageSource)
-            );
+            configureValidatorRegistry(connectionSources.getDefaultConnectionSource().getSettings(), (MongoMappingContext) mappingContext, messageSource);
         }
     }
 
@@ -913,8 +914,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     protected static MongoMappingContext createMappingContext(ConnectionSources<MongoClient, MongoConnectionSourceSettings> connectionSources, Class... classes) {
         ConnectionSource<MongoClient, MongoConnectionSourceSettings> defaultConnectionSource = connectionSources.getDefaultConnectionSource();
         MongoMappingContext mongoMappingContext = new MongoMappingContext(defaultConnectionSource.getSettings(), classes);
-        PropertyResolver configuration = connectionSources.getBaseConfiguration();
-        configureValidationRegistry(configuration, mongoMappingContext);
+        configureValidationRegistry(connectionSources.getDefaultConnectionSource().getSettings(), mongoMappingContext);
         return mongoMappingContext;
     }
 
@@ -922,7 +922,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         MongoConnectionSourceSettingsBuilder builder = new MongoConnectionSourceSettingsBuilder(configuration);
         MongoConnectionSourceSettings mongoConnectionSourceSettings = builder.build();
         MongoMappingContext mongoMappingContext = new MongoMappingContext(mongoConnectionSourceSettings, classes);;
-        configureValidationRegistry(configuration, mongoMappingContext);
+        configureValidationRegistry(mongoConnectionSourceSettings, mongoMappingContext);
         return mongoMappingContext;
     }
 
@@ -942,13 +942,20 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         mongoDatabases.put(entity,databaseName);
     }
 
-    private static void configureValidationRegistry(PropertyResolver configuration, MongoMappingContext mongoMappingContext) {
-        DefaultValidatorRegistry defaultValidatorRegistry = new DefaultValidatorRegistry(mongoMappingContext, configuration);
-        defaultValidatorRegistry.addConstraintFactory(
-                new MappingContextAwareConstraintFactory(UniqueConstraint.class, defaultValidatorRegistry.getMessageSource(), mongoMappingContext)
-        );
+    private static void configureValidationRegistry(MongoConnectionSourceSettings settings, MongoMappingContext mongoMappingContext) {
+        MessageSource messageSource = new StaticMessageSource();
+        configureValidatorRegistry(settings, mongoMappingContext, messageSource);
+    }
+
+    private static void configureValidatorRegistry(MongoConnectionSourceSettings settings, MongoMappingContext mongoMappingContext, MessageSource messageSource) {
+        ValidatorRegistry validatorRegistry = ValidatorRegistries.createValidatorRegistry(mongoMappingContext, settings, messageSource);
+        if(validatorRegistry instanceof ConstraintRegistry) {
+            ((ConstraintRegistry)validatorRegistry).addConstraintFactory(
+                    new MappingContextAwareConstraintFactory(UniqueConstraint.class, messageSource, mongoMappingContext)
+            );
+        }
         mongoMappingContext.setValidatorRegistry(
-                defaultValidatorRegistry
+                validatorRegistry
         );
     }
 
