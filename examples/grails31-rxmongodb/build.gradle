@@ -14,7 +14,9 @@ dependencies {
 
     runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.8.2"
     runtime "com.h2database:h2"
-    runtime "org.grails.plugins:scaffolding:3.1.2"
+    runtime "org.grails.plugins:scaffolding:3.2.1"
+    runtime "org.grails.plugins:fields:2.1.3"
+
     testCompile "org.grails:grails-plugin-testing:$grailsVersion"
     testCompile "org.grails.plugins:geb:1.0.2"
     testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1"

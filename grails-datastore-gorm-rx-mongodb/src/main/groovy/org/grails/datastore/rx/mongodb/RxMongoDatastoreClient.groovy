@@ -21,6 +21,7 @@ import org.grails.datastore.gorm.mongo.MongoGormEnhancer
 import org.grails.datastore.mapping.config.AbstractGormMappingFactory
 import org.grails.datastore.mapping.config.ConfigurationUtils
 import org.grails.datastore.mapping.config.Property
+import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.core.IdentityGenerationException
 import org.grails.datastore.mapping.core.OptimisticLockingException
 import org.grails.datastore.mapping.core.connections.*
@@ -337,6 +338,17 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     }
 
 
+    /**
+     * Creates a new RxMongoDatastoreClient from the given configuration which is supplied by a property resolver
+     *
+     * @param configuration The configuration resolver
+     * @param databaseName The default database name
+     * @param classes The classes which must implement {@link grails.gorm.rx.mongodb.RxMongoEntity}
+     */
+    RxMongoDatastoreClient(Map<String,Object> configuration, Class...classes) {
+        this( ConnectionSourcesInitializer.create(new MongoConnectionSourceFactory(), DatastoreUtils.createPropertyResolver(configuration)), classes)
+    }
+
     CodecRegistry getCodecRegistry() {
         return codecRegistry
     }
@@ -374,12 +386,12 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
     }
 
     protected static MongoMappingContext initializeMappingContext(AbstractMongoConnectionSourceSettings connectionSourceSettings, Class... classes) {
-        MongoMappingContext mongoMappingContext = new MongoMappingContext(connectionSourceSettings, classes)
+        MongoMappingContext mongoMappingContext = new MongoMappingContext(connectionSourceSettings)
         // disable versioning by default
         ((AbstractGormMappingFactory)mongoMappingContext.mappingFactory).setVersionByDefault(false)
         mongoMappingContext.addPersistentEntities(classes)
         mongoMappingContext.initialize()
-        return mongoMappingContext;
+        return mongoMappingContext
     }
 
     /**

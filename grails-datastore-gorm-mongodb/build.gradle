@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 dependencies {
     compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
     compile "org.grails:grails-datastore-gorm-validation:$gormVersion"
@@ -14,7 +16,8 @@ dependencies {
     testRuntime "org.springframework:spring-aop:$springVersion"
 
     compileOnly "javax.servlet:javax.servlet-api:$servletApiVersion"
-
+    testCompile("org.hibernate:hibernate-validator:5.0.3.Final")
+    testRuntime('org.glassfish.web:el-impl:2.2')
 }
 
 
@@ -32,6 +35,13 @@ test {
     afterSuite {
         System.out.print('.')
         System.out.flush()
+    }
+
+    testLogging {
+        exceptionFormat TestExceptionFormat.FULL
+        showCauses true
+        showExceptions true
+        showStackTraces true
     }
 }
 

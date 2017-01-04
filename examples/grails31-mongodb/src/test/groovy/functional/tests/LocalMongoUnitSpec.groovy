@@ -9,6 +9,9 @@ class LocalMongoUnitSpec extends MongoSpec {
 
 //end::structure[]
     void "Test GORM access"(){
+        setup:
+        Book.DB.drop()
+
         when:
         Book book = new Book(title: 'El Quijote').save(flush: true)
 

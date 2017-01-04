@@ -17,6 +17,7 @@ package org.grails.datastore.bson.json;
 
 import org.bson.*;
 import org.bson.json.JsonParseException;
+import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 
 import java.io.IOException;
@@ -64,6 +65,11 @@ public class JsonReader extends AbstractBsonReader {
     @Override
     protected byte doPeekBinarySubType() {
         return doReadBinaryData().getType();
+    }
+
+    @Override
+    protected int doPeekBinarySize() {
+        return doReadBinaryData().getData().length;
     }
 
     @Override
@@ -247,6 +253,11 @@ public class JsonReader extends AbstractBsonReader {
     }
 
     @Override
+    protected Decimal128 doReadDecimal128() {
+        return Decimal128.parse(currentValue.toString());
+    }
+
+    @Override
     protected String doReadJavaScript() {
         return (String) currentValue;
     }
@@ -351,6 +362,9 @@ public class JsonReader extends AbstractBsonReader {
                 break;
             case INT64:
                 readInt64();
+                break;
+            case DECIMAL128:
+                readDecimal128();
                 break;
             case JAVASCRIPT:
                 readJavaScript();

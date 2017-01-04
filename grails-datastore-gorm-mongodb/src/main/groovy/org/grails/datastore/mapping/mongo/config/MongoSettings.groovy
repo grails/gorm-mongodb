@@ -22,6 +22,12 @@ interface MongoSettings extends Settings {
      * The database name
      */
     String SETTING_DATABASE_NAME = "grails.mongodb.databaseName"
+
+    /**
+     * Whether to use the decimal type
+     */
+    String SETTING_DECIMAL_TYPE = "grails.mongodb.decimalType"
+
     /**
      * The connection string
      */

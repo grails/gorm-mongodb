@@ -22,7 +22,7 @@ class BookFongoSpec extends MongoSpec {
     void "Test low-level API extensions"() {
         when:
         def db = createMongoClient().getDatabase("test")
-        db.drop()
+//        db.drop()
         // Insert a document
         db['languages'].insert([name: 'Groovy'])
         // A less verbose way to do it

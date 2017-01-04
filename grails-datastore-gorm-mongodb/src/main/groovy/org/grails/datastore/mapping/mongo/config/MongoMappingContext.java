@@ -18,6 +18,8 @@ import com.mongodb.MongoClientURI;
 import groovy.lang.Closure;
 
 import java.beans.PropertyDescriptor;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -27,11 +29,9 @@ import org.bson.codecs.configuration.CodecConfigurationException;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
-import org.bson.types.Binary;
-import org.bson.types.Code;
-import org.bson.types.ObjectId;
-import org.bson.types.Symbol;
+import org.bson.types.*;
 import org.grails.datastore.bson.codecs.CodecExtensions;
+import org.grails.datastore.bson.codecs.encoders.SimpleEncoder;
 import org.grails.datastore.gorm.mongo.geo.*;
 import org.grails.datastore.gorm.mongo.simple.EnumType;
 import org.grails.datastore.mapping.config.AbstractGormMappingFactory;
@@ -48,6 +48,7 @@ import org.grails.datastore.mapping.mongo.MongoConstants;
 import org.grails.datastore.mapping.mongo.MongoDatastore;
 import org.grails.datastore.mapping.mongo.connections.AbstractMongoConnectionSourceSettings;
 import org.grails.datastore.bson.codecs.CodecCustomTypeMarshaller;
+import org.grails.datastore.mapping.reflect.ClassUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
 import org.springframework.core.env.PropertyResolver;
@@ -59,10 +60,11 @@ import org.springframework.core.env.PropertyResolver;
  */
 @SuppressWarnings("rawtypes")
 public class MongoMappingContext extends DocumentMappingContext {
+    private static final String DECIMAL_TYPE_CLASS_NAME = "org.bson.types.Decimal128";
     /**
      * Java types supported as mongo property types.
      */
-    private static final Set<String> MONGO_NATIVE_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+    private static final Set<String> MONGO_NATIVE_TYPES = new HashSet<>(Arrays.asList(
             Double.class.getName(),
             String.class.getName(),
             Document.class.getName(),
@@ -75,14 +77,18 @@ public class MongoMappingContext extends DocumentMappingContext {
             Pattern.class.getName(),
             Symbol.class.getName(),
             Integer.class.getName(),
-            "org.bson.types.BSONTimestamp",
             Code.class.getName(),
+            "org.bson.types.BSONTimestamp",
+            DECIMAL_TYPE_CLASS_NAME,
             "org.bson.types.CodeWScope",
+            "org.bson.types.Code",
+            "org.bson.types.Binary",
             Long.class.getName(),
             UUID.class.getName(),
             byte[].class.getName(),
             Byte.class.getName()
-    )));
+
+    ));
 
     private CodecRegistry codecRegistry;
     private Map<Class, Boolean> hasCodecCache = new HashMap<>();
@@ -144,6 +150,11 @@ public class MongoMappingContext extends DocumentMappingContext {
         super.initialize(settings);
 
         AbstractMongoConnectionSourceSettings mongoConnectionSourceSettings = (AbstractMongoConnectionSourceSettings) settings;
+        if(mongoConnectionSourceSettings.isDecimalType() && ClassUtils.isPresent(DECIMAL_TYPE_CLASS_NAME)) {
+            MONGO_NATIVE_TYPES.add(BigDecimal.class.getName());
+            MONGO_NATIVE_TYPES.add(BigInteger.class.getName());
+            SimpleEncoder.enableBigDecimalEncoding();
+        }
         List<Class<? extends Codec>> codecClasses = mongoConnectionSourceSettings.getCodecs();
 
         Iterable<Codec> codecList = ConfigurationUtils.findServices(codecClasses, Codec.class);
@@ -166,6 +177,7 @@ public class MongoMappingContext extends DocumentMappingContext {
     private void initialize(Class[] classes) {
         registerMongoTypes();
         final ConverterRegistry converterRegistry = getConverterRegistry();
+
         converterRegistry.addConverter(new Converter<String, ObjectId>() {
             public ObjectId convert(String source) {
                 if(ObjectId.isValid(source)) {
@@ -194,6 +206,35 @@ public class MongoMappingContext extends DocumentMappingContext {
                 return source.getData();
             }
         });
+
+        converterRegistry.addConverter(new Converter<Decimal128, BigDecimal>() {
+            @Override
+            public BigDecimal convert(Decimal128 source) {
+                return source.bigDecimalValue();
+            }
+        });
+
+        converterRegistry.addConverter(new Converter<BigDecimal,Decimal128>() {
+            @Override
+            public Decimal128 convert(BigDecimal source) {
+                return new Decimal128(source);
+            }
+        });
+
+        converterRegistry.addConverter(new Converter<Decimal128, BigInteger>() {
+            @Override
+            public BigInteger convert(Decimal128 source) {
+                return source.bigDecimalValue().toBigInteger();
+            }
+        });
+
+        converterRegistry.addConverter(new Converter<BigInteger,Decimal128>() {
+            @Override
+            public Decimal128 convert(BigInteger source) {
+                return new Decimal128(new BigDecimal(source.toString()));
+            }
+        });
+
 
         for (Converter converter : CodecExtensions.getBsonConverters()) {
             converterRegistry.addConverter(converter);

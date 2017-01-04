@@ -44,6 +44,7 @@ class TestSearchSpec extends GormDatastoreSpec{
 
 @Entity
 class Product implements MongoEntity<Product>{
+
     ObjectId id
     String title
 

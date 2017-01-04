@@ -52,7 +52,12 @@ abstract class GormDatastoreSpec extends Specification {
         def databaseName = System.getProperty(GormDatastoreSpec.CURRENT_TEST_NAME) ?: 'test'
 
 
-        mongoDatastore = new MongoDatastore([(MongoSettings.SETTING_DATABASE_NAME): databaseName])
+        def config = [(MongoSettings.SETTING_DATABASE_NAME): databaseName]
+        // disable decimal type support on Travis, since MongoDB 3.4 support doesn't exist there yet
+        if(System.getenv('TRAVIS')) {
+            config.put(MongoSettings.SETTING_DECIMAL_TYPE, false)
+        }
+        mongoDatastore = new MongoDatastore(config)
         mappingContext = mongoDatastore.mappingContext
         mappingContext.mappingFactory.registerCustomType(new AbstractMappingAwareCustomTypeMarshaller<Birthday, Document, Document>(Birthday) {
             @Override

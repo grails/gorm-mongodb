@@ -61,6 +61,13 @@ abstract class AbstractMongoConnectionSourceSettings extends ConnectionSourceSet
     boolean stateless = false
 
     /**
+     * Whether to use the decimal128 type for BigDecimal values
+     *
+     * @see org.bson.types.Decimal128
+     */
+    boolean decimalType = true
+
+    /**
      * The collection name to use to resolve connections when using {@link MongoConnectionSources}
      */
     String connectionsCollection = "mongo.connections"
