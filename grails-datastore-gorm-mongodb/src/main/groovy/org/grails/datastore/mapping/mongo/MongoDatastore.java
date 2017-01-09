@@ -83,7 +83,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Graeme Rocher
  * @since 1.0
  */
-public class MongoDatastore extends AbstractDatastore implements MappingContext.Listener, Closeable, StatelessDatastore, MultiTenantCapableDatastore<MongoClient, MongoConnectionSourceSettings> {
+public class MongoDatastore extends AbstractDatastore implements MappingContext.Listener, Closeable, StatelessDatastore, MultipleConnectionSourceCapableDatastore, MultiTenantCapableDatastore<MongoClient, MongoConnectionSourceSettings> {
 
     public static final String SETTING_DATABASE_NAME = MongoSettings.SETTING_DATABASE_NAME;
     public static final String SETTING_CONNECTION_STRING = MongoSettings.SETTING_CONNECTION_STRING;
@@ -975,6 +975,11 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             return this.datastoresByConnectionSource.get(tenantId.toString());
         }
         return this;
+    }
+
+    @Override
+    public Datastore getDatastoreForConnection(String connectionName) {
+        return this.getDatastoreForConnection(connectionName);
     }
 
     @Override
