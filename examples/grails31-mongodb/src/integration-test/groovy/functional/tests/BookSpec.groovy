@@ -2,6 +2,7 @@ package functional.tests
 
 import com.mongodb.MongoClient
 import grails.test.mixin.integration.Integration
+import grails.validation.ValidationException
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Specification
 
@@ -28,5 +29,16 @@ class BookSpec extends Specification {
 
         then:
         db.languages.count() == 3
+
+    }
+
+    void "test fail on error"() {
+        when:
+        def invalid = new Book(title: "")
+        invalid.save()
+
+        then:
+        thrown ValidationException
+        invalid.hasErrors()
     }
 }
