@@ -40,6 +40,7 @@ import org.grails.datastore.mapping.core.impl.PendingOperation
 import org.grails.datastore.mapping.core.impl.PendingUpdate
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
 import org.grails.datastore.mapping.document.config.DocumentMappingContext
+import org.grails.datastore.mapping.engine.EntityAccess
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.config.GormProperties
@@ -148,8 +149,8 @@ class MongoCodecSession extends AbstractMongoSession {
                         final Object nativeKey = update.nativeKey
                         final Document id = new Document(MongoEntityPersister.MONGO_ID_FIELD, nativeKey)
 
-                        def entityAccess = update.entityAccess
-                        def isVersioned = persistentEntity.isVersioned()
+                        EntityAccess entityAccess = update.entityAccess
+                        boolean isVersioned = persistentEntity.isVersioned()
                         def currentVersion = null
                         if(isVersioned) {
                             currentVersion = entityAccess.getProperty( persistentEntity.version.name )
