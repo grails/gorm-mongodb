@@ -5,7 +5,9 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-tomcat"
     compile "javax.servlet:javax.servlet-api:3.1.0"
     compile "org.grails:grails-core:$grailsVersion"
-    compile "org.grails:grails-dependencies:$grailsVersion"
+    compile "org.grails:grails-dependencies:$grailsVersion", {
+        exclude module:'grails-datastore-simple'
+    }
     compile "org.grails:grails-web-boot:$grailsVersion"
     compile project(":grails-plugin")
 

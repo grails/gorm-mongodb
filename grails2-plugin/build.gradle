@@ -20,6 +20,7 @@ grails {
 
 configurations.all { Configuration c ->
     c.exclude(group:'org.grails',module:'grails-datastore-gorm-support')
+    c.exclude(group:'org.grails',module:'grails-datastore-simple')
 
     resolutionStrategy {
         eachDependency { DependencyResolveDetails details ->
@@ -37,6 +38,7 @@ configurations.all { Configuration c ->
     }
     resolutionStrategy.dependencySubstitution {
         // Substitute project and module dependencies
+        substitute project(':grails-datastore-simple') with project(':grails-datastore-gorm-test')
         substitute project(':grails-datastore-gorm-support') with project(':grails-datastore-gorm-grails2-support')
     }
 }
@@ -53,7 +55,6 @@ dependencies {
     compile "org.grails:grails-datastore-core:$gormVersion"
     compile "org.grails:grails-datastore-gorm:$gormVersion"
     compile "org.grails:grails-datastore-web:$gormVersion"
-    compile "org.grails:grails-datastore-simple:$gormVersion"
     compile "org.grails:grails-datastore-gorm-grails2-support:$gormVersion"
     compile project(":grails-datastore-gorm-mongodb-ext"), {
         exclude group:'org.grails', module:'grails-datastore-gorm-mongodb'

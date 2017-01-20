@@ -17,7 +17,9 @@ configurations.all {
         }
     }
 }
-
+configurations.all { Configuration c ->
+    c.exclude(group: 'org.grails', module: 'grails-datastore-simple')
+}
 dependencies {
 
 
@@ -28,7 +30,6 @@ dependencies {
 
 
     compile "org.grails:grails-datastore-web:$gormVersion"
-    compile "org.grails:grails-datastore-simple:$gormVersion"
     compile "org.grails:grails-datastore-gorm-support:$gormVersion", {
         exclude group:'org.springframework', module:'spring-context'
         exclude group:'org.springframework', module:'spring-core'
