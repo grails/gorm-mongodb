@@ -2,10 +2,15 @@ package functional.tests
 
 //tag::structure[]
 import grails.test.mongodb.MongoSpec
+import grails.validation.ValidationException
 
 class LocalMongoUnitSpec extends MongoSpec {
 
     // Specs ...
+    @Override
+    void setup() {
+        Book.DB.drop()
+    }
 
 //end::structure[]
     void "Test GORM access"(){
@@ -26,5 +31,16 @@ class LocalMongoUnitSpec extends MongoSpec {
     }
 
 //tag::structure[]
+
+    void "test fail on error"() {
+
+        when:
+        def invalid = new Book(title: "")
+        invalid.save()
+
+        then:
+        thrown ValidationException
+        invalid.hasErrors()
+    }
 }
 //end::structure[]

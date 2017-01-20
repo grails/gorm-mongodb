@@ -7,6 +7,25 @@ dependencies {
 }
 ----
 
+If you are using a version of Grails 3 earlier than 3.3 then you may need to enforce the GORM version by adding the following block directly above the `dependencies` block:
+
+[source,groovy,subs="attributes"]
+.build.gradle
+----
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if( details.requested.group == 'org.grails' &&
+            details.requested.name.startsWith('grails-datastore')) {
+            details.useVersion("{version}")
+        }
+    }
+}
+dependencies {
+    ...
+}
+----
+
+
 For Grails 2.x you need to modify `BuildConfig.groovy`:
 
 [source,groovy,subs="attributes"]
