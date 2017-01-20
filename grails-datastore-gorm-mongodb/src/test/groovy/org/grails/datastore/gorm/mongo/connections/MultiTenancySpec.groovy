@@ -53,6 +53,15 @@ class MultiTenancySpec extends Specification {
         then:"The results are correct"
         CompanyC.count() == 1
 
+        when:"An object is updated"
+        CompanyC c = CompanyC.findByName("Foo")
+        c.name = "Bar"
+        c.save(flush:true)
+
+        then:
+        !CompanyC.findByName("Foo")
+        CompanyC.findByName("Bar")?.version == 1
+
         when:"The tenant id is switched"
         System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "test2")
 
@@ -60,6 +69,7 @@ class MultiTenancySpec extends Specification {
         CompanyC.DB.name == 'defaultDb'
         CompanyC.count() == 0
         !CompanyC.find(eq("name", "Foo")).first()
+        !CompanyC.find(eq("name", "Bar")).first()
         CompanyC.withTenant("test1") { Serializable tenantId, Session s ->
             assert tenantId
             assert s

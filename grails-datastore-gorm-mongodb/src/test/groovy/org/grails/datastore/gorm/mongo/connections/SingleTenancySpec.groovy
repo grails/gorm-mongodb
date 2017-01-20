@@ -14,6 +14,10 @@ import org.grails.datastore.mapping.multitenancy.resolvers.SystemPropertyTenantR
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
+
+import static com.mongodb.client.model.Filters.eq
+import static com.mongodb.client.model.Filters.eq
+
 /**
  * Created by graemerocher on 07/07/2016.
  */
@@ -77,12 +81,24 @@ class SingleTenancySpec extends Specification {
         then:"The results are correct"
         CompanyB.count() == 1
 
+        when:"An object is updated"
+        CompanyB cb = CompanyB.findByName("Foo")
+        cb.name = "Bar"
+        cb.save(flush:true)
+
+        then:
+        !CompanyB.findByName("Foo")
+        CompanyB.findByName("Bar")?.version == 1
+
         when:"The tenant id is switched"
         System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "test2")
 
         then:"the correct tenant is used"
         CompanyB.DB.name == 'test2Db'
         CompanyB.count() == 0
+        !CompanyB.find(eq("name", "Foo")).first()
+        !CompanyB.find(eq("name", "Bar")).first()
+
         CompanyB.withTenant("test1") { Serializable tenantId, Session s ->
             assert tenantId
             assert s

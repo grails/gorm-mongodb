@@ -229,6 +229,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             });
         }
 
+        registerEventListeners(this.eventPublisher);
         this.gormEnhancer = initialize(settings);
     }
 
@@ -696,10 +697,9 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      * Runs the initialization sequence
      * @param settings
      */
-    protected MongoGormEnhancer initialize(MongoConnectionSourceSettings settings) {
+    protected MongoGormEnhancer initialize(final MongoConnectionSourceSettings settings) {
         getMappingContext().addMappingContextListener(this);
         initializeConverters(this.mappingContext);
-        registerEventListeners(this.eventPublisher);
 
         this.mappingContext.addMappingContextListener(new MappingContext.Listener() {
             @Override
@@ -721,7 +721,10 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             @Override
             protected <D> GormInstanceApi<D> getInstanceApi(Class<D> cls, String qualifier) {
                 MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);
-                return new GormInstanceApi<>(cls,mongoDatastore);
+
+                GormInstanceApi<D> instanceApi = new GormInstanceApi<>(cls, mongoDatastore);
+                instanceApi.setFailOnError(settings.isFailOnError());
+                return instanceApi;
             }
 
             @Override
