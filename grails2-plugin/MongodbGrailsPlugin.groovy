@@ -5,7 +5,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import grails.util.Metadata
 
 class MongodbGrailsPlugin {
-	def version = "6.1.0.M1" // added by Gradle
+	def version = "6.1.0.BUILD-SNAPSHOT" // added by Gradle
     def license = "Apache 2.0 License"
     def organization = [name: "Grails", url: "http://grails.org/"]
     def developers = [
