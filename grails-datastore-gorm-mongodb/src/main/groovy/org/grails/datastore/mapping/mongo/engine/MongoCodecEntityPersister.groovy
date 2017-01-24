@@ -97,20 +97,6 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
     MongoCodecSession getSession() {
         return (MongoCodecSession)super.getSession()
     }
-    /**
-     * Obtains an objects identifer
-     * @param obj The object
-     * @return The identifier or null if it doesn't have one
-     */
-    @Override
-    Serializable getObjectIdentifier(Object obj) {
-        if (obj == null) return null
-        final ProxyFactory pf = proxyFactory
-        if (pf.isProxy(obj)) {
-            return pf.getIdentifier(obj)
-        }
-        return (Serializable)fastClassData.getIdentifier(obj)
-    }
 
     protected String getIdentifierName(ClassMapping cm) {
         final IdentityMapping identifier = cm.getIdentifier();
@@ -197,9 +183,6 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
         if(si.isPendingAlready(obj)) {
             return (Serializable) id
         }
-        else {
-            si.registerPending(obj)
-        }
 
 
         final boolean idIsNull = id == null
@@ -231,7 +214,7 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
                isUpdate = mongoCodecSession.contains(obj)
             }
 
-
+            si.registerPending(obj)
             processAssociations(mongoCodecSession, entity, entityAccess, obj, proxyFactory, isUpdate)
 
             if(!isUpdate) {
