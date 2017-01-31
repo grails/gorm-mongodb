@@ -71,7 +71,7 @@ include::objectMapping/dirtyChecking.adoc[]
 [[queryIndexes]]
 === Querying Indexing
 
-include::objectMapping/queryIndexes.adoc[]
+include::querying/queryIndexes.adoc[]
 
 [[writeConcern]]
 === Customizing the WriteConcern
