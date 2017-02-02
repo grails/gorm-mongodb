@@ -65,7 +65,7 @@ class MongoCollection extends Collection {
      */
     MongoCollection setSort(Object s) {
         if (s instanceof Query.Order) {
-            this.sort = (Query.Order) s
+            super.setSort( (Query.Order) s )
         }
         if (s instanceof Map) {
             Map m = (Map) s
@@ -73,15 +73,15 @@ class MongoCollection extends Collection {
                 Map.Entry entry = (Map.Entry) m.entrySet().iterator().next()
                 Object key = entry.getKey()
                 if ("desc".equalsIgnoreCase(entry.getValue().toString())) {
-                    this.sort = Query.Order.desc(key.toString())
+                    super.setSort( Query.Order.desc(key.toString()) )
                 }
                 else {
-                    this.sort = Query.Order.asc(key.toString())
+                    super.setSort( Query.Order.asc(key.toString()) )
                 }
             }
         }
         else {
-            this.sort = Query.Order.asc(s.toString())
+            super.setSort( Query.Order.asc(s.toString()) )
         }
         return this
     }
