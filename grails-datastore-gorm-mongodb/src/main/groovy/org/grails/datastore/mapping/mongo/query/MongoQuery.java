@@ -554,8 +554,8 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         Object classFieldValue;
         Collection<PersistentEntity> childEntities = entity.getMappingContext().getChildEntities(entity);
         if (childEntities.size() > 0) {
-            HashMap classValue = new HashMap<String, ArrayList>();
-            ArrayList classes = new ArrayList<String>();
+            HashMap classValue = new HashMap<>();
+            ArrayList classes = new ArrayList<>();
             classes.add(entity.getDiscriminator());
             for(PersistentEntity childEntity: childEntities) {
                 classes.add(childEntity.getDiscriminator());

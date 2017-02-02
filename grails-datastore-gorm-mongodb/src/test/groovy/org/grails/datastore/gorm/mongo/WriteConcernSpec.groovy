@@ -5,11 +5,11 @@ import grails.persistence.Entity
 
 import com.mongodb.WriteConcern
 import spock.lang.Issue
-
+import static grails.mongodb.mapping.MappingBuilder.*
 /**
  * Tests usage of WriteConcern
  */
-class WriteConcerRnSpec extends GormDatastoreSpec {
+class WriteConcernSpec extends GormDatastoreSpec {
 
     @Override
     List getDomainClasses() {
@@ -50,8 +50,8 @@ class WriteConcerRnSpec extends GormDatastoreSpec {
 class SafeWrite {
     String id
     String name
-    static mapping = {
-        writeConcern WriteConcern.FSYNC_SAFE
+    static mapping = document {
+        writeConcern WriteConcern.JOURNALED
     }
 }
 
@@ -59,7 +59,7 @@ class SafeWrite {
 class UnacknowledgedWrite {
     String id
     String name
-    static mapping = {
+    static mapping = document {
         writeConcern WriteConcern.UNACKNOWLEDGED
     }
 }
