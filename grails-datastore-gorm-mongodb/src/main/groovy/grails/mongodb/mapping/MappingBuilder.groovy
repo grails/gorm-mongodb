@@ -15,7 +15,7 @@ import org.grails.datastore.mapping.mongo.config.MongoCollection
 class MappingBuilder {
 
     /**
-     * Build a Hibernate mapping
+     * Build a MongoDB document mapping
      *
      * @param mappingDefinition The closure defining the mapping
      * @return The mapping
