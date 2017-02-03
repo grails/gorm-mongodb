@@ -8,10 +8,13 @@ import grails.gorm.CriteriaBuilder
 import grails.gorm.DetachedCriteria
 import grails.gorm.tests.GormDatastoreSpec
 import org.grails.datastore.mapping.mongo.MongoCodecSession
+import spock.lang.IgnoreIf
 
 /**
  * Created by graemerocher on 03/02/2017.
  */
+// These tests require MongoDB 3.4+ to run, Travis only has MongoDB 3.0 support atm
+@IgnoreIf({System.getenv('TRAVIS')})
 class ReadConcernArgumentSpec extends GormDatastoreSpec {
 
     void "Test that read concern work on criteria queries"() {
