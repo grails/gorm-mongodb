@@ -15,6 +15,7 @@
 package org.grails.datastore.mapping.mongo.query;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.ReadConcern;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
@@ -83,6 +84,7 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
     public static final String MONGO_WHERE_OPERATOR = WHERE_OPERATOR;
 
     public static final String HINT_ARGUMENT = "hint";
+    public static final String READ_CONCERN_ARGUMENT = "readConcern";
 
     private Map queryArguments = Collections.emptyMap();
 
@@ -500,7 +502,9 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
     }
 
     protected MongoCursor<Document> executeQuery(final PersistentEntity entity,
-                                                 final Junction criteria, final com.mongodb.client.MongoCollection<Document> collection, Document query) {
+                                                 final Junction criteria,
+                                                 final com.mongodb.client.MongoCollection<Document> collection,
+                                                 final Document query) {
         FindIterable<Document> cursor;
         if (criteria.isEmpty()) {
             cursor = executeQueryAndApplyPagination(collection, query);
@@ -518,7 +522,14 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         return cursor.iterator();
     }
 
-    protected FindIterable<Document> executeQueryAndApplyPagination(final com.mongodb.client.MongoCollection<Document> collection, Document query) {
+    protected FindIterable<Document> executeQueryAndApplyPagination(com.mongodb.client.MongoCollection<Document> collection, Document query) {
+        Object readConcernObject = queryArguments.get(READ_CONCERN_ARGUMENT);
+        if(readConcernObject instanceof ReadConcern) {
+            collection = collection.withReadConcern(
+                (ReadConcern) readConcernObject
+            );
+        }
+
         final FindIterable<Document> iterable = collection.find(query);
         if (offset > 0) {
             iterable.skip(offset);
