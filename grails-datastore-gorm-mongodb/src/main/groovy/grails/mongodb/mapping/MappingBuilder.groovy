@@ -35,10 +35,7 @@ class MappingBuilder {
 
         @Override
         MongoCollection configure(MongoCollection existing) {
-            if(mapping == null) {
-                mapping = MongoCollection.configureExisting(existing, definition)
-            }
-            return mapping
+            return MongoCollection.configureExisting(existing, definition)
         }
 
         @Override
