@@ -413,8 +413,8 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         final AbstractMongoSession mongoSession = this.mongoSession;
         com.mongodb.client.MongoCollection<Document> collection = mongoSession.getCollection(entity);
 
-
-        if (uniqueResult) {
+        final List<Projection> projectionList = projections().getProjectionList();
+        if (uniqueResult && projectionList.isEmpty()) {
             if(isCodecPersister) {
                 collection = collection
                         .withDocumentClass(entity.getJavaClass());
@@ -430,9 +430,13 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                         .limit(1)
                         .first();
             }
+            if(dbObject == null) {
+                return wrapObjectResultInList(dbObject);
+            }
             if(isCodecPersister) {
                 if(!mongoSession.contains(dbObject)) {
                     final EntityAccess entityAccess = mongoSession.createEntityAccess(entity, dbObject);
+                    mongoEntityPersister.firePostLoadEvent(entity, entityAccess);
                     mongoSession.cacheInstance(dbObject.getClass(), (Serializable) entityAccess.getIdentifier(), dbObject);
                 }
                 return wrapObjectResultInList(dbObject);
@@ -445,7 +449,7 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         MongoCursor<Document> cursor;
         Document query = createQueryObject(entity);
 
-        final List<Projection> projectionList = projections().getProjectionList();
+
         if (projectionList.isEmpty()) {
             if(isCodecPersister) {
                 collection = collection
@@ -523,6 +527,9 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         }
         if (max > -1) {
             iterable.limit(max);
+        }
+        if(uniqueResult) {
+            iterable.limit(1);
         }
 
         if (!orderBy.isEmpty()) {
@@ -1408,6 +1415,9 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
             int max = mongoQuery.max;
             if (max > 0) {
                 aggregationPipeline.add(new Document("$limit", max));
+            }
+            else if(mongoQuery.uniqueResult) {
+                aggregationPipeline.add(new Document("$limit", 1));
             }
             int offset = mongoQuery.offset;
             if (offset > 0) {
