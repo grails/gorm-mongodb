@@ -44,33 +44,9 @@ class SimpleHasManySpec extends GormDatastoreSpec{
 
     }
 
-    void "Test save unidirectional one-to-many with cascade:none does not cascade changes to its children"() {
-        when:"A domain model is persisted with a dirty child instance"
-        String origTitle = "first"
-        def c1 = new Chapter(title: origTitle)
-        def c1Persisted = c1.save(flush:true)
-        Long origVersion = c1Persisted.version
-        session.clear()
-
-        def book = new BookNoCascade(name: "mybook")
-        book.chapters = new HashSet()
-        c1.title = 'firstUpdated'
-        book.chapters.add(c1)
-        book.save(flush:true)
-        session.clear()
-
-        book = BookNoCascade.get(book.id)
-
-        then:"The retrieved data is correct"
-        def c1AfterSave = book.chapters.find { it.id == c1.id }
-        c1AfterSave != null
-        c1AfterSave.version == origVersion  // the version should stay at 0
-        c1AfterSave.title == origTitle // the title should stay "first"
-    }
-
     @Override
     List getDomainClasses() {
-        [Book, Chapter, BookNoCascade]
+        [Book, Chapter]
     }
 }
 
@@ -78,26 +54,16 @@ class SimpleHasManySpec extends GormDatastoreSpec{
 class Book implements Serializable {
     ObjectId id
     Long version
-    static hasMany = [chapters: Chapter]
-    String name
-    Set<Chapter> chapters
+    static hasMany = [chapters: Chapter];
+    String name;
+    Set<Chapter> chapters;
 }
 
 @Entity
 class Chapter implements Serializable {
     ObjectId id
     Long version
-    String title
+
+    String title;
 }
 
-@Entity
-class BookNoCascade implements Serializable {
-    ObjectId id
-    Long version
-    static hasMany = [chapters: Chapter]
-    String name
-    Set<Chapter> chapters
-    static mapping = {
-        chapters cascade: "none"
-    }
-}
