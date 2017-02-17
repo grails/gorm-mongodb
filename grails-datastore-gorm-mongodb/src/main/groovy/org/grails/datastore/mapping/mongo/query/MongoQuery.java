@@ -1416,9 +1416,6 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
             if (max > 0) {
                 aggregationPipeline.add(new Document("$limit", max));
             }
-            else if(mongoQuery.uniqueResult) {
-                aggregationPipeline.add(new Document("$limit", 1));
-            }
             int offset = mongoQuery.offset;
             if (offset > 0) {
                 aggregationPipeline.add(new Document("$skip", offset));
