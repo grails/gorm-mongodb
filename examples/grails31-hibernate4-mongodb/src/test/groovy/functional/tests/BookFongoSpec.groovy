@@ -39,12 +39,14 @@ class BookFongoSpec extends MongoSpec {
         Book book = new Book(title: 'El Quijote').save(flush: true)
 
         then:
-        Book.count() ==1
+        !book.errors.hasErrors()
+        Book.count() == 1
 
         when:
         book = Book.findByTitle('El Quijote')
 
         then:
+        book != null
         book.id
     }
 

@@ -29,7 +29,7 @@ import grails.gorm.tests.OneToManySpec
  */
 @RunWith(Suite)
 @SuiteClasses([
-    EnumSpec
+    OneToManySpec
 ])
 class MongoSuite {
 }
