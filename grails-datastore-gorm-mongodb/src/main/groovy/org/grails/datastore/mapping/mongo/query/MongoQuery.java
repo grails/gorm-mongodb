@@ -22,6 +22,7 @@ import com.mongodb.client.MongoCursor;
 import grails.mongodb.geo.*;
 import groovy.lang.Closure;
 import org.bson.BsonDocument;
+import org.bson.BsonDocumentReader;
 import org.bson.BsonDocumentWriter;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -493,7 +494,7 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                 }
             }
         } else {
-            return new AggregatedResultList(getSession(), aggregateCursor, projectedKeys);
+            return new AggregatedResultList((AbstractMongoSession) getSession(), aggregateCursor, projectedKeys);
         }
 
         return projectedResults;
@@ -1047,9 +1048,9 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
         private int internalIndex = 0;
         private boolean initialized = false;
         private boolean containsAssociations = false;
-        private Session session;
+        private AbstractMongoSession session;
 
-        public AggregatedResultList(Session session, MongoCursor<Document> cursor, List<ProjectedProperty> projectedProperties) {
+        public AggregatedResultList(AbstractMongoSession session, MongoCursor<Document> cursor, List<ProjectedProperty> projectedProperties) {
             this.cursor = cursor;
             this.projectedProperties = projectedProperties;
             this.session = session;
@@ -1121,7 +1122,27 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                     }
                     if (!hasResults) {
                         handleNoResults();
-                    } else {
+                    }
+                    else if(property instanceof Embedded) {
+                        Embedded embedded = (Embedded)property;
+                        List embeddedList = new ArrayList();
+                        CodecRegistry codecRegistry = session.getDatastore().getCodecRegistry();
+                        PersistentEntityCodec codec = new PersistentEntityCodec(codecRegistry, embedded.getAssociatedEntity());
+
+                        for (Serializable embeddedDoc : identifiers) {
+                            if(embeddedDoc instanceof Document) {
+                                Document documentObject = (Document) embeddedDoc;
+
+                                Object decoded = codec.decode(new BsonDocumentReader(documentObject.toBsonDocument(Document.class, codecRegistry)));
+                                embeddedList.add(
+                                    decoded
+                                );
+                            }
+                        }
+
+                        this.initializedObjects = embeddedList;
+                    }
+                    else {
                         this.initializedObjects = session.retrieveAll(property.getType(), identifiers);
                     }
                 } else {
@@ -1137,9 +1158,11 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                             PersistentProperty property = projectedProperty.property;
                             Object value = getProjectedValue(dbo, projectedProperty.projectionKey);
                             if (property instanceof Association) {
-                                Map<Class, List<Serializable>> identifierMap = associationMap.get(index);
-                                Class type = ((Association) property).getAssociatedEntity().getJavaClass();
-                                identifierMap.get(type).add((Serializable) value);
+                                if( (!(property instanceof Embedded) && !(property instanceof EmbeddedCollection) && !(property instanceof Basic))) {
+                                    Map<Class, List<Serializable>> identifierMap = associationMap.get(index);
+                                    Class type = ((Association) property).getAssociatedEntity().getJavaClass();
+                                    identifierMap.get(type).add((Serializable) value);
+                                }
                             }
                             projectedResult.add(value);
                             index++;

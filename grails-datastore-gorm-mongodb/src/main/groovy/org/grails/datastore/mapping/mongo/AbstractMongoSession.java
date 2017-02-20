@@ -24,6 +24,7 @@ import org.grails.datastore.mapping.engine.EntityAccess;
 import org.grails.datastore.mapping.model.MappingContext;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.mongo.config.MongoCollection;
+import org.grails.datastore.mapping.mongo.config.MongoMappingContext;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
@@ -190,6 +191,11 @@ public abstract class AbstractMongoSession extends AbstractSession<MongoClient> 
             final PersistentEntity root = entity.getRootEntity();
             return getCollection(root);
         }
+    }
+
+    @Override
+    public MongoMappingContext getMappingContext() {
+        return (MongoMappingContext) super.getMappingContext();
     }
 
     /**

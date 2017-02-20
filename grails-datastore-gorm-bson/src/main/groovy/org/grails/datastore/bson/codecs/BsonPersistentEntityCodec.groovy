@@ -110,7 +110,7 @@ class BsonPersistentEntityCodec implements Codec {
                     }
                 }
                 else {
-                    def property = persistentEntity.getPropertyByName(name)
+                    PersistentProperty property = persistentEntity.getPropertyByName(name)
                     if(property && bsonType != BsonType.NULL) {
                         def propKind = property.getClass().superclass
 

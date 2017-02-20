@@ -57,6 +57,53 @@ class EmbeddedAssociationSpec extends GormDatastoreSpec {
         postCodes == ['30483']
     }
 
+    void "Test query with projection"() {
+
+        given:"A domain with an embedded association"
+        def address = new Address(postCode: "30483")
+        def i = new Individual(name:"Bob", address: address)
+
+        i.save(flush:true)
+        session.clear()
+
+        when:"We query with the embedded instance"
+        def postCodes = Individual.createCriteria().list {
+            projections {
+                property('address')
+            }
+        }
+
+        then:"the result is correct"
+        postCodes != null
+        postCodes.size() == 1
+        postCodes[0] instanceof Address
+        postCodes[0].postCode == '30483'
+    }
+
+    void "Test query with multiple projections"() {
+
+        given:"A domain with an embedded association"
+        def address = new Address(postCode: "30483")
+        def i = new Individual(name:"Bob", address: address)
+
+        i.save(flush:true)
+        session.clear()
+
+        when:"We query with the embedded instance"
+        def postCodes = Individual.createCriteria().list {
+            projections {
+                property('name')
+                property('address')
+            }
+        }
+
+        then:"the result is correct"
+        postCodes != null
+        postCodes.size() == 1
+        postCodes[0][0] == "Bob"
+        postCodes[0][1] == [postCode:'30483']
+    }
+
     void "Test persistence of embedded entities"() {
         given:"A domain with an embedded association"
             def i = new Individual(name:"Bob", address: new Address(postCode:"30483"))
