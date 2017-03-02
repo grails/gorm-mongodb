@@ -15,7 +15,7 @@ apply plugin: "grails"
 
 grails {
     grailsVersion = "2.5.1"
-    groovyVersion = "2.4.6"
+    groovyVersion = "2.4.9"
 }
 
 configurations.all { Configuration c ->
