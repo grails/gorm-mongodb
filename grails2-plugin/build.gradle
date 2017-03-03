@@ -14,8 +14,8 @@ import org.gradle.api.internal.artifacts.publish.*
 apply plugin: "grails"
 
 grails {
-    grailsVersion = "2.5.1"
-    groovyVersion = "2.4.9"
+    grailsVersion = "2.5.5"
+    groovyVersion = rootProject.groovyVersion
 }
 
 configurations.all { Configuration c ->
