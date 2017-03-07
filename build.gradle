@@ -25,11 +25,11 @@ ext {
 //    hibernatePluginVersion = project.gormVersion - '.RELEASE'
     hibernatePluginVersion = project.gormVersion
 //    hibernatePluginVersion = '6.0.4'
-    grailsVersion = "3.2.3"
+    grailsVersion = "3.2.7"
     groovyVersion = "2.4.7"
-    springBootVersion = "1.4.2.RELEASE"
-    mongodbDriverVersion = '3.4.0'
-    springVersion = "4.3.4.RELEASE"
+    springBootVersion = "1.4.4.RELEASE"
+    mongodbDriverVersion = '3.4.2'
+    springVersion = "4.3.6.RELEASE"
     isCiBuild = project.hasProperty("isCiBuild")
     isBuildSnapshot = project.version.endsWith("BUILD-SNAPSHOT")
 
