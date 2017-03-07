@@ -590,31 +590,29 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
                 def associatedEntity = property.associatedEntity
 
                 Object associationId
-                if(property.doesCascade(CascadeType.PERSIST) && associatedEntity != null) {
-                    if(!property.isForeignKeyInChild()) {
-                        def mappingContext = parentAccess.persistentEntity.mappingContext
-                        def proxyFactory = mappingContext.proxyFactory
-                        if(proxyFactory.isProxy(value)) {
-                            associationId = proxyFactory.getIdentifier(value)
+                if(!property.isForeignKeyInChild()) {
+                    def mappingContext = parentAccess.persistentEntity.mappingContext
+                    def proxyFactory = mappingContext.proxyFactory
+                    if(proxyFactory.isProxy(value)) {
+                        associationId = proxyFactory.getIdentifier(value)
+                    }
+                    else {
+                        def associationAccess = mappingContext.getEntityReflector(associatedEntity)
+                        associationId = associationAccess.getIdentifier(value)
+                    }
+                    if(associationId != null) {
+                        writer.writeName MappingUtils.getTargetKey(property)
+                        MongoAttribute attr = (MongoAttribute)property.mapping.mappedForm
+                        if(attr?.isReference()) {
+                            def identityEncoder = codecRegistry.get(DBRef)
+
+                            MongoCodecSession mongoSession = (MongoCodecSession)AbstractDatastore.retrieveSession(MongoDatastore)
+                            def ref = new DBRef(mongoSession.getCollectionName( associatedEntity),associationId)
+                            identityEncoder.encode writer, ref, encoderContext
                         }
                         else {
-                            def associationAccess = mappingContext.getEntityReflector(associatedEntity)
-                            associationId = associationAccess.getIdentifier(value)
-                        }
-                        if(associationId != null) {
-                            writer.writeName MappingUtils.getTargetKey(property)
-                            MongoAttribute attr = (MongoAttribute)property.mapping.mappedForm
-                            if(attr?.isReference()) {
-                                def identityEncoder = codecRegistry.get(DBRef)
-
-                                MongoCodecSession mongoSession = (MongoCodecSession)AbstractDatastore.retrieveSession(MongoDatastore)
-                                def ref = new DBRef(mongoSession.getCollectionName( associatedEntity),associationId)
-                                identityEncoder.encode writer, ref, encoderContext
-                            }
-                            else {
-                                Codec<Object> identityEncoder = (Codec<Object>)codecRegistry.get(associationId.getClass())
-                                identityEncoder.encode writer, associationId, encoderContext
-                            }
+                            Codec<Object> identityEncoder = (Codec<Object>)codecRegistry.get(associationId.getClass())
+                            identityEncoder.encode writer, associationId, encoderContext
                         }
                     }
                 }

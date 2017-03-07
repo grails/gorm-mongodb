@@ -23,6 +23,8 @@ class GPMongoDB295Spec extends GormDatastoreSpec {
             group.save(failOnError: true, flush: true)
 
         expect:"The exception is not thrown"
+            !user.hasErrors()
+            !group.hasErrors()
             getAllSavedDataWithANewSession()
     }
 
