@@ -8,7 +8,7 @@ buildscript {
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
         // classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
         classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
-        classpath "org.grails:grails-gradle-plugin:3.2.3"
+        classpath "org.grails:grails-gradle-plugin:3.2.6"
         classpath "org.grails:grails-gradle-plugin:2.2.0.RC1"
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
     }
