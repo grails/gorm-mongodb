@@ -15,7 +15,6 @@
  */
 package org.grails.datastore.mapping.mongo.engine
 
-import com.mongodb.Mongo
 import com.mongodb.MongoClient
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.FindOneAndUpdateOptions
@@ -272,113 +271,111 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
     protected void processAssociations(MongoCodecSession mongoCodecSession, PersistentEntity entity, EntityAccess entityAccess, obj, ProxyFactory proxyFactory, boolean isUpdate) {
         // now we must ensure that all cascades are handled and inserts / updates scheduled
         for (association in entity.associations) {
-            if (association.doesCascade(CascadeType.PERSIST)) {
-                def associatedEntity = association.associatedEntity
-                if (association instanceof ToOne) {
-                    if (association instanceof Embedded) {
-                        def propertyName = association.name
-                        def value = entityAccess.getProperty(propertyName)
-                        if( !proxyFactory.isInitialized(value) ) {
-                            continue
-                        }
-                        if(value != null) {
-                            processAssociations(    mongoCodecSession,
-                                                    associatedEntity,
-                                                    createEntityAccess(associatedEntity, value),
-                                                    value,
-                                                    proxyFactory,
-                                                    isUpdate )
-                        }
-                    } else {
-                        def propertyName = association.name
-                        def value = entityAccess.getProperty(propertyName)
-                        if (value != null) {
-                            if (association.isBidirectional() && !isUpdate) {
-                                def inverseAccess = createEntityAccess(associatedEntity, value)
-                                def inverseSide = association.inverseSide
-
-                                def inverseName = inverseSide.name
-                                if (inverseSide instanceof ToOne) {
-                                    inverseAccess.setPropertyNoConversion(
-                                            inverseName,
-                                            obj
-                                    )
-                                }
-                                else if(inverseSide instanceof OneToMany ) {
-                                    if(isUpdate) continue
-
-                                    def inverseCollection = inverseAccess.getProperty(inverseName)
-
-                                    if(inverseCollection == null) {
-                                        inverseCollection = MappingUtils.createConcreteCollection( inverseSide.type )
-                                        inverseAccess.setPropertyNoConversion(
-                                                inverseName,
-                                                inverseCollection
-                                        )
-                                    }
-                                    if(inverseCollection instanceof Collection) {
-                                        def coll = (Collection) inverseCollection
-                                        if(!coll.contains(obj)) {
-                                            coll << obj
-                                        }
-                                    }
-
-                                }
-                            }
-                            if (proxyFactory.isInitialized(value)) {
-                                def dirtyCheckable = (DirtyCheckable) value
-                                if (dirtyCheckable.hasChanged()) {
-                                    if(!isUpdate || association.isOwningSide()) {
-                                        mongoCodecSession.persist(value)
-                                    }
-                                }
-                            }
-                        }
-
-                    }
-                } else if ((association instanceof OneToMany) || (association instanceof ManyToMany)) {
+            def associatedEntity = association.associatedEntity
+            if (association instanceof ToOne) {
+                if (association instanceof Embedded) {
                     def propertyName = association.name
                     def value = entityAccess.getProperty(propertyName)
-                    boolean shouldPersist = false
+                    if( !proxyFactory.isInitialized(value) ) {
+                        continue
+                    }
+                    if(value != null) {
+                        processAssociations(    mongoCodecSession,
+                                                associatedEntity,
+                                                createEntityAccess(associatedEntity, value),
+                                                value,
+                                                proxyFactory,
+                                                isUpdate )
+                    }
+                } else {
+                    def propertyName = association.name
+                    def value = entityAccess.getProperty(propertyName)
                     if (value != null) {
-                        if (!isUpdate) {
-                            shouldPersist = true
-                        } else {
-                            if (value instanceof DirtyCheckableCollection) {
-                                DirtyCheckableCollection coll = (DirtyCheckableCollection) value
-                                if (coll.hasChanged()) {
-                                    shouldPersist = true
-                                }
-                            } else {
-                                shouldPersist = true
+                        if (association.isBidirectional() && !isUpdate) {
+                            def inverseAccess = createEntityAccess(associatedEntity, value)
+                            def inverseSide = association.inverseSide
+
+                            def inverseName = inverseSide.name
+                            if (inverseSide instanceof ToOne) {
+                                inverseAccess.setPropertyNoConversion(
+                                        inverseName,
+                                        obj
+                                )
                             }
-                        }
+                            else if(inverseSide instanceof OneToMany ) {
+                                if(isUpdate) continue
 
-                        if (shouldPersist) {
+                                def inverseCollection = inverseAccess.getProperty(inverseName)
 
-                            def associatedEntities = (Iterable) value
-                            if (association.isBidirectional()) {
-                                def inverseSide = association.inverseSide
-                                def inverseName = inverseSide.name
-                                if(inverseSide instanceof ToOne) {
-
-                                    for (ae in associatedEntities) {
-                                        createEntityAccess(associatedEntity, ae)
-                                                .setPropertyNoConversion(inverseName, obj)
+                                if(inverseCollection == null) {
+                                    inverseCollection = MappingUtils.createConcreteCollection( inverseSide.type )
+                                    inverseAccess.setPropertyNoConversion(
+                                            inverseName,
+                                            inverseCollection
+                                    )
+                                }
+                                if(inverseCollection instanceof Collection) {
+                                    def coll = (Collection) inverseCollection
+                                    if(!coll.contains(obj)) {
+                                        coll << obj
                                     }
                                 }
+
                             }
-
-                            def identifiers = mongoCodecSession.persist(associatedEntities)
-                            mongoCodecSession.setAttribute(
-                                    obj,
-                                    "${association}.ids",
-                                    identifiers
-                            )
-
-                            def dirtyCheckingCollection = DirtyCheckingSupport.wrap((Collection) value, (DirtyCheckable) obj, propertyName)
-                            entityAccess.setPropertyNoConversion(propertyName, dirtyCheckingCollection)
                         }
+                        if (proxyFactory.isInitialized(value)) {
+                            def dirtyCheckable = (DirtyCheckable) value
+                            if (dirtyCheckable.hasChanged()) {
+                                if(!isUpdate || association.isOwningSide() || association.doesCascade(CascadeType.PERSIST)) {
+                                    mongoCodecSession.persist(value)
+                                }
+                            }
+                        }
+                    }
+
+                }
+            } else if ((association instanceof OneToMany) || (association instanceof ManyToMany)) {
+                def propertyName = association.name
+                def value = entityAccess.getProperty(propertyName)
+                boolean shouldPersist = false
+                if (value != null && association.doesCascade(CascadeType.PERSIST)) {
+                    if (!isUpdate) {
+                        shouldPersist = true
+                    } else {
+                        if (value instanceof DirtyCheckableCollection) {
+                            DirtyCheckableCollection coll = (DirtyCheckableCollection) value
+                            if (coll.hasChanged()) {
+                                shouldPersist = true
+                            }
+                        } else {
+                            shouldPersist = true
+                        }
+                    }
+
+                    if (shouldPersist) {
+
+                        def associatedEntities = (Iterable) value
+                        if (association.isBidirectional()) {
+                            def inverseSide = association.inverseSide
+                            def inverseName = inverseSide.name
+                            if(inverseSide instanceof ToOne) {
+
+                                for (ae in associatedEntities) {
+                                    createEntityAccess(associatedEntity, ae)
+                                            .setPropertyNoConversion(inverseName, obj)
+                                }
+                            }
+                        }
+
+                        def identifiers = mongoCodecSession.persist(associatedEntities)
+                        mongoCodecSession.setAttribute(
+                                obj,
+                                "${association}.ids",
+                                identifiers
+                        )
+
+                        def dirtyCheckingCollection = DirtyCheckingSupport.wrap((Collection) value, (DirtyCheckable) obj, propertyName)
+                        entityAccess.setPropertyNoConversion(propertyName, dirtyCheckingCollection)
                     }
                 }
             }

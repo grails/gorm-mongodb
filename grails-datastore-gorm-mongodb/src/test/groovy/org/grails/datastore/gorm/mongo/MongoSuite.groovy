@@ -30,7 +30,7 @@ import grails.gorm.tests.OneToManySpec
  */
 @RunWith(Suite)
 @SuiteClasses([
-    UpdateWithProxyPresentSpec
+    OneToManySpec
 ])
 class MongoSuite {
 }
