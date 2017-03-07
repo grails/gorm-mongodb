@@ -25,6 +25,7 @@ import org.grails.datastore.gorm.events.DefaultApplicationEventPublisher
 import org.grails.datastore.gorm.plugin.support.PersistenceContextInterceptorAggregator
 import org.grails.datastore.gorm.support.AbstractDatastorePersistenceContextInterceptor
 import org.grails.datastore.gorm.support.DatastorePersistenceContextInterceptor
+import org.grails.datastore.mapping.core.grailsversion.GrailsVersion
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceFactory
 import org.grails.datastore.mapping.validation.BeanFactoryValidatorRegistry
@@ -105,8 +106,9 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
                 mongoDatastore(MongoDatastore, mongo, configuration, eventPublisher, collectMappedClasses(DATASTORE_TYPE))
             }
 
+            boolean isRecentGrailsVersion = GrailsVersion.isAtLeastMajorMinor(3,3)
             mongoMappingContext(mongoDatastore:"getMappingContext") {
-                if(isGrailsPresent()) {
+                if(isGrailsPresent() && !isRecentGrailsVersion) {
                     validatorRegistry = new BeanFactoryValidatorRegistry((BeanFactory)beanDefinitionRegistry)
                 }
             }
