@@ -52,6 +52,29 @@ class BasicCollectionsSpec extends GormDatastoreSpec{
         ]
     }
 
+    void "Test that a map of BigDecimal works."() {
+        when:"A payRate map is persisted"
+        def p = new Linguist(name:"Bob")
+        def val = new BigDecimal("1.0")
+        p.payRates.put(Locale.UK.toString(), val)
+        p.save(flush:true)
+
+        then:"The collection is still ok"
+        p.payRates == [
+                (Locale.UK.toString()):val
+        ]
+
+        when:
+        session.clear()
+        p = Linguist.get(p.id)
+
+        then:"The embedded collection and payRates can be read back correctly"
+        p.name == "Bob"
+        p.payRates == [
+                (Locale.UK.toString()):val
+        ]
+    }
+
     void "Test beforeInsert() and beforeUpdate() methods for collections"() {
         when:"An entity is persisted"
         def p = new Increment()
@@ -81,6 +104,7 @@ class Linguist {
     String name
     List<Locale> spokenLanguages = []
     Map<String, Currency> currencies = [:]
+    Map<String, BigDecimal> payRates = [:]
 
     static constraints = {
     }
