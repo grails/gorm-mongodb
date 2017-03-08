@@ -2,8 +2,9 @@ package grails.gorm.rx.mongodb.domains
 
 import grails.gorm.annotation.Entity
 import grails.gorm.rx.mongodb.RxMongoEntity
-import org.apache.commons.lang3.builder.HashCodeBuilder
+
 import org.bson.types.ObjectId
+import org.codehaus.groovy.util.HashCodeHelper
 
 @Entity
 class UserRole implements RxMongoEntity<UserRole> {
@@ -28,10 +29,10 @@ class UserRole implements RxMongoEntity<UserRole> {
 
 
     int hashCode() {
-        def builder = new HashCodeBuilder()
-        if (user) builder.append(user.id)
-        if (role) builder.append(role.id)
-        builder.toHashCode()
+        int hash = HashCodeHelper.initHash()
+        if (user) hash = HashCodeHelper.updateHash(hash, user.id)
+        if (role) hash = HashCodeHelper.updateHash(hash, role.id)
+        hash
     }
 
     static constraints = {
