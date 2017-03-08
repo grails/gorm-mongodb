@@ -7,7 +7,14 @@ dependencies {
 }
 ----
 
-If you are using a version of Grails 3 earlier than 3.3 then you may need to enforce the GORM version by adding the following block directly above the `dependencies` block:
+If you are using a version of Grails 3 earlier than 3.3 then you may need to enforce the GORM version. If you are using Grails 3.2.7 or above this can be done by modifying the `gormVersion` setting in `gradle.properties`:
+
+[source,properties,subs="attributes"]
+----
+gormVersion={version}
+----
+
+Otherwise if you are using an earlier version of Grails you can force the GORM version by adding the following block directly above the `dependencies` block:
 
 [source,groovy,subs="attributes"]
 .build.gradle
