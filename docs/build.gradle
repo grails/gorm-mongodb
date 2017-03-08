@@ -43,6 +43,7 @@ asciidoctor {
                 'reproducible'  : '',
                 'version'       : project.version,
                 'pluginVersion' : project.version - '.RELEASE',
+                'mongoDriverVersion': mongodbDriverVersion,
                 'sourcedir'     : "${project.rootDir}"
 }
 

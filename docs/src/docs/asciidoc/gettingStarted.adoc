@@ -1,4 +1,6 @@
-To get started with GORM for MongoDB you need configure it as a dependency in `build.gradle`:
+=== Basic Setup
+
+To get started with GORM for MongoDB within Grails you need configure it as a dependency in `build.gradle`:
 
 [source,groovy,subs="attributes"]
 ----
@@ -32,6 +34,39 @@ dependencies {
 }
 ----
 
+=== Common Errors
+
+If you receive an error that indicates a failure to resolve the `grails-datastore-simple` dependency you may need to add the following to `build.gradle` directly above the `dependencies` block:
+
+[source,groovy]
+.build.gradle
+----
+configurations.all {
+    exclude module:'grails-datastore-simple'
+}
+----
+
+If you receive an error at runtime such as:
+
+[source,groovy]
+----
+Caused by: org.bson.codecs.configuration.CodecConfigurationException: Can't find a codec for class org.bson.BsonDecimal128.
+        at org.bson.codecs.configuration.CodecCache.getOrThrow(CodecCache.java:46)
+        at org.bson.codecs.configuration.ProvidersCodecRegistry.get(ProvidersCodecRegistry.java:63)
+        at org.bson.codecs.configuration.ChildCodecRegistry.get(ChildCodecRegistry.java:51)
+        at org.bson.codecs.BsonTypeCodecMap.<init>(BsonTypeCodecMap.java:44)
+        at org.bson.codecs.BsonDocumentCodec.<init>(BsonDocumentCodec.java:65)
+----
+
+It means you have an older version of the MongoDB Java driver on your classpath and you should add the following declaration to `build.gradle` to ensure the dependency is correct:
+
+[source,groovy,subs="attributes"]
+.build.gradle
+----
+compile "org.mongodb:mongodb-driver:{mongoDriverVersion}"
+----
+
+=== Setup within Grails 2.x
 
 For Grails 2.x you need to modify `BuildConfig.groovy`:
 
@@ -42,7 +77,9 @@ plugins {
 }
 ----
 
-With that done you need to set up a running MongoDB server. Refer to the <<ref-orgmanual-MongoDB Documentation,MongoDB Documentation>> for an explanation on how to startup a MongoDB instance. Once installed, starting MongoDB is typically a matter of executing the following command:
+=== Configuring MongoDB
+
+With that done you need to set up a running MongoDB server. Refer to the https://docs.mongodb.com/getting-started/shell/[MongoDB Documentation] for an explanation on how to startup a MongoDB instance. Once installed, starting MongoDB is typically a matter of executing the following command:
 
 [source,groovy]
 ----
