@@ -20,6 +20,7 @@ import grails.mongodb.MongoEntity
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import org.grails.datastore.gorm.bootstrap.AbstractDatastoreInitializer
+import org.grails.datastore.gorm.bootstrap.support.ServiceRegistryFactoryBean
 import org.grails.datastore.gorm.events.ConfigurableApplicationContextEventPublisher
 import org.grails.datastore.gorm.events.DefaultApplicationEventPublisher
 import org.grails.datastore.gorm.plugin.support.PersistenceContextInterceptorAggregator
@@ -112,6 +113,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
                     validatorRegistry = new BeanFactoryValidatorRegistry((BeanFactory)beanDefinitionRegistry)
                 }
             }
+            mongoDatastoreServiceRegistry(ServiceRegistryFactoryBean, ref("mongoDatastore"))
             mongoTransactionManager(mongoDatastore:"getTransactionManager")
             mongoPersistenceInterceptor(getPersistenceInterceptorClass(), ref("mongoDatastore"))
             mongoPersistenceContextInterceptorAggregator(PersistenceContextInterceptorAggregator)
