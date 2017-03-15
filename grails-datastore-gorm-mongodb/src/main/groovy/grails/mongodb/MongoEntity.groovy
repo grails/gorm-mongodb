@@ -16,7 +16,6 @@
 package grails.mongodb
 
 import com.mongodb.AggregationOptions
-import com.mongodb.MongoClient
 import com.mongodb.ReadPreference
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
@@ -28,23 +27,16 @@ import org.bson.Document
 import org.bson.conversions.Bson
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.GormEntity
-import org.grails.datastore.gorm.GormStaticApi
 import org.grails.datastore.gorm.mongo.MongoCriteriaBuilder
 import org.grails.datastore.gorm.mongo.api.MongoStaticApi
 import org.grails.datastore.gorm.schemaless.DynamicAttributes
 import org.grails.datastore.mapping.core.AbstractDatastore
-import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.core.SessionImplementor
 import org.grails.datastore.mapping.engine.EntityPersister
-import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.mongo.AbstractMongoSession
-import org.grails.datastore.mapping.mongo.MongoCodecSession
 import org.grails.datastore.mapping.mongo.MongoDatastore
-import org.grails.datastore.mapping.mongo.MongoSession
-import org.grails.datastore.mapping.mongo.engine.AbstractMongoObectEntityPersister
 import org.grails.datastore.mapping.mongo.engine.MongoEntityPersister
-import org.grails.datastore.mapping.mongo.engine.codecs.PersistentEntityCodec
-import org.grails.datastore.mapping.mongo.query.MongoQuery
+
 /**
  * Enhances the default {@link GormEntity} class with MongoDB specific methods
  *
