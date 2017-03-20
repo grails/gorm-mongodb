@@ -14,8 +14,8 @@ import org.gradle.api.internal.artifacts.publish.*
 apply plugin: "grails"
 
 grails {
-    grailsVersion = "2.5.1"
-    groovyVersion = "2.4.6"
+    grailsVersion = project.grails2Version
+    groovyVersion = project.groovyVersion
 }
 
 configurations.all { Configuration c ->
@@ -32,7 +32,7 @@ configurations.all { Configuration c ->
             }
             else if(details.requested.group == 'org.grails' &&
                     details.requested.name == 'grails-async') {
-                details.useVersion(grailsVersion)   
+                details.useVersion(grails2Version)
             }
         }        
     }
