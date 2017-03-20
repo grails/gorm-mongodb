@@ -1,5 +1,12 @@
 Below are the details of the changes across releases:
 
+==== 6.1
+
+* GORM Data Services Support
+* Package Scanning Constructors
+* Decimal128 Type Support
+* MongoDB 3.4.x Java Driver Support
+
 ==== 6.0
 
 * Multiple Data Sources Support
