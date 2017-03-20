@@ -22,22 +22,12 @@ version "6.1.0.BUILD-SNAPSHOT"
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-//    hibernatePluginVersion = project.gormVersion - '.RELEASE'
-    hibernatePluginVersion = project.gormVersion
-//    hibernatePluginVersion = '6.0.4'
-    grailsVersion = "3.2.7"
-    groovyVersion = "2.4.10"
-    springBootVersion = "1.4.4.RELEASE"
-    mongodbDriverVersion = '3.4.2'
-    springVersion = "4.3.6.RELEASE"
+    hibernatePluginVersion = project.gormVersion - '.RELEASE'
     isCiBuild = project.hasProperty("isCiBuild")
     isBuildSnapshot = project.version.endsWith("BUILD-SNAPSHOT")
-
     servletApiVersion = "3.0.1"
-
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
     nexusPassword = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
-
 }
 
 
