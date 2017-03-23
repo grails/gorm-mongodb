@@ -447,6 +447,14 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     }
 
     /**
+     * Construct a Mongo datastore scanning the given package
+     *
+     * @param packageToScan The packages to scan
+     */
+    public MongoDatastore(Package packageToScan) {
+        this(new ClasspathEntityScanner().scan(packageToScan));
+    }
+    /**
      * Construct a Mongo datastore scanning the given packages
      *
      * @param configuration The configuration
