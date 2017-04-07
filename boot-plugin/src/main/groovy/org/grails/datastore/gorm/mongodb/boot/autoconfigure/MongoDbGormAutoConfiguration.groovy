@@ -18,12 +18,16 @@ import com.mongodb.MongoClient
 import com.mongodb.MongoClientOptions
 import grails.mongodb.bootstrap.MongoDbDataStoreSpringInitializer
 import groovy.transform.CompileStatic
+import org.grails.datastore.gorm.events.ConfigurableApplicationContextEventPublisher
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.reflect.AstUtils
+import org.grails.datastore.mapping.services.Service
+import org.springframework.beans.BeansException
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.BeanFactoryAware
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
@@ -31,13 +35,22 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
 import org.springframework.boot.autoconfigure.mongo.MongoProperties
 import org.springframework.boot.bind.RelaxedPropertyResolver
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.EnvironmentAware
 import org.springframework.context.ResourceLoaderAware
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar
+import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.type.AnnotationMetadata
+import org.springframework.transaction.PlatformTransactionManager
+
+import java.beans.Introspector
+
 /**
  *
  * Auto configurer that configures GORM for MongoDB for use in Spring Boot
@@ -49,10 +62,10 @@ import org.springframework.core.type.AnnotationMetadata
 @Configuration
 @ConditionalOnMissingBean(MongoDatastore)
 @AutoConfigureAfter(MongoAutoConfiguration)
-class MongoDbGormAutoConfiguration implements BeanFactoryAware, ResourceLoaderAware, ImportBeanDefinitionRegistrar, EnvironmentAware{
+class MongoDbGormAutoConfiguration implements ApplicationContextAware{
 
-    @Autowired
-    private MongoProperties properties;
+    @Autowired(required = false)
+    private MongoProperties mongoProperties
 
     @Autowired(required = false)
     MongoClient mongo
@@ -60,68 +73,66 @@ class MongoDbGormAutoConfiguration implements BeanFactoryAware, ResourceLoaderAw
     @Autowired(required = false)
     MongoClientOptions mongoOptions
 
-    BeanFactory beanFactory
+    ConfigurableApplicationContext applicationContext
 
-    ResourceLoader resourceLoader
-
-    Environment environment
-
-    @Override
-    void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
-        MongoDbDataStoreSpringInitializer initializer
-        def packages = AutoConfigurationPackages.get(beanFactory)
-        def classLoader = ((ConfigurableBeanFactory)beanFactory).getBeanClassLoader()
-
-        initializer = new MongoDbDataStoreSpringInitializer(classLoader, packages as String[]) {
-            @Override
-            protected void scanForPersistentClasses() {
-                super.scanForPersistentClasses()
-                def entityNames = AstUtils.getKnownEntityNames()
-                for (entityName in entityNames) {
-                    try {
-
-                        def cls = classLoader.loadClass(entityName)
-                        if(!persistentClasses.contains(cls))
-                            persistentClasses << cls
-                    } catch (ClassNotFoundException e) {
-                        // ignore
-                    }
-                }
+    @Bean
+    MongoDatastore mongoDatastore() {
+        ConfigurableApplicationContext context = applicationContext
+        if(!(context instanceof ConfigurableApplicationContext)) {
+            throw new IllegalArgumentException("MongoDbGormAutoConfiguration requires an instance of ConfigurableApplicationContext")
+        }
+        ConfigurableListableBeanFactory beanFactory = context.beanFactory
+        List<String> packageNames = AutoConfigurationPackages.get(beanFactory)
+        List<Package> packages = []
+        for(name in packageNames) {
+            Package pkg = Package.getPackage(name)
+            if(pkg != null) {
+                packages.add(pkg)
             }
         }
-        initializer.resourceLoader = resourceLoader
 
-        initializer.setConfiguration(environment)
-        initializer.setMongoClient(mongo)
-        initializer.setMongoOptions(mongoOptions)
+        MongoDatastore datastore
+        ConfigurableEnvironment environment = context.environment
+        ConfigurableApplicationContextEventPublisher eventPublisher = new ConfigurableApplicationContextEventPublisher(context)
+        if(mongo != null) {
+            datastore = new MongoDatastore(mongo, environment,eventPublisher, packages as Package[])
+        }
+        else if(mongoProperties != null) {
+            this.mongo = mongoProperties.createMongoClient(mongoOptions, environment)
+            datastore = new MongoDatastore(mongo, environment,eventPublisher, packages as Package[])
+        }
+        else {
+            datastore = new MongoDatastore(environment, eventPublisher, packages as Package[])
+        }
 
-
-        if(this.properties != null) {
-            initializer.setDatabaseName(this.properties.database)
-            if(mongo == null && mongoOptions != null) {
-                initializer.setMongoClient(
-                        properties.createMongoClient(mongoOptions, environment)
+        for(Service service in datastore.getServices()) {
+            Class serviceClass = service.getClass()
+            grails.gorm.services.Service ann = serviceClass.getAnnotation(grails.gorm.services.Service)
+            String serviceName = ann?.name()
+            if(serviceName == null) {
+                serviceName = Introspector.decapitalize(serviceClass.simpleName)
+            }
+            if(!context.containsBean(serviceName)) {
+                context.beanFactory.registerSingleton(
+                        serviceName,
+                        service
                 )
             }
         }
-        else if(environment != null){
-            def propertyResolver = new RelaxedPropertyResolver(environment, "spring.")
-            def config = propertyResolver.getSubProperties("mongodb.")
-            if(config.containsKey('database')) {
-                initializer.setDatabaseName(config.get("database").toString())
-            }
-            else if(config.containsKey('databaseName')) {
-                initializer.setDatabaseName(config.get("databaseName").toString())
-            }
-        }
-        initializer.configureForBeanDefinitionRegistry(registry)
+        return datastore
     }
 
+    @Bean
+    PlatformTransactionManager mongoTransactionManager() {
+        mongoDatastore().getTransactionManager()
+    }
 
     @Override
-    void setEnvironment(Environment environment) {
-        this.environment = environment;
+    void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        if(!(applicationContext instanceof ConfigurableApplicationContext)) {
+            throw new IllegalArgumentException("MongoDbGormAutoConfiguration requires an instance of ConfigurableApplicationContext")
+        }
+        this.applicationContext = (ConfigurableApplicationContext)applicationContext
     }
-
 
 }

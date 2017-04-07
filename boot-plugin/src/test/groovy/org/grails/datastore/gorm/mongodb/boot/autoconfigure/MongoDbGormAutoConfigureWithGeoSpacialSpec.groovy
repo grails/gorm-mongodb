@@ -1,8 +1,8 @@
 package org.grails.datastore.gorm.mongodb.boot.autoconfigure
 
 import com.mongodb.Mongo
+import grails.gorm.annotation.Entity
 import grails.mongodb.geo.Point
-import grails.persistence.Entity
 import org.bson.types.ObjectId
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages
 import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfiguration

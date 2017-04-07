@@ -267,6 +267,16 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         this(mongoClient, configuration, createMappingContext(configuration, classes), eventPublisher);
     }
 
+    /**
+     * Configures a new {@link MongoDatastore} for the given arguments
+     *
+     * @param mongoClient The {@link MongoClient} instance
+     * @param eventPublisher The Spring ApplicationContext
+     * @param packages The packages to scan
+     */
+    public MongoDatastore(MongoClient mongoClient, PropertyResolver configuration, ConfigurableApplicationEventPublisher eventPublisher, Package...packages) {
+        this(mongoClient, configuration, createMappingContext(configuration, new ClasspathEntityScanner().scan(packages)), eventPublisher);
+    }
 
     /**
      * Configures a new {@link MongoDatastore} for the given arguments

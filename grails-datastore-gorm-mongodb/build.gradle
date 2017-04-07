@@ -5,7 +5,7 @@ dependencies {
     compile "org.grails:grails-datastore-gorm-validation:$gormVersion"
     compile "org.grails:grails-datastore-gorm:$gormVersion"
 
-    compile("org.grails:grails-datastore-gorm-support:$gormVersion") {
+    compileOnly("org.grails:grails-datastore-gorm-support:$gormVersion") {
         exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
     }
 
@@ -17,6 +17,9 @@ dependencies {
 
     compileOnly "javax.servlet:javax.servlet-api:$servletApiVersion"
     testCompile("org.hibernate:hibernate-validator:5.0.3.Final")
+    testCompile("org.grails:grails-datastore-gorm-support:$gormVersion") {
+        exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
+    }
     testRuntime('org.glassfish.web:el-impl:2.2')
 }
 

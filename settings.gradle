@@ -21,6 +21,7 @@ include 'examples/grails3-mongodb'
 include 'examples/grails3-mongodb-database-per-tenant'
 include 'examples/grails3-rxmongodb'
 include 'examples/grails3-hibernate4-mongodb'
+include 'examples/springboot-mongodb'
 
 
 findProject(':boot-plugin').name = 'gorm-mongodb-spring-boot'

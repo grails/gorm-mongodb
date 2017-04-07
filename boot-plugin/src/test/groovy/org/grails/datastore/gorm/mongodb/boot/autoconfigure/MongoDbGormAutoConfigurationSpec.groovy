@@ -1,8 +1,8 @@
 package org.grails.datastore.gorm.mongodb.boot.autoconfigure
 
-import grails.persistence.Entity
-import org.grails.boot.internal.EnableAutoConfiguration
+import grails.gorm.annotation.Entity
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfiguration
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
 import org.springframework.context.annotation.AnnotationConfigApplicationContext

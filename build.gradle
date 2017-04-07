@@ -40,13 +40,16 @@ subprojects { project ->
 
 
     if(project.name.startsWith("examples")) {
-        apply plugin:"org.grails.grails-web"
-        apply plugin:"org.grails.grails-gsp"
+        if(project.name.contains('grails3')) {
 
-        tasks.withType(Test) {
-            testLogging {
-                showStandardStreams = true
-                exceptionFormat = 'full'
+            apply plugin:"org.grails.grails-web"
+            apply plugin:"org.grails.grails-gsp"
+
+            tasks.withType(Test) {
+                testLogging {
+                    showStandardStreams = true
+                    exceptionFormat = 'full'
+                }
             }
         }
 
