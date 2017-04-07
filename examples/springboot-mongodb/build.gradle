@@ -1,0 +1,19 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
+    }
+}
+
+apply plugin:"groovy"
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-web")
+    compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
+    compile project(":gorm-mongodb-spring-boot")
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+}
