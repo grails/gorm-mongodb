@@ -6,7 +6,7 @@ uses by default a `MongoClient` instance that connects to a MongoDB instance as 
 
 [source,groovy]
 ----
-include::{sourcedir}/examples/grails31-mongodb/src/test/groovy/functional/tests/LocalMongoUnitSpec.groovy[tags=structure]
+include::{sourcedir}/examples/grails3-mongodb/src/test/groovy/functional/tests/LocalMongoUnitSpec.groovy[tags=structure]
 ----
 
 You can also provide your own `MongoClient` instance to use something such as https://github.com/fakemongo/fongo[Fongo],
@@ -14,7 +14,7 @@ as shown in the following example:
 
 [source,groovy]
 ----
-include::{sourcedir}/examples/grails31-mongodb/src/test/groovy/functional/tests/BookUnitSpec.groovy[]
+include::{sourcedir}/examples/grails3-mongodb/src/test/groovy/functional/tests/BookUnitSpec.groovy[]
 ----
 
 Note that the default implementation is to scan your classpath searching for domain classes, from the package defined
@@ -23,5 +23,5 @@ is large, classpath scanning may be slow, so it's better to override the method 
 
 [source,groovy]
 ----
-include::{sourcedir}/examples/grails31-hibernate4-mongodb/src/test/groovy/functional/tests/BookFongoSpec.groovy[tags=getDomainClasses,indent=0]
+include::{sourcedir}/examples/grails3-hibernate4-mongodb/src/test/groovy/functional/tests/BookFongoSpec.groovy[tags=getDomainClasses,indent=0]
 ----
