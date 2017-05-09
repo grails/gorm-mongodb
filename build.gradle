@@ -36,9 +36,13 @@ subprojects { project ->
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
     }
+<<<<<<< HEAD
 
 
 
+=======
+    
+>>>>>>> 6.0.x
     if(project.name.startsWith("examples")) {
         if(project.name.contains('grails3')) {
 
@@ -52,7 +56,13 @@ subprojects { project ->
                 }
             }
         }
-
+        configurations.all {
+            resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+                if(details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
+                    details.useVersion(groovyVersion)   
+                }
+            }
+        } 
         return
     }
 

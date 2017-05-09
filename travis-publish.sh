@@ -51,14 +51,6 @@ if [[ $TRAVIS_REPO_SLUG == "grails/gorm-mongodb" && $TRAVIS_PULL_REQUEST == 'fal
         version="$TRAVIS_TAG"
         version=${version:1}
 
-        if [[ $TRAVIS_TAG =~ [M\d|RC\d] ]]; then            
-           echo "Publishing Milestone Release"  
-        else 
-            mkdir -p latest/mongodb
-            cp -r ../docs/build/docs/. ./latest/mongodb/
-            git add latest/mongodb/*
-        fi   
-
         majorVersion=${version:0:4}
         majorVersion="${majorVersion}x"
 
