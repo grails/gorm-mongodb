@@ -115,6 +115,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     protected final Map<String, MongoDatastore> datastoresByConnectionSource = new LinkedHashMap<>();
     protected final MultiTenancySettings.MultiTenancyMode multiTenancyMode;
     protected final TenantResolver tenantResolver;
+    protected final AutoTimestampEventListener autoTimestampEventListener;
 
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
@@ -230,6 +231,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             });
         }
 
+        this.autoTimestampEventListener = new AutoTimestampEventListener(this);
         registerEventListeners(this.eventPublisher);
         this.gormEnhancer = initialize(settings);
     }
@@ -790,7 +792,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
 
     protected void registerEventListeners(ConfigurableApplicationEventPublisher eventPublisher) {
         eventPublisher.addApplicationListener(new DomainEventListener(this));
-        eventPublisher.addApplicationListener(new AutoTimestampEventListener(this));
+        eventPublisher.addApplicationListener(autoTimestampEventListener);
         eventPublisher.addApplicationListener(new ValidationEventListener(this));
 
         if(multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR) {
@@ -1034,5 +1036,9 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             }
             return codec;
         }
+    }
+
+    public AutoTimestampEventListener getAutoTimestampEventListener() {
+        return this.autoTimestampEventListener;
     }
 }
