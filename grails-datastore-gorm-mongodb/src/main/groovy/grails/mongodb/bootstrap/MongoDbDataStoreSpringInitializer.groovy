@@ -115,6 +115,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
             }
             mongoDatastoreServiceRegistry(ServiceRegistryFactoryBean, ref("mongoDatastore"))
             mongoTransactionManager(mongoDatastore:"getTransactionManager")
+            mongoAutoTimestampEventListener(mongoDatastore:"getAutoTimestampEventListener")
             mongoPersistenceInterceptor(getPersistenceInterceptorClass(), ref("mongoDatastore"))
             mongoPersistenceContextInterceptorAggregator(PersistenceContextInterceptorAggregator)
             def transactionManagerBeanName = TRANSACTION_MANAGER_BEAN
