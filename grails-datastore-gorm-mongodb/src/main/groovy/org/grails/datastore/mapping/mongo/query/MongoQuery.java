@@ -462,7 +462,7 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                         .withCodecRegistry( mongoSession.getDatastore().getCodecRegistry());
             }
             cursor = executeQuery(entity, criteria, collection, query);
-            return new MongoResultList(cursor, offset, mongoEntityPersister);
+            return new MongoResultList(cursor, offset, max, mongoEntityPersister);
         }
 
         populateMongoQuery((AbstractMongoSession) session, query, criteria, entity);
@@ -1325,11 +1325,16 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
 
         @SuppressWarnings("unchecked")
         public MongoResultList(MongoCursor cursor, int offset, EntityPersister mongoEntityPersister) {
-            super(offset, cursor);
+            this(cursor, offset, -1, mongoEntityPersister);
+        }
+
+        public MongoResultList(MongoCursor cursor, int offset, int max, EntityPersister mongoEntityPersister) {
+            super(offset,max, cursor);
             this.cursor = cursor;
             this.mongoEntityPersister = mongoEntityPersister;
             this.isCodecPersister = mongoEntityPersister instanceof MongoCodecEntityPersister;
         }
+
 
         @Override
         public void close() throws IOException {
