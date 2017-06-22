@@ -1325,10 +1325,10 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
 
         @SuppressWarnings("unchecked")
         public MongoResultList(MongoCursor cursor, int offset, EntityPersister mongoEntityPersister) {
-            this(cursor, offset, -1, mongoEntityPersister);
+            this(cursor, offset, null, mongoEntityPersister);
         }
 
-        public MongoResultList(MongoCursor cursor, int offset, int max, EntityPersister mongoEntityPersister) {
+        public MongoResultList(MongoCursor cursor, int offset, Integer max, EntityPersister mongoEntityPersister) {
             super(offset,max, cursor);
             this.cursor = cursor;
             this.mongoEntityPersister = mongoEntityPersister;
