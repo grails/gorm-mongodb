@@ -163,7 +163,10 @@ subprojects { project ->
 
         dependencies {
             documentation "org.fusesource.jansi:jansi:1.11"
-            testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+            testCompile "org.codehaus.groovy:groovy-test:$groovyVersion"
+            testCompile "org.spockframework:spock-core:1.0-groovy-2.4", {
+                exclude module:'groovy-all'
+            }
         }
 
         groovydoc.jvmArgs "-Xmx512M"
