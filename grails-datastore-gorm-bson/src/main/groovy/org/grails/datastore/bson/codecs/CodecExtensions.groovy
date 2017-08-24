@@ -20,6 +20,7 @@ import org.bson.BsonArray
 import org.bson.BsonBinary
 import org.bson.BsonBoolean
 import org.bson.BsonDateTime
+import org.bson.BsonDecimal128
 import org.bson.BsonDocument
 import org.bson.BsonDouble
 import org.bson.BsonInt32
@@ -226,13 +227,25 @@ class CodecExtensions implements CodecProvider {
                 return map
             }
         }
+
+        BSON_VALUE_CONVERTERS[BsonDecimal128] << new Converter<BsonDecimal128, BigDecimal>() {
+            @Override
+            BigDecimal convert(BsonDecimal128 source) {
+                return source.decimal128Value().bigDecimalValue()
+            }
+        }
     }
 
     static Collection<Converter> getBsonConverters() {
         return (Collection<Converter>)BSON_VALUE_CONVERTERS.values().flatten()
     }
+
     static Converter getBsonConverter(Class<? extends BsonValue> type) {
-        BSON_VALUE_CONVERTERS.get(type).first()
+        def converters = BSON_VALUE_CONVERTERS.get(type)
+        if(!converters.isEmpty()) {
+            return converters.first()
+        }
+        return null
     }
 
 

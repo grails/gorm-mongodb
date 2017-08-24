@@ -457,6 +457,15 @@ public class JsonReader extends AbstractBsonReader {
     }
 
     @Override
+    public BsonReaderMark getMark() {
+        if (mark != null) {
+            throw new BSONException("A mark already exists; it needs to be reset before creating a new one");
+        }
+        mark = new Mark();
+        return mark;
+    }
+
+    @Override
     public void reset() {
         if (mark == null) {
             throw new BSONException("trying to reset a mark before creating it");
@@ -481,7 +490,9 @@ public class JsonReader extends AbstractBsonReader {
             position = JsonReader.this.scanner.position;
         }
 
-        protected void reset() {
+        @Override
+        public void reset() {
+
             super.reset();
             JsonReader.this.pushedToken = pushedToken;
             JsonReader.this.currentValue = currentValue;
@@ -491,6 +502,7 @@ public class JsonReader extends AbstractBsonReader {
                 throw new JsonParseException("Failed to reset reader: " + e.getMessage(), e);
             }
             JsonReader.this.setContext(new Context(getParentContext(), getContextType()));
+            mark = null;
         }
     }
 
