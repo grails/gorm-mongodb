@@ -13,7 +13,7 @@ class BasicCollectionsSpec extends GormDatastoreSpec{
 
     void "Test that a Locale can be used inside a collection"() {
         when:"A locale collection is persisted"
-        def p = new Linguist(name:"Bob")
+        def p = new Linguist(name:"Bob", attributes: [[hairColor:'black']])
         p.spokenLanguages << Locale.UK << Locale.CANADA_FRENCH << Locale.US
         p.save(flush:true)
 
@@ -26,6 +26,7 @@ class BasicCollectionsSpec extends GormDatastoreSpec{
 
         then:"The embedded collection and locales can be read back correctly"
         p.name == "Bob"
+        p.attributes == [[hairColor:'black']]
         p.spokenLanguages == [Locale.UK, Locale.CANADA_FRENCH, Locale.US]
     }
 
@@ -106,6 +107,7 @@ class Linguist {
     String id
     String name
     List<Locale> spokenLanguages = []
+    List<Map> attributes = []
     Map<String, Currency> currencies = [:]
     Map<String, BigDecimal> payRates = [:]
 
