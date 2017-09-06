@@ -5,14 +5,8 @@ cache:
   - "$HOME/.m2/repository"
 jdk:
 - oraclejdk8
-addons:
-  apt:
-    sources:
-    - mongodb-upstart
-    - mongodb-3.0-precise
-    packages:
-    - mongodb-org-server
-    - mongodb-org-shell
+services:
+  - mongodb
 env:
   global:
   - TERM=dumb
