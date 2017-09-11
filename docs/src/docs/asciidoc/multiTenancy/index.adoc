@@ -8,6 +8,10 @@ GORM for MongoDb supports the following multi-tenancy modes:
 
 include::configuration.adoc[]
 
+=== Multi-Tenancy Transformations
+
+include::tenantTransforms.adoc[]
+
 === Multi Tenancy Modes
 
 include::multiTenancyModes.adoc[]
