@@ -110,6 +110,11 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
                     validatorRegistry = new BeanFactoryValidatorRegistry((BeanFactory)beanDefinitionRegistry)
                 }
             }
+
+            if (!secondaryDatastore) {
+                registerAlias "mongoMappingContext", "grailsDomainClassMappingContext"
+            }
+
             mongoTransactionManager(mongoDatastore:"getTransactionManager")
             mongoAutoTimestampEventListener(mongoDatastore:"getAutoTimestampEventListener")
             mongoPersistenceInterceptor(getPersistenceInterceptorClass(), ref("mongoDatastore"))

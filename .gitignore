@@ -7,6 +7,8 @@ grails2-plugin/plugins/
 grails2-plugin/plugin.xml
 secring.gpg
 
+**/out/
+
 # Ignore Gradle GUI config
 gradle-app.setting
 

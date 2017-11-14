@@ -52,6 +52,33 @@ class MongoDbDataStoreSpringInitializerSpec extends Specification{
         mongoDatastore.destroy()
     }
 
+    void "Test the alias is created when it is the primary datastore"() {
+        when:"the initializer used to setup GORM for MongoDB"
+        def initializer = new MongoDbDataStoreSpringInitializer(['grails.mongodb.databaseName':'foo'],Person)
+        def applicationContext = initializer.configure()
+        def mongoDatastore = applicationContext.getBean(MongoDatastore)
+
+        then:
+        applicationContext.containsBean("grailsDomainClassMappingContext")
+
+        cleanup:
+        mongoDatastore.destroy()
+    }
+
+    void "Test the alias is not created when it is the secondary datastore"() {
+        when:"the initializer used to setup GORM for MongoDB"
+        def initializer = new MongoDbDataStoreSpringInitializer(['grails.mongodb.databaseName':'foo'],Person)
+        initializer.setSecondaryDatastore(true)
+        def applicationContext = initializer.configure()
+        def mongoDatastore = applicationContext.getBean(MongoDatastore)
+
+        then:
+        !applicationContext.containsBean("grailsDomainClassMappingContext")
+
+        cleanup:
+        mongoDatastore.destroy()
+    }
+
     @Issue('GPMONGODB-339')
     @Ignore // The MongoDB API for this test has been altered / removed with no apparent replacement for getting the number of pooled connections in use
     void "Test withTransaction returns connections when used without session handling"() {
