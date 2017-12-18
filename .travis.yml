@@ -5,6 +5,7 @@ cache:
   - "$HOME/.m2/repository"
 jdk:
 - oraclejdk7
+dist: precise
 addons:
   apt:
     sources:
