@@ -6,6 +6,7 @@ import com.mongodb.ReadPreference
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
+import com.mongodb.client.model.Aggregates
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.FindOneAndDeleteOptions
 import com.mongodb.client.model.Projections
@@ -296,17 +297,16 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
         return filter
     }
 
-    @CompileStatic
     private List<Bson> preparePipeline(List pipeline) {
         List<Bson> newPipeline = new ArrayList<Bson>()
-        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR) {
+        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR && persistentEntity.isMultiTenant()) {
             newPipeline.add(
-                    Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass()))
+                    Aggregates.match(Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass())))
             )
         }
         for (o in pipeline) {
             if (o instanceof Bson) {
-                newPipeline << (Bson)o
+                newPipeline << (Bson) o
             } else if (o instanceof Map) {
                 newPipeline << new Document((Map) o)
             }
