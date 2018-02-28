@@ -208,6 +208,48 @@ class MongoStaticApiMultiTenancySpec extends Specification {
         count == 1
     }
 
+    void "test aggregate"() {
+        setup: "drop existing database"
+        Book.DB.drop()
+        datastore.buildIndex()
+
+        when: "no book exists, now search for a book"
+        Book.aggregate([['$match': ["title": "Grails 3 - Step by Step"]]])
+
+        then: "not able to resolve tenantId"
+        thrown(TenantNotFoundException)
+
+        when: "set tenantId, and create two books"
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "mix")
+        createBook("Grails 3 - Step by Step")
+        createBook("Making Java Groovy")
+
+        and: "search for the book"
+        List result = Book.aggregate([['$match': ["title": "Grails 3 - Step by Step"]]])
+
+        then: "should return the only book"
+        result.size() == 1
+
+        when: "change the tenantId"
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "others")
+
+        and: "search for book again"
+        result = Book.aggregate([['$match': ["title": "Grails 3 - Step by Step"]]])
+
+        then: "should not find the book"
+        result.size() == 0
+
+        when: "change the tenantId, and create some books"
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "grails")
+        createBooks()
+
+        and: "search for the book"
+        result = Book.aggregate([['$match': ["title": "Grails 3 - Step by Step"]]])
+
+        then: "should find the only book"
+        result.size() == 1
+    }
+
     List getDomainClasses() {
         [Book]
     }
