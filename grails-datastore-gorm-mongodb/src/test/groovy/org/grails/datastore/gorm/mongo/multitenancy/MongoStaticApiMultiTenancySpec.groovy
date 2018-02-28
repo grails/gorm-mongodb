@@ -161,8 +161,51 @@ class MongoStaticApiMultiTenancySpec extends Specification {
         and: "search for the book"
         result = Book.find(Filters.eq("title", "Grails 3 - Step by Step")).toList()
 
-        then: "should find the books"
+        then: "should find the book"
         result.size() == 1
+    }
+
+
+    void "test count"() {
+        setup: "drop existing database"
+        Book.DB.drop()
+        datastore.buildIndex()
+
+        when: "no book exists, now search for a book"
+        Book.count(Filters.eq("title","Grails 3 - Step by Step"))
+
+        then: "not able to resolve tenantId"
+        thrown(TenantNotFoundException)
+
+        when: "set tenantId, and create two books"
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "mix")
+        createBook("Grails 3 - Step by Step")
+        createBook("Making Java Groovy")
+
+        and: "search for the book"
+        Integer count = Book.count(Filters.eq("title","Grails 3 - Step by Step"))
+
+        then: "should return the only book"
+        count == 1
+
+        when: "change the tenantId"
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "others")
+
+        and: "search for book again"
+        count = Book.count(Filters.eq("title", "Grails 3 - Step by Step"))
+
+        then: "should not find the book"
+        count == 0
+
+        when: "change the tenantId, and create some books"
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "grails")
+        createBooks()
+
+        and: "search for the book"
+        count = Book.count(Filters.eq("title", "Grails 3 - Step by Step"))
+
+        then: "should find the only book"
+        count == 1
     }
 
     List getDomainClasses() {
