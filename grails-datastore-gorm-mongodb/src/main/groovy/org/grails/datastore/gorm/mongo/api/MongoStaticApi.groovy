@@ -23,7 +23,6 @@ import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.engine.EntityPersister
 import org.grails.datastore.mapping.engine.internal.MappingUtils
-import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.mongo.AbstractMongoSession
 import org.grails.datastore.mapping.mongo.MongoCodecSession
 import org.grails.datastore.mapping.mongo.MongoDatastore
@@ -47,11 +46,10 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
     FindIterable<D> find(Bson filter) {
         withSession { AbstractMongoSession session ->
             def entity = session.mappingContext.getPersistentEntity(persistentClass.name)
-            FindIterable<D> findIterable = session.getCollection(entity)
-                                                .withDocumentClass(persistentClass)
-                                                .find(filter)
-            findIterable = addMultiTenantFilterIfNecessary(findIterable)
-            return findIterable
+            filter = wrapFilterWithMultiTenancy(filter)
+            return session.getCollection(entity)
+                    .withDocumentClass(persistentClass)
+                    .find(filter)
         }
     }
 
@@ -89,24 +87,6 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
                         .count(filter)
             }
         }
-    }
-
-    protected Bson wrapFilterWithMultiTenancy(Bson filter) {
-        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR && persistentEntity.isMultiTenant()) {
-            filter = Filters.and(
-                    Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass())),
-                    filter
-            )
-        }
-        return filter
-    }
-    protected <FT> FindIterable<FT> addMultiTenantFilterIfNecessary(FindIterable<FT> findIterable) {
-        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR && persistentEntity.isMultiTenant()) {
-            return findIterable.filter(
-                    Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass()))
-            )
-        }
-        return findIterable
     }
 
     @Override
@@ -254,14 +234,13 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
             else {
                 search = Filters.text(query)
             }
-
+            search = wrapFilterWithMultiTenancy(search)
             FindIterable cursor = coll.find(search)
 
             int offset = options.offset instanceof Number ? ((Number)options.offset).intValue() : 0
             int max = options.max instanceof Number ? ((Number)options.max).intValue() : -1
             if(offset > 0) cursor.skip(offset)
             if(max > -1) cursor.limit(max)
-            cursor = addMultiTenantFilterIfNecessary(cursor)
             new MongoQuery.MongoResultList(cursor.iterator(), offset, (EntityPersister)session.getPersister(persistentEntity))
         } )
     }
@@ -290,12 +269,12 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
 
 
             def score = Projections.metaTextScore("score")
+            search = wrapFilterWithMultiTenancy(search)
             FindIterable cursor = coll.find(search)
                                             .projection(score)
                                             .sort(score)
                                             .limit(limit)
 
-            cursor = addMultiTenantFilterIfNecessary(cursor)
             new MongoQuery.MongoResultList(cursor.iterator(), 0, persister)
         } )
     }
@@ -306,6 +285,16 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
         return ((MongoEntity)instance).dbo
     }
 
+
+    protected Bson wrapFilterWithMultiTenancy(Bson filter) {
+        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR && persistentEntity.isMultiTenant()) {
+            filter = Filters.and(
+                    Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass())),
+                    filter
+            )
+        }
+        return filter
+    }
 
     @CompileStatic
     private List<Bson> preparePipeline(List pipeline) {
