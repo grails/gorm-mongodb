@@ -17,12 +17,12 @@ buildscript {
 println "GORM VERSION = ${project.gormVersion}"
 
 group "org.grails"
-version "6.1.5.BUILD-SNAPSHOT"
-// version "6.1.4.RELEASE"
+//version "6.1.5.BUILD-SNAPSHOT"
+version "6.1.5.RELEASE"
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    hibernatePluginVersion = project.gormVersion - '.RELEASE'
+    hibernatePluginVersion = '6.1.8'
     isCiBuild = project.hasProperty("isCiBuild")
     isBuildSnapshot = project.version.endsWith("BUILD-SNAPSHOT")
     servletApiVersion = "3.0.1"
