@@ -54,6 +54,9 @@ subprojects { project ->
                 if(details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
                     details.useVersion(groovyVersion)   
                 }
+                if(details.requested.group == 'org.springframework') {
+                    details.useVersion(springVersion)
+                }
             }
         } 
         return

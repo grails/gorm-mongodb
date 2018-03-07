@@ -17,3 +17,11 @@ dependencies {
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
 }
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if(details.requested.group == 'org.springframework') {
+            details.useVersion(springVersion)
+        }
+    }
+}
