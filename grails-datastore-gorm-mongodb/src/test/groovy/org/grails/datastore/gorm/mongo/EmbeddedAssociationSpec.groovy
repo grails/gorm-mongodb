@@ -3,7 +3,6 @@ package org.grails.datastore.gorm.mongo
 import grails.gorm.tests.GormDatastoreSpec
 import grails.persistence.Entity
 import spock.lang.IgnoreIf
-import spock.lang.IgnoreRest
 import spock.lang.Issue
 
 class EmbeddedAssociationSpec extends GormDatastoreSpec {
@@ -359,16 +358,40 @@ class EmbeddedAssociationSpec extends GormDatastoreSpec {
         def i = new Individual(name:"Bob", address: address)
         i.save(flush:true)
         session.clear()
+
+        when:
         i = Individual.first()
         i.address = Address.findByPostCode("44512")
         i.save(flush:true)
         session.clear()
 
-        when:"We query to get the embedded instance"
+        and:"We query to get the embedded instance"
         i = Individual.first()
 
-        then:"the result is correct"
+        then: "the result is correct"
         i.address.postCode == "44512"
+    }
+
+    void "Test overwrite an embedded List property with a previously saved instance"() {
+        given:"A domain with an embedded association"
+        Address address = new Address(postCode: "30483")
+        new Address(postCode: "44512").save(flush: true)
+        Individual2 i = new Individual2(name:"Bob", address: address)
+        i.otherAddresses = [address]
+        i.save(flush:true)
+        session.clear()
+
+        when:
+        i = Individual2.first()
+        i.otherAddresses = [Address.findByPostCode("44512")]
+        i.save(flush:true)
+        session.clear()
+
+        and:"We query to get the embedded instance"
+        i = Individual2.first()
+
+        then: "the result is correct"
+        i.otherAddresses[0].postCode == "44512"
     }
 }
 
