@@ -33,6 +33,7 @@ import org.grails.datastore.mapping.core.impl.PendingOperationAdapter
 import org.grails.datastore.mapping.core.impl.PendingUpdateAdapter
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckableCollection
+import org.grails.datastore.mapping.dirty.checking.DirtyCheckingCollection
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckingSupport
 import org.grails.datastore.mapping.engine.EntityAccess
 import org.grails.datastore.mapping.engine.ThirdPartyCacheEntityPersister
@@ -65,11 +66,11 @@ import javax.persistence.CascadeType
 @CompileStatic
 class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
 
-    public static final String INSTANCE_PREFIX = "instance:";
+    public static final String INSTANCE_PREFIX = "instance:"
     public static final String MONGO_ID_FIELD = MongoConstants.MONGO_ID_FIELD
     public static final String MONGO_CLASS_FIELD = MongoConstants.MONGO_CLASS_FIELD
-    protected static final String NEXT_ID = "next_id";
-    protected static final String NEXT_ID_SUFFIX = ".$NEXT_ID";
+    protected static final String NEXT_ID = "next_id"
+    protected static final String NEXT_ID_SUFFIX = ".$NEXT_ID"
     public static final String INC_OPERATOR = MongoConstants.INC_OPERATOR
     public static final String ASSIGNED_IDENTIFIER_MAPPING = MongoConstants.ASSIGNED_IDENTIFIER_MAPPING
 
@@ -98,9 +99,9 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
     }
 
     protected String getIdentifierName(ClassMapping cm) {
-        final IdentityMapping identifier = cm.getIdentifier();
+        final IdentityMapping identifier = cm.getIdentifier()
         if (identifier != null && identifier.getIdentifierName() != null) {
-            return identifier.getIdentifierName()[0];
+            return identifier.getIdentifierName()[0]
         }
         return null
     }
@@ -192,7 +193,7 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
             isUpdate = false
         }
         if (isUpdate && !getSession().isDirty(obj)) {
-            return (Serializable) id;
+            return (Serializable) id
         }
         else {
             final EntityAccess entityAccess = createEntityAccess(entity,obj)
@@ -265,7 +266,7 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
     }
 
     private boolean isNotUpdateForAssignedId(PersistentEntity persistentEntity, Object obj, boolean update, boolean assignedId, SessionImplementor<Object> si) {
-        return assignedId && update && !si.isStateless(persistentEntity) &&  !session.contains(obj);
+        return assignedId && update && !si.isStateless(persistentEntity) &&  !session.contains(obj)
     }
 
     protected void processAssociations(MongoCodecSession mongoCodecSession, PersistentEntity entity, EntityAccess entityAccess, obj, ProxyFactory proxyFactory, boolean isUpdate) {
@@ -343,8 +344,8 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
                         shouldPersist = true
                     } else {
                         if (value instanceof DirtyCheckableCollection) {
-                            DirtyCheckableCollection coll = (DirtyCheckableCollection) value
-                            if (coll.hasChanged()) {
+                            def dirtyCheckingCollection = DirtyCheckingSupport.wrap((Collection) value, (DirtyCheckable) obj, propertyName)
+                            if (((DirtyCheckingCollection) dirtyCheckingCollection).hasChanged() ) {
                                 shouldPersist = true
                             }
                         } else {
@@ -386,7 +387,7 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
         updateTPCache(persistentEntity, e, id)
     }
 
-    public Serializable generateIdentifier(final PersistentEntity persistentEntity) {
+    Serializable generateIdentifier(final PersistentEntity persistentEntity) {
         // If there is a numeric identifier then we need to rely on optimistic concurrency controls to obtain a unique identifer
         // sequence. If the identifier is not numeric then we assume BSON ObjectIds.
         if (hasNumericalIdentifier) {
@@ -408,7 +409,7 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
                 if (result != null) {
                     return result.getLong(NEXT_ID)
                 } else {
-                    attempts++;
+                    attempts++
                     if (attempts > 3) {
                         throw new IdentityGenerationException("Unable to generate identity for [$persistentEntity.name] using findAndModify after 3 attempts")
                     }
