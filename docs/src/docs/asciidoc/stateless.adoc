@@ -71,7 +71,8 @@ There are several disadvantages to using stateless domain classes as the default
 
 [source,groovy]
 ----
-def b = new Book(id:"The Book")
+Book b = new Book()
+b.id = "The Book"
 b.insert()
 ----
 
