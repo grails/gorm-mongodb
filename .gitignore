@@ -1,6 +1,7 @@
 .gradle
 build/
 .idea
+*.iml
 target/
 *.zip
 grails2-plugin/plugins/
