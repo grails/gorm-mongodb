@@ -106,9 +106,22 @@ class AssignedIdentifierSpec extends GormDatastoreSpec {
         l.country == "Canada"
     }
 
+    void "Test that assigned identifiers work with stateless domains"() {
+        when:"A stateless entity is saved with an assigned id"
+        Volcano v = new Volcano(country: "Spain")
+        v.id = "Teide"
+        v.save flush: true
+        session.clear()
+        v = Volcano.get("Teide")
+
+        then:"The object is correctly retrieved by assigned id"
+        v.id == "Teide"
+        v.country == "Spain"
+    }
+
     @Override
     List getDomainClasses() {
-        [River, Lake]
+        [River, Lake, Volcano]
     }
 }
 
@@ -128,4 +141,16 @@ class Lake {
     static mapping = {
         id generator:'assigned'
     }
+}
+
+@Entity
+class Volcano {
+
+    String id
+    String country
+    static mapping = {
+        id generator:'assigned'
+        stateless true
+    }
+
 }
