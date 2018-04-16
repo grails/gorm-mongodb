@@ -28,7 +28,9 @@ The `Point` type gets persisted as a http://geojson.org/geojson-spec.html#id2[Ge
 
 [source,groovy]
 ----
-new Restaurant(id:"Dan's Burgers", location: new Point(50, 50)).save(flush:true)
+Restaurant r = new Restaurant(location: new Point(50, 50))
+r.id = "Dan's Burgers"
+r.save(flush:true)
 
 Restaurant.findByLocation(new Point(50,50))
 ----
