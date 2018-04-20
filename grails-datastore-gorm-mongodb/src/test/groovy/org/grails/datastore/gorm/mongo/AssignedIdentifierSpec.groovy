@@ -3,9 +3,6 @@ package org.grails.datastore.gorm.mongo
 import com.mongodb.MongoBulkWriteException
 import grails.gorm.tests.GormDatastoreSpec
 import grails.persistence.Entity
-
-import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.dao.DuplicateKeyException
 import spock.lang.Issue
 
 /**
@@ -110,7 +107,7 @@ class AssignedIdentifierSpec extends GormDatastoreSpec {
         when:"A stateless entity is saved with an assigned id"
         Volcano v = new Volcano(country: "Spain")
         v.id = "Teide"
-        v.save flush: true
+        v.insert(flush: true)
         session.clear()
         v = Volcano.get("Teide")
 
