@@ -9,7 +9,7 @@ class StatelessSpec extends GormDatastoreSpec {
         [Volcano]
     }
 
-    void "stateless and self-assigned ids can be used together"(){
+    void "stateless and self-assigned ids can be used together"() {
         given:
         Volcano v = new Volcano(country: "Spain")
         v.id = "Teide"
