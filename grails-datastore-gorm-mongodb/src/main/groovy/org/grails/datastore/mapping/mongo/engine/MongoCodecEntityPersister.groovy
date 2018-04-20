@@ -210,7 +210,7 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
             else if(idIsNull) {
                 throw new DataIntegrityViolationException("Entity [$obj] has null identifier when identifier strategy is manual assignment. Assign an appropriate identifier before persisting.")
             }
-            else if(isAssigned) {
+            else if (isAssigned && !si.isStateless(entity)) {
                isUpdate = mongoCodecSession.contains(obj)
             }
 
