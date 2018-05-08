@@ -10,11 +10,12 @@ class MultiplePropertySetterSpec extends Specification {
 
     @AutoCleanup @Shared MongoDatastore datastore = new MongoDatastore(Car)
 
-    void "test canary"() {
+    void "test domain with multiple property setter"() {
         setup:
         new Car(name: "Ford EcoSport").save(flush: true, failOnError: true)
 
-        expect: true
+        expect:
+        Car.count() == 1
     }
 
 }
