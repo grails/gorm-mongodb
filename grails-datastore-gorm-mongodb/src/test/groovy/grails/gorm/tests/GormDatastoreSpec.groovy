@@ -37,6 +37,10 @@ abstract class GormDatastoreSpec extends Specification {
                 Pet, PetType, Plant, PlantCategory, Publication, Task, TestEntity]
     }
 
+    Map getConfiguration() {
+        [:]
+    }
+
     @Shared @AutoCleanup MongoDatastore mongoDatastore
     @Shared MongoClient mongoClient
     @Shared GrailsApplication grailsApplication
@@ -57,7 +61,7 @@ abstract class GormDatastoreSpec extends Specification {
         if(System.getenv('TRAVIS')) {
             config.put(MongoSettings.SETTING_DECIMAL_TYPE, false)
         }
-        mongoDatastore = new MongoDatastore(config)
+        mongoDatastore = new MongoDatastore(config << getConfiguration())
         mappingContext = mongoDatastore.mappingContext
         mappingContext.mappingFactory.registerCustomType(new AbstractMappingAwareCustomTypeMarshaller<Birthday, Document, Document>(Birthday) {
             @Override

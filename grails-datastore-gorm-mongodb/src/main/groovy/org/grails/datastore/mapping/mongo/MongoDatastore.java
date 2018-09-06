@@ -744,7 +744,8 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
                 MongoDatastore mongoDatastore = getDatastoreForQualifier(cls, qualifier);
 
                 GormInstanceApi<D> instanceApi = new GormInstanceApi<>(cls, mongoDatastore);
-                instanceApi.setFailOnError(settings.isFailOnError());
+                instanceApi.setFailOnError(getFailOnError());
+                instanceApi.setMarkDirty(getMarkDirty());
                 return instanceApi;
             }
 
