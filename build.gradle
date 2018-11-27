@@ -4,7 +4,7 @@ buildscript {
         maven { url "https://repo.grails.org/grails/core" }
     }
     dependencies {
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
         // classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
         classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
@@ -17,15 +17,15 @@ buildscript {
 println "GORM VERSION = ${project.gormVersion}"
 
 group "org.grails"
-version "6.1.7.BUILD-SNAPSHOT"
+version "7.0.0.BUILD-SNAPSHOT"
 //version "6.1.6.RELEASE"
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    hibernatePluginVersion = '6.1.8'
+    hibernatePluginVersion = '7.0.0.BUILD-SNAPSHOT'
     isCiBuild = project.hasProperty("isCiBuild")
     isBuildSnapshot = project.version.endsWith("BUILD-SNAPSHOT")
-    servletApiVersion = "3.0.1"
+    servletApiVersion = "4.0.1"
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
     nexusPassword = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
 }
@@ -166,16 +166,18 @@ subprojects { project ->
         apply plugin: "io.github.groovylang.groovydoc"
 
 
-        sourceCompatibility = "1.7"
-        targetCompatibility = "1.7"
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
 
         dependencies {
             documentation "org.fusesource.jansi:jansi:1.11"
-            testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+            testCompile "org.spockframework:spock-core:1.2-groovy-2.5"
         }
 
-        groovydoc.jvmArgs "-Xmx512M"
-        groovydoc.classpath += configurations.documentation
+        configure([groovydoc]) {
+            classpath += configurations.documentation
+            jvmArgs "-Xmx512M"
+        }
 
         compileTestGroovy {
             configure(groovyOptions.forkOptions) {
@@ -185,7 +187,7 @@ subprojects { project ->
 
         compileGroovy {
             configure(groovyOptions.forkOptions) {
-                jvmArgs = [ '-Xmx768m', '-XX:MaxPermSize=256m']
+                jvmArgs = [ '-Xmx768m']
             }
         }
 
