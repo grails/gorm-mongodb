@@ -371,18 +371,18 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
                 for(o in v) {
                     def embeddedUpdate = encodeUpdate(o, createEntityAccess(o), EncoderContext.builder().build(), true)
                     def embeddedSets = embeddedUpdate.get(MONGO_SET_OPERATOR)
-                    if(embeddedSets) {
+                    if(embeddedSets != null) {
 
                         def map = (Map) embeddedSets
                         for (key in map.keySet()) {
-                            sets.put("${association.name}.${i}.$key", (BsonValue) map.get(key))
+                            sets.put("${association.name}.${i}.$key".toString(), (BsonValue) map.get(key))
                         }
                     }
                     def embeddedUnsets = embeddedUpdate.get(MONGO_UNSET_OPERATOR)
                     if(embeddedUnsets) {
                         def map = (Map) embeddedUnsets
                         for (key in map.keySet()) {
-                            unsets.put("${association.name}.${i}.$key", BLANK_STRING)
+                            unsets.put("${association.name}.${i}.$key".toString(), BLANK_STRING)
                         }
                     }
                     i++
@@ -442,11 +442,11 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
 
         def embeddedUpdate = encodeUpdate(v)
         def embeddedSets = embeddedUpdate.get(MONGO_SET_OPERATOR)
-        if(embeddedSets) {
+        if(embeddedSets != null) {
 
             def map = (Map) embeddedSets
             for (key in map.keySet()) {
-                sets.put("${association.name}.$key", (BsonValue) map.get(key))
+                sets.put("${association.name}.$key".toString(), (BsonValue) map.get(key))
             }
         }
 
@@ -454,7 +454,7 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
         if(embeddedUnsets) {
             def map = (Map) embeddedUnsets
             for (key in map.keySet()) {
-                unsets.put("${association.name}.$key", BLANK_STRING)
+                unsets.put("${association.name}.$key".toString(), BLANK_STRING)
             }
         }
     }

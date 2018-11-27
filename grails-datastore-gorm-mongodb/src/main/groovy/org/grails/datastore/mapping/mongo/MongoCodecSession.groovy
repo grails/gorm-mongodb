@@ -217,7 +217,7 @@ class MongoCodecSession extends AbstractMongoSession {
                 MongoCollection collection = getCollection(persistentEntity)
                                                 .withDocumentClass(persistentEntity.javaClass)
 
-                final WriteConcern wc = writeConcern
+                WriteConcern wc = writeConcern
                 if(wc == null) {
                     org.grails.datastore.mapping.mongo.config.MongoCollection mapping = (org.grails.datastore.mapping.mongo.config.MongoCollection)persistentEntity.mapping.mappedForm
                     wc = mapping.writeConcern
