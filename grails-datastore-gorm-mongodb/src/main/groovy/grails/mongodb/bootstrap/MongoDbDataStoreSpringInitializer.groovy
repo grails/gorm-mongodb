@@ -74,7 +74,9 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
     @CompileStatic
     ApplicationContext configure() {
         GenericApplicationContext applicationContext = new GenericApplicationContext()
-        applicationContext.beanFactory.registerSingleton( mongoBeanName, mongo)
+        if (mongo != null) {
+            applicationContext.beanFactory.registerSingleton( mongoBeanName, mongo)
+        }
         configureForBeanDefinitionRegistry(applicationContext)
         applicationContext.refresh()
         return applicationContext
