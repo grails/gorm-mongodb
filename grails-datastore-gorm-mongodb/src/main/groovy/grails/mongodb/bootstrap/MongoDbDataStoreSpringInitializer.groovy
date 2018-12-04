@@ -75,7 +75,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
     ApplicationContext configure() {
         GenericApplicationContext applicationContext = new GenericApplicationContext()
         if (mongo != null) {
-            applicationContext.beanFactory.registerSingleton( mongoBeanName, mongo)
+            applicationContext.beanFactory.registerSingleton(mongoBeanName, mongo)
         }
         configureForBeanDefinitionRegistry(applicationContext)
         applicationContext.refresh()
@@ -109,12 +109,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
                 mongoDatastore(MongoDatastore, mongo, configuration, eventPublisher, collectMappedClasses(DATASTORE_TYPE))
             }
 
-            boolean isRecentGrailsVersion = GrailsVersion.isAtLeastMajorMinor(3,3)
-            mongoMappingContext(mongoDatastore:"getMappingContext") {
-                if(isGrailsPresent() && !isRecentGrailsVersion) {
-                    validatorRegistry = new BeanFactoryValidatorRegistry((BeanFactory)beanDefinitionRegistry)
-                }
-            }
+            mongoMappingContext(mongoDatastore:"getMappingContext")
 
             if (!secondaryDatastore) {
                 registerAlias "mongoMappingContext", "grailsDomainClassMappingContext"

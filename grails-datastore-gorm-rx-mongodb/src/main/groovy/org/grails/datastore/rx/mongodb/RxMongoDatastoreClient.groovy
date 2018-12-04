@@ -765,7 +765,7 @@ class RxMongoDatastoreClient extends AbstractRxDatastoreClient<MongoClient> impl
             }
         }
 
-        for (PersistentProperty<MongoAttribute> property in entity.getPersistentProperties()) {
+        for (PersistentProperty property in entity.getPersistentProperties()) {
             final boolean indexed = isIndexed(property)
 
             if (indexed) {

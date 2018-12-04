@@ -4,10 +4,13 @@ import com.mongodb.BasicDBObject
 import com.mongodb.MongoClient
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
+import grails.gorm.validation.PersistentEntityValidator
 import org.bson.Document
 import org.grails.datastore.bson.query.BsonQuery
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.mongo.Birthday
+import org.grails.datastore.gorm.validation.constraints.eval.DefaultConstraintEvaluator
+import org.grails.datastore.gorm.validation.constraints.registry.DefaultConstraintRegistry
 import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.engine.types.AbstractMappingAwareCustomTypeMarshaller
 import org.grails.datastore.mapping.model.MappingContext
@@ -17,8 +20,8 @@ import org.grails.datastore.mapping.mongo.AbstractMongoSession
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.config.MongoSettings
 import org.grails.datastore.mapping.query.Query
-import org.grails.validation.GrailsDomainClassValidator
 import org.springframework.context.support.GenericApplicationContext
+import org.springframework.context.support.StaticMessageSource
 import org.springframework.validation.Validator
 import spock.lang.AutoCleanup
 import spock.lang.Shared
@@ -104,12 +107,11 @@ abstract class GormDatastoreSpec extends Specification {
 
     void setupValidator(Class entityClass, Validator validator = null) {
         PersistentEntity entity = mappingContext.persistentEntities.find { PersistentEntity e -> e.javaClass == entityClass }
+        def messageSource = new StaticMessageSource()
+        def evaluator = new DefaultConstraintEvaluator(new DefaultConstraintRegistry(messageSource), mappingContext, Collections.emptyMap())
         if (entity) {
             mappingContext.addEntityValidator(entity, validator ?:
-                    new GrailsDomainClassValidator(
-                            grailsApplication: grailsApplication,
-                            domainClass: grailsApplication.getDomainClass(entity.javaClass.name)
-                    ) )
+            new PersistentEntityValidator(entity, messageSource, evaluator))
         }
     }
 

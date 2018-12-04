@@ -248,8 +248,10 @@ class BsonPersistentEntityCodec implements Codec {
                         }
                         else {
                             def propKind = prop.getClass().superclass
-                            PropertyEncoder<Object> propertyEncoder = (PropertyEncoder<Object>)getPropertyEncoder(propKind)
-                            propertyEncoder?.encode(writer, prop, v, access, encoderContext, codecRegistry)
+                            if (prop instanceof PersistentProperty) {
+                                PropertyEncoder<PersistentProperty> propertyEncoder = (PropertyEncoder<PersistentProperty>) getPropertyEncoder(propKind)
+                                propertyEncoder?.encode(writer, prop, v, access, encoderContext, codecRegistry)
+                            }
                         }
 
                     }

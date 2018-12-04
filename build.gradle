@@ -170,8 +170,18 @@ subprojects { project ->
         targetCompatibility = "1.8"
 
         dependencies {
+            compile group: 'org.codehaus.groovy', name: 'groovy', version: groovyVersion
+            testCompile group: 'org.codehaus.groovy', name: 'groovy-test', version: groovyVersion
+            testCompile group: 'org.codehaus.groovy', name: 'groovy-json', version: groovyVersion
+            testCompile "junit:junit:$junitVersion"
             documentation "org.fusesource.jansi:jansi:1.11"
-            testCompile "org.spockframework:spock-core:1.2-groovy-2.5"
+            documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
+            testCompile("org.spockframework:spock-core:1.2-groovy-2.5") {
+                exclude group: 'junit', module: 'junit-dep'
+                exclude group: 'org.codehaus.groovy', module: 'groovy-all'
+                exclude group: 'org.hamcrest', module: 'hamcrest-core'
+                transitive = false
+            }
         }
 
         configure([groovydoc]) {
@@ -191,6 +201,17 @@ subprojects { project ->
             }
         }
 
+    }
+
+    configurations {
+        all {
+            resolutionStrategy {
+                force "org.codehaus.groovy:groovy:$groovyVersion"
+                force "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
+                force "org.codehaus.groovy:groovy-xml:$groovyVersion"
+                force "org.codehaus.groovy:groovy-templates:$groovyVersion"
+            }
+        }
     }
 
     publishing {

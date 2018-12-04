@@ -15,6 +15,7 @@ import org.grails.web.json.JSONWriter
 import grails.converters.JSON
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.core.env.PropertyResolver
 import org.springframework.transaction.PlatformTransactionManager
 import org.grails.datastore.gorm.plugin.support.*
 
@@ -40,7 +41,7 @@ class MongodbGrailsPlugin extends Plugin {
     @CompileStatic
     Closure doWithSpring() {
         ConfigSupport.prepareConfig(config, (ConfigurableApplicationContext) applicationContext)
-        def initializer = new MongoDbDataStoreSpringInitializer(config, grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE).collect() { GrailsClass cls -> cls.clazz })
+        def initializer = new MongoDbDataStoreSpringInitializer((PropertyResolver) config, grailsApplication.getArtefacts(DomainClassArtefactHandler.TYPE).collect() { GrailsClass cls -> cls.clazz })
         initializer.registerApplicationIfNotPresent = false
 
         def applicationName = Metadata.getCurrent().getApplicationName()

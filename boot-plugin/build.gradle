@@ -11,13 +11,23 @@ dependencies {
     }
     compile project(":grails-datastore-gorm-mongodb-ext"), {
         exclude group:'org.grails', module:'grails-datastore-gorm-mongodb'
-    }    
+    }
     compile "org.springframework:spring-tx:$springVersion"
 
     testCompile "org.springframework.boot:spring-boot-cli:$springBootVersion", {
         exclude group:'org.codehaus.groovy', module:'groovy'
     }
-    testCompile "org.spockframework:spock-core:1.2-groovy-2.5"
+
+    compile group: 'org.codehaus.groovy', name: 'groovy', version: groovyVersion
+    testCompile group: 'org.codehaus.groovy', name: 'groovy-test', version: groovyVersion
+    testCompile "junit:junit:$junitVersion"
+
+    testCompile ("org.spockframework:spock-core:1.2-groovy-2.5") {
+        exclude group: 'junit', module: 'junit-dep'
+        exclude group: 'org.codehaus.groovy', module: 'groovy-all'
+        exclude group: 'org.hamcrest', module: 'hamcrest-core'
+        transitive = false
+    }
 }
 
 //compileTestGroovy.groovyOptions.forkOptions.jvmArgs = ["-Xdebug", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"]

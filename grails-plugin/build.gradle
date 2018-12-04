@@ -18,17 +18,12 @@ configurations.all {
     }
 }
 dependencies {
-
-
     compileOnly("org.grails:grails-core:")
     compileOnly("org.grails:grails-bootstrap")
-    compileOnly("org.grails:grails-plugin-converters") {
-        exclude module:'grails-datastore-simple'
-    }
-    compileOnly("org.grails:grails-plugin-testing:$grailsVersion")
+    compileOnly "org.grails:grails-test-mixins:3.3.0"
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
 
-    compileOnly 'javax.servlet:javax.servlet-api:3.1.0'
-
+    compileOnly "org.grails.plugins:converters:3.3.1"
 
     compile "org.grails:grails-datastore-web:$gormVersion"
     compile "org.grails:grails-datastore-gorm-support:$gormVersion", {
