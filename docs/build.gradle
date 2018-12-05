@@ -74,37 +74,37 @@ fetchSource.inputs.properties(branch:githubBranch)
 fetchSource.outputs.dir checkOutDir
 
 
-task copyDocs(type:Copy, dependsOn:asciidoctor) {
+task copyDocs(type: Copy, dependsOn:asciidoctor) {
     from "${project.buildDir}/asciidoc/html5"
     into "${project.buildDir}/docs/manual"
 }
 
-task groovydoc(type:org.groovy.lang.groovydoc.tasks.GroovydocTask, dependsOn:fetchSource) {
-    docTitle = "GORM for MongoDB - ${project.version}"
-    destinationDir = project.file("build/docs/api")
-    notimestamp = true
-    noversionstamp = true
-
-    def files
-    for(p in coreProjects) {
-        if(files == null) {
-            files = project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
-        }
-        else {
-            files += project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
-        }
-    }
-    project.rootProject.subprojects
-                        .findAll { !it.name.contains('-rx-') && !it.name.startsWith('grails2') && !it.name.startsWith('examples') }
-                        .each { subproject ->
-        if(subproject.file('src/main/groovy').exists()) {
-            files += subproject.files("src/main/groovy")
-        }
-    }
-    source = files
-    classpath += configurations.documentation
-    jvmArgs "-Xmx1024m"
-}
+//task groovydoc(type:org.groovy.lang.groovydoc.tasks.GroovydocTask, dependsOn:fetchSource) {
+//    docTitle = "GORM for MongoDB - ${project.version}"
+//    destinationDir = project.file("build/docs/api")
+//    notimestamp = true
+//    noversionstamp = true
+//
+//    def files
+//    for(p in coreProjects) {
+//        if(files == null) {
+//            files = project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
+//        }
+//        else {
+//            files += project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
+//        }
+//    }
+//    project.rootProject.subprojects
+//                        .findAll { !it.name.contains('-rx-') && !it.name.startsWith('grails2') && !it.name.startsWith('examples') }
+//                        .each { subproject ->
+//        if(subproject.file('src/main/groovy').exists()) {
+//            files += subproject.files("src/main/groovy")
+//        }
+//    }
+//    source = files
+//    classpath += configurations.documentation
+//    jvmArgs "-Xmx1024m"
+//}
 
 task copyResources(type:Copy) {
     from 'src/docs/resources'

@@ -5,12 +5,11 @@ buildscript {
     }
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
-        classpath 'com.bmuschko:gradle-nexus-plugin:2.3'
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
         // classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
-        classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
-        classpath "org.grails:grails-gradle-plugin:3.2.6"
-        classpath "org.grails:grails-gradle-plugin:2.2.0.RC1"
-        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
+        // classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
+        classpath "org.grails:grails-gradle-plugin:$grailsVersion"
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.9.2'
     }
 }
 
@@ -62,11 +61,8 @@ subprojects { project ->
         return
     }
 
-
-
     boolean isPluginProject = project.name.endsWith("-plugin") && (project.name.startsWith("grails") || project.name.startsWith("rx-"))
     boolean isGrails3PluginProject = project.name.endsWith("-plugin") && !project.name.startsWith("grails2")
-    boolean isGrails2PluginProject = project.name.endsWith("-plugin") && project.name.startsWith("grails2")
 
     ext {
         projectInfo = new PublishingConvention(project)
@@ -105,20 +101,8 @@ subprojects { project ->
                 }
             }
 
-        }         
+        }
     }
-       
-
-    if(isPluginProject) {        
-        group "org.grails.plugins"
-        version( rootProject.version - '.RELEASE' )
-    }
-    else {
-        group "org.grails"
-        version rootProject.version
-    }
-
-    
 
     configurations {
         documentation
@@ -128,7 +112,16 @@ subprojects { project ->
                 cacheDynamicVersionsFor 0, 'hours'
                 cacheChangingModulesFor 0, 'hours'
             }
-        }        
+        }
+    }
+
+    if(isPluginProject) {
+        group "org.grails.plugins"
+        version( rootProject.version - '.RELEASE' )
+    }
+    else {
+        group "org.grails"
+        version rootProject.version
     }
 
     if(project.name == 'docs') {
@@ -136,19 +129,24 @@ subprojects { project ->
     }       
 
     if(isGrails3PluginProject) {
-        apply plugin: "org.grails.grails-plugin"       
-    }
-    else if(!isGrails2PluginProject) {
+        apply plugin: "org.grails.grails-plugin"
+    } else {
         apply plugin:"groovy"
-        apply plugin: 'com.bmuschko.nexus'   
+        apply plugin: 'com.bmuschko.nexus'
 
         modifyPom {
             delegate.project pomInfo
         }
-
     }
 
     apply plugin: 'maven-publish'
+    if(isGrails3PluginProject) {
+        apply plugin: 'com.jfrog.bintray'
+    }
+    //apply plugin: "io.github.groovylang.groovydoc"
+
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
 
     configurations.all {
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
@@ -159,48 +157,22 @@ subprojects { project ->
         }
     }
 
-    if(!isGrails2PluginProject) {
-        if(isGrails3PluginProject) {
-            apply plugin: 'com.jfrog.bintray'
+    dependencies {
+        compile "org.codehaus.groovy:groovy:$groovyVersion"
+
+        testCompile "org.codehaus.groovy:groovy-test:$groovyVersion"
+        testCompile "org.codehaus.groovy:groovy-json:$groovyVersion"
+        testCompile "junit:junit:$junitVersion"
+
+        documentation "org.fusesource.jansi:jansi:1.11"
+        documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
+
+        testCompile "org.spockframework:spock-core:$spockVersion", {
+            exclude group: 'junit', module: 'junit-dep'
+            exclude group: 'org.codehaus.groovy', module: 'groovy-all'
+            exclude group: 'org.hamcrest', module: 'hamcrest-core'
+            transitive = false
         }
-        apply plugin: "io.github.groovylang.groovydoc"
-
-
-        sourceCompatibility = "1.8"
-        targetCompatibility = "1.8"
-
-        dependencies {
-            compile group: 'org.codehaus.groovy', name: 'groovy', version: groovyVersion
-            testCompile group: 'org.codehaus.groovy', name: 'groovy-test', version: groovyVersion
-            testCompile group: 'org.codehaus.groovy', name: 'groovy-json', version: groovyVersion
-            testCompile "junit:junit:$junitVersion"
-            documentation "org.fusesource.jansi:jansi:1.11"
-            documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
-            testCompile("org.spockframework:spock-core:1.2-groovy-2.5") {
-                exclude group: 'junit', module: 'junit-dep'
-                exclude group: 'org.codehaus.groovy', module: 'groovy-all'
-                exclude group: 'org.hamcrest', module: 'hamcrest-core'
-                transitive = false
-            }
-        }
-
-        configure([groovydoc]) {
-            classpath += configurations.documentation
-            jvmArgs "-Xmx512M"
-        }
-
-        compileTestGroovy {
-            configure(groovyOptions.forkOptions) {
-                jvmArgs = [ '-Xmx768m']
-            }
-        }
-
-        compileGroovy {
-            configure(groovyOptions.forkOptions) {
-                jvmArgs = [ '-Xmx768m']
-            }
-        }
-
     }
 
     configurations {
@@ -224,32 +196,21 @@ subprojects { project ->
                     username = u
                     password = p
                 }
-                if(isGrails2PluginProject) {
-                    if(isBuildSnapshot) {
-                        url  "https://repo.grails.org/grails/plugins-snapshots-local"
-                    }
-                    else {
-                        url  "https://repo.grails.org/grails/plugins-releases-local"
-                    }                    
-                }
-                else if(isGrails3PluginProject) {
+                if (isGrails3PluginProject) {
                     if(isBuildSnapshot) {
                         url  "https://repo.grails.org/grails/plugins3-snapshots-local"
                     }
                     else {
                         url  "https://repo.grails.org/grails/plugins3-releases-local"
                     }                    
-                }
-                else {
+                } else {
                     if(isBuildSnapshot) {
                         url  "https://repo.grails.org/grails/libs-snapshots-local"
                     }
                     else {
                         url  "https://repo.grails.org/grails/libs-releases-local"
                     }
-
                 }
-
             }
         }
 
@@ -258,26 +219,17 @@ subprojects { project ->
                 artifactId projectInfo.projectArtifactId
                 from components.java
 
-                if(!isGrails2PluginProject) {                    
-                    
-                    artifact sourcesJar {
-                        classifier "sources"
-                    }
-                    artifact javadocJar {
-                        classifier "javadoc"
-                    }                    
+                artifact sourcesJar {
+                    classifier "sources"
+                }
+                artifact javadocJar {
+                    classifier "javadoc"
                 }
 
-                if(isGrails3PluginProject) {
-                    artifact source:"${sourceSets.main.output.classesDir}/META-INF/grails-plugin.xml",
+                if (isGrails3PluginProject) {
+                    artifact source:"${sourceSets.main.groovy.outputDir}/META-INF/grails-plugin.xml",
                              classifier:"plugin",
                              extension:'xml'
-                }   
-                else if(isGrails2PluginProject) {
-                    artifact source:"plugin.xml",
-                             classifier:"plugin",
-                             extension:'xml'
-
                 }
 
                 pom.withXml {
@@ -286,33 +238,12 @@ subprojects { project ->
                     dependency?.optional = true
                     xml.children().last() + pomInfo
 
-                    if(isGrails2PluginProject) {
-                        xml.dependencies.dependency.each { dep ->
-                            if(!dep.exclusions) {
-                                dep.appendNode('exclusions').replaceNode {
-                                    delegate.exclusions {
-                                        delegate.exclusion {
-                                            delegate.artifactId 'grails-datastore-gorm-support'
-                                            delegate.groupId 'org.grails'
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        def grailsDep = xml.dependencies.dependency.find { dep -> 
-                            dep.artifactId.text() == 'grails-dependencies' 
-                        }
-                        if(grailsDep) {
-                            grailsDep.replaceNode {}
-                        }                        
-                    }
                 }
-
             }
         }
     }   
 
-    if(isGrails3PluginProject) {
+    if (isGrails3PluginProject) {
         bintray {
 
             def u = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
