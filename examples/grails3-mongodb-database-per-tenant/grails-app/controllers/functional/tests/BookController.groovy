@@ -3,7 +3,7 @@ package functional.tests
 import grails.mongodb.MongoEntity
 
 import static org.springframework.http.HttpStatus.*
-import grails.transaction.Transactional
+import grails.gorm.transactions.Transactional
 
 @Transactional(readOnly = true)
 class BookController {
