@@ -9,10 +9,13 @@ import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.core.exceptions.ConfigurationException
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.mongo.MongoDatastore
-import org.springframework.boot.env.PropertySourcesLoader
+import org.springframework.boot.env.PropertySourceLoader
 import org.springframework.core.env.PropertyResolver
+import org.springframework.core.env.PropertySource
 import org.springframework.core.io.DefaultResourceLoader
+import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
+import org.springframework.core.io.support.SpringFactoriesLoader
 import org.springframework.transaction.support.TransactionSynchronizationManager
 import spock.lang.AutoCleanup
 import spock.lang.Shared
@@ -54,11 +57,26 @@ abstract class MongoSpec extends Specification {
     protected List<Class> getDomainClasses() { [] }
 
     void setupSpec() {
-        PropertySourcesLoader loader = new PropertySourcesLoader()
+        List<PropertySourceLoader> propertySourceLoaders = SpringFactoriesLoader.loadFactories(PropertySourceLoader.class, getClass().getClassLoader());
         ResourceLoader resourceLoader = new DefaultResourceLoader()
-        loader.load resourceLoader.getResource("application.yml")
-        loader.load resourceLoader.getResource("application.groovy")
-        Config config = new PropertySourcesConfig(loader.propertySources)
+
+        List<PropertySource> propertySources = []
+
+        PropertySourceLoader ymlLoader = propertySourceLoaders.find { it.getFileExtensions().toList().contains("yml") }
+        if (ymlLoader) {
+            propertySources.addAll(load(resourceLoader, ymlLoader, "application.yml"))
+        }
+        PropertySourceLoader groovyLoader = propertySourceLoaders.find { it.getFileExtensions().toList().contains("groovy") }
+        if (groovyLoader) {
+            propertySources.addAll(load(resourceLoader, groovyLoader, "application.groovy"))
+        }
+
+        Map<String, Object> mapPropertySource = propertySources
+            .findAll { it.getSource() }
+            .collectEntries { it.getSource() as Map }
+
+        Config config = new PropertySourcesConfig(mapPropertySource)
+
         List<Class> domainClasses = getDomainClasses()
         if (!domainClasses) {
             def packageToScan = getPackageToScan(config)
@@ -111,5 +129,21 @@ abstract class MongoSpec extends Specification {
      */
     protected String getPackageToScan(Config config) {
         config.getProperty('grails.codegen.defaultPackage', getClass().package.name)
+    }
+
+    private List<PropertySource> load(ResourceLoader resourceLoader, PropertySourceLoader loader, String filename) {
+        if (canLoadFileExtension(loader, filename)) {
+            Resource appYml = resourceLoader.getResource(filename)
+            return loader.load(appYml.getDescription(), appYml) as List<PropertySource>
+        } else {
+            return Collections.emptyList()
+        }
+    }
+
+    private boolean canLoadFileExtension(PropertySourceLoader loader, String name) {
+        return Arrays
+            .stream(loader.fileExtensions)
+            .map { String extension -> extension.toLowerCase() }
+            .anyMatch { String extension -> name.toLowerCase().endsWith(extension) }
     }
 }
