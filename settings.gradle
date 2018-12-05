@@ -13,15 +13,15 @@ include 'docs'
 include "boot-plugin"
 //include 'grails2-plugin'
 include 'grails-plugin'
-//include 'rx-plugin'
+include 'rx-plugin'
 
 
 // examples
-//include 'examples/grails3-mongodb'
-//include 'examples/grails3-mongodb-database-per-tenant'
-//include 'examples/grails3-rxmongodb'
-//include 'examples/grails3-hibernate4-mongodb'
-//include 'examples/springboot-mongodb'
+include 'examples/grails3-mongodb'
+include 'examples/grails3-mongodb-database-per-tenant'
+include 'examples/grails3-rxmongodb'
+include 'examples/grails3-hibernate4-mongodb'
+include 'examples/springboot-mongodb'
 
 
 findProject(':boot-plugin').name = 'gorm-mongodb-spring-boot'

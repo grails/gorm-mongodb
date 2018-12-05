@@ -25,8 +25,8 @@ dependencies {
 
     compileOnly("org.grails:grails-core:")
     compileOnly("org.grails:grails-bootstrap")
-    compileOnly("org.grails:grails-plugin-converters")
-    compileOnly 'javax.servlet:javax.servlet-api:3.1.0'
+    compileOnly("org.grails.plugins:converters:3.3.1")
+    compileOnly("javax.servlet:javax.servlet-api:$servletApiVersion")
 
 
     compile "org.grails:grails-datastore-web:$gormVersion"
@@ -41,7 +41,7 @@ dependencies {
         exclude group:'javax.transaction', module:'jta'
     }
 
-    compile "org.grails:grails-datastore-gorm-rx-plugin-support:$gormVersion"
+//    compile "org.grails:grails-datastore-gorm-rx-plugin-support:$gormVersion"
     compile project(":grails-datastore-gorm-rx-mongodb"), {
         exclude group:'org.springframework', module:'spring-context'
         exclude group:'org.springframework', module:'spring-core'

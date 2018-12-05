@@ -10,18 +10,26 @@ buildscript {
 apply plugin:"groovy"
 apply plugin: 'org.springframework.boot'
 
+ext['groovy.version'] = "$groovyVersion"
+
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web")
+    compile("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
     compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
+
     compile project(":gorm-mongodb-spring-boot")
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-    testCompile "org.spockframework:spock-core:1.2-groovy-2.5"
+
+    testCompile("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
+    testCompile("org.spockframework:spock-core:1.2-groovy-2.5")
 }
 
 configurations.all {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
         if(details.requested.group == 'org.springframework') {
             details.useVersion(springVersion)
+        }
+
+        if(details.requested.group == 'javax.validation' && details.requested.name.equals('validation-api')) {
+            details.useVersion("2.0.1.Final")
         }
     }
 }
