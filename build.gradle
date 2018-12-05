@@ -159,9 +159,11 @@ subprojects { project ->
 
     dependencies {
         compile "org.codehaus.groovy:groovy:$groovyVersion"
+        compile "org.codehaus.groovy:groovy-templates:$groovyVersion"
 
         testCompile "org.codehaus.groovy:groovy-test:$groovyVersion"
         testCompile "org.codehaus.groovy:groovy-json:$groovyVersion"
+        testCompile "org.codehaus.groovy:groovy-templates:$groovyVersion"
         testCompile "junit:junit:$junitVersion"
 
         documentation "org.fusesource.jansi:jansi:1.11"
