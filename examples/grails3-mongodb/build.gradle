@@ -13,7 +13,7 @@ dependencies {
     compile "org.grails:grails-web-boot:$grailsVersion"
     compile project(":grails-plugin")
     compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
-    runtime "com.bertramlabs.plugins:asset-pipeline-grails:2.8.2"
+    runtime "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
     runtime "com.h2database:h2"
     runtime "org.grails.plugins:scaffolding:$scaffolingVersion"
     runtime "org.grails.plugins:fields:$fieldsVersion"
