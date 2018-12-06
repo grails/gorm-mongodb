@@ -22,7 +22,7 @@ dependencies {
         documentation "org.grails:grails-datastore-$p:$gormVersion"
     }
     project.rootProject.subprojects.findAll { !it.name.contains('-rx-') }.each { subproject ->
-        if(subproject.name != "docs" && !subproject.name.startsWith('grails2') && !subproject.name.startsWith('examples')) {
+        if(subproject.name != "docs" && !subproject.name.startsWith('examples')) {
             documentation project(":$subproject.name")
         }
     }
@@ -95,7 +95,7 @@ task copyDocs(type: Copy, dependsOn:asciidoctor) {
 //        }
 //    }
 //    project.rootProject.subprojects
-//                        .findAll { !it.name.contains('-rx-') && !it.name.startsWith('grails2') && !it.name.startsWith('examples') }
+//                        .findAll { !it.name.contains('-rx-') && !it.name.startsWith('examples') }
 //                        .each { subproject ->
 //        if(subproject.file('src/main/groovy').exists()) {
 //            files += subproject.files("src/main/groovy")

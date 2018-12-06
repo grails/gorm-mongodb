@@ -4,8 +4,6 @@ build/
 *.iml
 target/
 *.zip
-grails2-plugin/plugins/
-grails2-plugin/plugin.xml
 secring.gpg
 
 **/out/

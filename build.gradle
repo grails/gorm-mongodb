@@ -62,7 +62,7 @@ subprojects { project ->
     }
 
     boolean isPluginProject = project.name.endsWith("-plugin") && (project.name.startsWith("grails") || project.name.startsWith("rx-"))
-    boolean isGrails3PluginProject = project.name.endsWith("-plugin") && !project.name.startsWith("grails2")
+    boolean isGrails3PluginProject = project.name.endsWith("-plugin")
 
     ext {
         projectInfo = new PublishingConvention(project)
