@@ -20,7 +20,7 @@ dependencies {
 
     testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion"
     testCompile "org.grails:grails-web-testing-support:$testingSupportVersion"
-    testCompile "com.github.fakemongo:fongo:2.0.9"
+    testCompile "com.github.fakemongo:fongo:$fongoVersion"
     testCompile "org.grails.plugins:geb"
     testRuntime "org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion"
     testRuntime "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
