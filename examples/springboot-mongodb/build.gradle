@@ -19,7 +19,7 @@ dependencies {
     compile project(":gorm-mongodb-spring-boot")
 
     testCompile("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
-    testCompile("org.spockframework:spock-core:1.2-groovy-2.5")
+    testCompile("org.spockframework:spock-core:$spockVersion")
 }
 
 configurations.all {

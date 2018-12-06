@@ -22,7 +22,7 @@ dependencies {
     testCompile group: 'org.codehaus.groovy', name: 'groovy-test', version: groovyVersion
     testCompile "junit:junit:$junitVersion"
 
-    testCompile ("org.spockframework:spock-core:1.2-groovy-2.5") {
+    testCompile ("org.spockframework:spock-core:$spockVersion") {
         exclude group: 'junit', module: 'junit-dep'
         exclude group: 'org.codehaus.groovy', module: 'groovy-all'
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
