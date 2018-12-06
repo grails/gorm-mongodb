@@ -1,8 +1,12 @@
 #!/bin/bash
 
-echo "Publishing..."
-
 EXIT_STATUS=0
+
+if [ "${TRAVIS_JDK_VERSION}" == "openjdk11" ] ; then
+  exit $EXIT_STATUS
+fi
+
+echo "Publishing for branch $TRAVIS_BRANCH JDK: $TRAVIS_JDK_VERSION"
 
 if [[ $TRAVIS_REPO_SLUG == "grails/gorm-mongodb" && $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
 
