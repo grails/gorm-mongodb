@@ -10,6 +10,7 @@ buildscript {
         // classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.9.2'
+        classpath "gradle.plugin.com.energizedwork.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
     }
 }
 
@@ -58,6 +59,13 @@ subprojects { project ->
                 }
             }
         } 
+
+        boolean usesGeb = project.name.contains('grails3-hibernate5-mongodb') || project.name.contains('grails3-mongodb') || project.name.contains('grails3-mongodb-database-per-tenant')|| project.name.contains('grails3-rxmongodb')
+
+        if (usesGeb) {
+            apply plugin:"com.energizedwork.webdriver-binaries"
+        }
+
         return
     }
 
