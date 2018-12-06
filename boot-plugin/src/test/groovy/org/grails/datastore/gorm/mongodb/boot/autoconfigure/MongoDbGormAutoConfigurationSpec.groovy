@@ -44,9 +44,7 @@ class MongoDbGormAutoConfigurationSpec extends Specification{
     @Import(MongoDbGormAutoConfiguration)
     static class TestConfiguration {
     }
-
 }
-
 
 @Entity
 class Person {
@@ -54,4 +52,3 @@ class Person {
     String lastName
     Integer age = 18
 }
-

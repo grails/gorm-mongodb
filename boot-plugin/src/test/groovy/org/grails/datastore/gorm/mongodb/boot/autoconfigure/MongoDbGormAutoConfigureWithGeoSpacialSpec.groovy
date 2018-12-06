@@ -29,7 +29,6 @@ class MongoDbGormAutoConfigureWithGeoSpacialSpec extends Specification{
                               PropertyPlaceholderAutoConfiguration.class);
     }
 
-
     void 'Test that GORM is correctly configured'() {
 
         given:"The context is refreshed"
@@ -58,7 +57,6 @@ class MongoDbGormAutoConfigureWithGeoSpacialSpec extends Specification{
     @Import(MongoDbGormAutoConfiguration)
     static class TestConfiguration {
     }
-
 }
 
 @Entity
@@ -76,4 +74,3 @@ class City {
         location geoIndex:'2dsphere'
     }
 }
-
