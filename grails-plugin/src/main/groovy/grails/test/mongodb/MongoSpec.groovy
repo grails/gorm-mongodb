@@ -95,9 +95,9 @@ abstract class MongoSpec extends Specification {
         else {
             MongoClient mongoClient = createMongoClient()
             if (mongoClient) {
-                mongoDatastore = new MongoDatastore(mongoClient, config, (Class[])domainClasses.toArray())
+                mongoDatastore = new MongoDatastore(mongoClient, config, domainClasses as Class[])
             } else {
-                mongoDatastore = new MongoDatastore((PropertyResolver) config, (Class[])domainClasses.toArray())
+                mongoDatastore = new MongoDatastore((PropertyResolver) config, domainClasses as Class[])
             }
         }
     }
