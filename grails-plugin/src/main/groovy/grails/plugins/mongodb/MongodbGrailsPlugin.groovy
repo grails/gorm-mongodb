@@ -61,7 +61,7 @@ class MongodbGrailsPlugin extends Plugin {
     @Override
     void doWithApplicationContext() {
         JSON.registerObjectMarshaller DBObject, { dbo, json ->
-            JSONWriter writer = json.getWriter();
+            JSONWriter writer = json.getWriter()
 
             writer.object()
             dbo.each {  k, v ->
@@ -73,17 +73,17 @@ class MongodbGrailsPlugin extends Plugin {
             null
         }
         JSON.registerObjectMarshaller(BasicDBList, 999) { dbo, json ->
-            JSONWriter writer = json.getWriter();
+            JSONWriter writer = json.getWriter()
 
-            writer.array();
+            writer.array()
             dbo.each { val -> json.convertAnother(val) }
-            writer.endArray();
+            writer.endArray()
 
             null
         }
 
         JSON.registerObjectMarshaller(BasicDBObject, 999) { dbo, json ->
-            JSONWriter writer = json.getWriter();
+            JSONWriter writer = json.getWriter()
 
             writer.object()
             dbo.each {  k, v ->
