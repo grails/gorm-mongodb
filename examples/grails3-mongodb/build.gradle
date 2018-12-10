@@ -22,7 +22,10 @@ dependencies {
     testCompile "org.grails:grails-web-testing-support:$testingSupportVersion"
     testCompile "de.bwaldvogel:mongo-java-server:$mongoJavaServerVersion"
 
-    testCompile "org.grails.plugins:geb"
+    testCompile("org.grails.plugins:geb") {
+        exclude group: 'org.gebish', module: 'geb-spock'
+    }
+    testCompile "org.gebish:geb-spock:$gebVersion"
     testRuntime "org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion"
     testRuntime "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
     testRuntime "org.seleniumhq.selenium:selenium-safari-driver:$seleniumSafariDriverVersion"
