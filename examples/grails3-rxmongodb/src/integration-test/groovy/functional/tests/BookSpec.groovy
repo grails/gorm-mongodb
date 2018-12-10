@@ -7,12 +7,6 @@ import spock.lang.Specification
 @Integration(applicationClass = Application)
 class BookSpec extends Specification {
 
-    def setup() {
-    }
-
-    def cleanup() {
-    }
-
     void "Test list books"() {
         expect:
         Book.list().toBlocking().first().size() == 0
