@@ -77,7 +77,7 @@ test.doFirst {
     }
     copy {
         from tckClassesDir
-        into sourceSets.test.output.classesDir
+        into sourceSets.test.output.classesDirs.find { it.path.contains('classes/groovy') }
         include "**/*.class"
         exclude { details ->
             // Do not copy across any TCK class (or nested classes of that class)
