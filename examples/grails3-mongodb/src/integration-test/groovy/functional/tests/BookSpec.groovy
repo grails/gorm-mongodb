@@ -1,7 +1,8 @@
 package functional.tests
 
 import com.mongodb.MongoClient
-import grails.test.mixin.integration.Integration
+import grails.testing.mixin.integration.Integration
+
 import grails.validation.ValidationException
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Specification

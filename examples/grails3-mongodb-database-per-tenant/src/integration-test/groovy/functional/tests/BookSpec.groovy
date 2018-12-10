@@ -2,7 +2,8 @@ package functional.tests
 
 import com.mongodb.Block
 import grails.gorm.multitenancy.Tenants
-import grails.test.mixin.integration.Integration
+import grails.testing.mixin.integration.Integration
+
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.multitenancy.exceptions.TenantNotFoundException
 import org.grails.datastore.mapping.multitenancy.resolvers.SystemPropertyTenantResolver

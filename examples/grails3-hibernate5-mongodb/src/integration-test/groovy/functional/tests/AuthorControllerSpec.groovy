@@ -1,7 +1,7 @@
 package functional.tests
 
 import geb.spock.GebSpec
-import grails.test.mixin.integration.Integration
+import grails.testing.mixin.integration.Integration
 
 @Integration
 class AuthorControllerSpec extends GebSpec {
