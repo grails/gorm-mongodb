@@ -2,7 +2,7 @@ package functional.tests
 
 import grails.test.mongodb.MongoSpec
 
-class TeamUnitSpec extends MongoSpec {
+class TeamUnitSpec extends MongoSpec implements EmbeddedMongoClient {
 
     void "get() doesn't throw NPE"() {
         when:
