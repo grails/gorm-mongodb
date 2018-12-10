@@ -8,7 +8,7 @@ import spock.lang.Specification
 /**
  * See the API for {@link grails.test.mixin.support.GrailsUnitTestMixin} for usage instructions
  */
-@Integration
+@Integration(applicationClass = Application)
 class BookSpec extends Specification {
 
     def setup() {

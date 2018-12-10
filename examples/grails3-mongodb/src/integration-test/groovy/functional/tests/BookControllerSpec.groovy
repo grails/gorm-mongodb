@@ -7,7 +7,7 @@ import geb.spock.*
 /**
  * See the API for {@link grails.test.mixin.support.GrailsUnitTestMixin} for usage instructions
  */
-@Integration
+@Integration(applicationClass = Application)
 class BookControllerSpec extends GebSpec {
 
     def setup() {

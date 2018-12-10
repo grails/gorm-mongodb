@@ -14,7 +14,7 @@ import spock.lang.Specification
 /**
  * Created by graemerocher on 17/10/16.
  */
-@Integration
+@Integration(applicationClass = Application)
 class BookSpec extends Specification {
     @Autowired
     MongoDatastore mongoDatastore
