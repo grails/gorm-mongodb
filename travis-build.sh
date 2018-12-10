@@ -14,8 +14,6 @@ else
 	    ./gradlew gorm-mongodb-spring-boot:test -no-daemon || EXIT_STATUS=$?
 	fi
 
-	./gradlew --stop
-
 	if [[ $EXIT_STATUS -eq 0 ]]; then
 	    ./travis-publish.sh || EXIT_STATUS=$?
 	fi
