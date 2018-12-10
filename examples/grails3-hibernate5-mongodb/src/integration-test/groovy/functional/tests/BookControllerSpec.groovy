@@ -1,6 +1,6 @@
 package functional.tests
 
-import geb.spock.*
+import geb.spock.GebSpec
 import grails.testing.mixin.integration.Integration
 
 /**

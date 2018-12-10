@@ -2,7 +2,6 @@ package functional.tests
 
 import grails.testing.mixin.integration.Integration
 
-import geb.spock.*
 import spock.lang.Specification
 
 /**
