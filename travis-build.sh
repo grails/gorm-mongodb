@@ -6,7 +6,6 @@ if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
 	echo "Skipping tests to Publish release"
 	./travis-publish.sh || EXIT_STATUS=$?
 else
-	./gradlew --stop
 	./gradlew --no-daemon compileGroovy
 	./gradlew --no-daemon compileTestGroovy
 
