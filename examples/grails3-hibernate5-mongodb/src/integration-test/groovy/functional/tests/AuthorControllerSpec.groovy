@@ -6,12 +6,6 @@ import grails.testing.mixin.integration.Integration
 @Integration(applicationClass = Application)
 class AuthorControllerSpec extends GebSpec {
 
-    def setup() {
-    }
-
-    def cleanup() {
-    }
-
     void "Test list authors"() {
         when:"The home page is visited"
         go '/author/index'
