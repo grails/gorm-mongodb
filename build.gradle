@@ -14,7 +14,7 @@ buildscript {
     }
 }
 
-println "GORM VERSION = ${project.gormVersion}"
+logger.lifecycle "GORM VERSION = ${project.gormVersion}"
 
 group "org.grails"
 version "7.0.0.BUILD-SNAPSHOT"
