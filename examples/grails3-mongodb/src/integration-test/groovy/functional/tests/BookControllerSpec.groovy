@@ -4,9 +4,6 @@ import grails.testing.mixin.integration.Integration
 
 import geb.spock.GebSpec
 
-/**
- * See the API for {@link grails.test.mixin.support.GrailsUnitTestMixin} for usage instructions
- */
 @Integration(applicationClass = Application)
 class BookControllerSpec extends GebSpec {
 
