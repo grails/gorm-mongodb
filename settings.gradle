@@ -1,10 +1,8 @@
 
 // core
-include "grails-datastore-gorm-bson",
-        "grails-datastore-gorm-mongodb",
-        "grails-datastore-gorm-mongodb-ext",
-        "grails-datastore-gorm-rx-bson",
-        "grails-datastore-gorm-rx-mongodb"
+include "grails-datastore-gorm-bson"
+include "grails-datastore-gorm-mongodb"
+include "grails-datastore-gorm-mongodb-ext"
 
 // documentation
 include 'docs'
@@ -12,8 +10,6 @@ include 'docs'
 // plugins
 include "boot-plugin"
 include 'grails-plugin'
-include 'rx-plugin'
-
 
 // examples
 include 'examples-grails3-mongodb'
@@ -21,9 +17,6 @@ project(":examples-grails3-mongodb").projectDir = new File(settingsDir, "example
 
 include 'examples-grails3-mongodb-database-per-tenant'
 project(":examples-grails3-mongodb-database-per-tenant").projectDir = new File(settingsDir, "examples/grails3-mongodb-database-per-tenant")
-
-include 'examples-grails3-rxmongodb'
-project(":examples-grails3-rxmongodb").projectDir = new File(settingsDir, "examples/grails3-rxmongodb")
 
 include 'examples-grails3-hibernate5-mongodb'
 project(":examples-grails3-hibernate5-mongodb").projectDir = new File(settingsDir, "examples/grails3-hibernate5-mongodb")
