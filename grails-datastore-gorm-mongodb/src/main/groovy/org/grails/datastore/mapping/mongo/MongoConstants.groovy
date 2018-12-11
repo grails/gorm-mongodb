@@ -22,7 +22,7 @@ class MongoConstants {
 
     @CompileDynamic
     public static <T> T mapToObject(Class<T> targetType, Map<String,Object> values) {
-        T t = targetType.newInstance()
+        T t = targetType.getDeclaredConstructor().newInstance()
         for(String name in values.keySet()) {
             if(t.respondsTo(name)) {
                 t."$name"( values.get(name) )
