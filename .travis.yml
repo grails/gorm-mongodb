@@ -8,6 +8,9 @@ cache:
 jdk:
 - oraclejdk8
 - openjdk11
+addons:
+  chrome: stable
+  firefox: latest
 services:
   - mongodb
 env:
