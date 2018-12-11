@@ -1,6 +1,7 @@
-package grails.gorm.tests
+package grails.gorm.tests.listener
 
 import grails.gorm.DetachedCriteria
+import grails.gorm.tests.GormDatastoreSpec
 import grails.persistence.Entity
 
 import org.grails.datastore.mapping.core.Datastore
