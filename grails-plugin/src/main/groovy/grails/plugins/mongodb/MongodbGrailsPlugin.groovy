@@ -11,8 +11,6 @@ import grails.util.Metadata
 import groovy.transform.CompileStatic
 import org.grails.core.artefact.DomainClassArtefactHandler
 import org.grails.datastore.mapping.mongo.MongoDatastore
-import org.grails.web.json.JSONWriter
-import grails.converters.JSON
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.env.PropertyResolver
@@ -57,46 +55,6 @@ class MongodbGrailsPlugin extends Plugin {
     protected boolean hasHibernatePlugin() {
         manager.allPlugins.any() { GrailsPlugin plugin -> plugin.name ==~ /hibernate\d*/}
     }
-
-    @Override
-    void doWithApplicationContext() {
-        JSON.registerObjectMarshaller DBObject, { dbo, json ->
-            JSONWriter writer = json.getWriter()
-
-            writer.object()
-            dbo.each {  k, v ->
-                writer.key(k)
-                json.convertAnother(v)
-            }
-            writer.endObject()
-
-            null
-        }
-        JSON.registerObjectMarshaller(BasicDBList, 999) { dbo, json ->
-            JSONWriter writer = json.getWriter()
-
-            writer.array()
-            dbo.each { val -> json.convertAnother(val) }
-            writer.endArray()
-
-            null
-        }
-
-        JSON.registerObjectMarshaller(BasicDBObject, 999) { dbo, json ->
-            JSONWriter writer = json.getWriter()
-
-            writer.object()
-            dbo.each {  k, v ->
-                writer.key(k)
-                json.convertAnother(v)
-            }
-            writer.endObject()
-
-            null
-        }
-    }
-
-
 
     @Override
     @CompileStatic

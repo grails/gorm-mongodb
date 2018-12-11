@@ -3,7 +3,7 @@ targetCompatibility = 1.8
 
 dependencyManagement {
     imports {
-        mavenBom "org.grails:grails-bom:$grailsVersion"
+        mavenBom "org.grails:grails-bom:$grails3Version"
     }
     applyMavenExclusions false
 }
@@ -25,8 +25,8 @@ dependencies {
 
     compileOnly "org.spockframework:spock-core:$spockVersion"
 
-    compileOnly "org.grails.plugins:converters:$grailsVersion"
-    compile "org.grails:grails-web-common:$grailsVersion"
+    // compileOnly "org.grails.plugins:converters:$grails3Version"
+    // compile "org.grails:grails-web-common:$grails3Version"
 
     compile "org.grails:grails-datastore-web:$gormVersion"
     compile "org.grails:grails-datastore-gorm-support:$gormVersion", {
