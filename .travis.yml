@@ -8,11 +8,16 @@ cache:
 jdk:
 - oraclejdk8
 - openjdk11
+services:
+  - mongodb
 addons:
   chrome: stable
   firefox: latest
-services:
-  - mongodb
+  apt:
+    sources:
+      - mongodb-3.0-precise
+    packages:
+      - mongodb-org-server
 env:
   global:
   - TERM=dumb
