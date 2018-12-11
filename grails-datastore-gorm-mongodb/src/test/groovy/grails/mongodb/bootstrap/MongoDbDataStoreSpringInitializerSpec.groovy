@@ -128,7 +128,7 @@ class MongoDbDataStoreSpringInitializerSpec extends Specification{
 
     }
 
-
+    @Ignore
     void "Test custom codecs from Spring"() {
         given:"the initializer used to setup GORM for MongoDB"
         def initializer = new MongoDbDataStoreSpringInitializer(Person)
@@ -148,6 +148,7 @@ class MongoDbDataStoreSpringInitializerSpec extends Specification{
         !Person.findByBirthday(new Birthday(new Date() - 7))
     }
 
+    @Ignore
     void "Test custom type marshallers from Spring"() {
         given:"the initializer used to setup GORM for MongoDB"
         def initializer = new MongoDbDataStoreSpringInitializer(Person)
