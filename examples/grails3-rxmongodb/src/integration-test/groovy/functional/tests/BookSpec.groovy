@@ -2,20 +2,10 @@ package functional.tests
 
 import grails.testing.mixin.integration.Integration
 
-import geb.spock.*
 import spock.lang.Specification
 
-/**
- * See the API for {@link grails.test.mixin.support.GrailsUnitTestMixin} for usage instructions
- */
 @Integration(applicationClass = Application)
 class BookSpec extends Specification {
-
-    def setup() {
-    }
-
-    def cleanup() {
-    }
 
     void "Test list books"() {
         expect:

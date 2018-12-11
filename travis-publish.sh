@@ -17,19 +17,19 @@ if [[ $TRAVIS_REPO_SLUG == "grails/gorm-mongodb" && $TRAVIS_PULL_REQUEST == 'fal
   gpg --keyserver keyserver.ubuntu.com --recv-key $SIGNING_KEY
   if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
     # for releases we upload to Bintray and Sonatype OSS
-    ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" uploadArchives --no-daemon || EXIT_STATUS=$?
+    ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" uploadArchives --no-daemon -x grails-datastore-gorm-rx-mongodb:assemble -x rx-plugin:assemble -x examples-grails3-rxmongodb:assemble  || EXIT_STATUS=$?
 
     if [[ $EXIT_STATUS -eq 0 ]]; then
-        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish --no-daemon || EXIT_STATUS=$?
+        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish --no-daemon -x grails-datastore-gorm-rx-mongodb:assemble -x rx-plugin:assemble -x examples-grails3-rxmongodb:assemble  || EXIT_STATUS=$?
     fi
 
 
     if [[ $EXIT_STATUS -eq 0 ]]; then
-        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" bintrayUpload --no-daemon || EXIT_STATUS=$?
+        ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" bintrayUpload --no-daemon  -x grails-datastore-gorm-rx-mongodb:assemble -x rx-plugin:assemble -x examples-grails3-rxmongodb:assemble  || EXIT_STATUS=$?
     fi
   else
     # for snapshots only to repo.grails.org
-    ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish || EXIT_STATUS=$?
+    ./gradlew -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="${TRAVIS_BUILD_DIR}/secring.gpg" publish -x grails-datastore-gorm-rx-mongodb:assemble -x rx-plugin:assemble -x examples-grails3-rxmongodb:assemble || EXIT_STATUS=$?
   fi
   if [[ $EXIT_STATUS -eq 0 ]]; then
     echo "Publishing Successful."

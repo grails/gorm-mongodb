@@ -14,7 +14,7 @@ dependencies {
     compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
     compile project(":grails-plugin")
     compile "org.grails.plugins:hibernate5:$hibernatePluginVersion"
-    compile "org.hibernate:hibernate-ehcache:5.3.4.Final"
+    compile "org.hibernate:hibernate-ehcache:$hibernateCoreVersion"
 
     runtime "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
     runtime "com.h2database:h2"

@@ -2,10 +2,12 @@ package functional.tests
 
 import geb.spock.GebSpec
 import grails.testing.mixin.integration.Integration
+import spock.lang.Ignore
 
 @Integration(applicationClass = Application)
 class AuthorControllerSpec extends GebSpec {
 
+    @Ignore
     void "Test list authors"() {
         when:"The home page is visited"
         go '/author/index'
@@ -14,6 +16,7 @@ class AuthorControllerSpec extends GebSpec {
         title == "Author List"
     }
 
+    @Ignore
     void "Test save author"() {
         when:
         go "/author/create"
