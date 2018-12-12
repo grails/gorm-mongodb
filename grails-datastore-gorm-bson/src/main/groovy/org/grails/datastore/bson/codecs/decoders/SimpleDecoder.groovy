@@ -10,9 +10,26 @@ import org.bson.types.Binary
 import org.bson.types.Decimal128
 import org.bson.types.ObjectId
 import org.grails.datastore.bson.codecs.PropertyDecoder
+import org.grails.datastore.bson.codecs.encoders.InstantEncoder
+import org.grails.datastore.bson.codecs.encoders.LocalDateEncoder
+import org.grails.datastore.bson.codecs.encoders.LocalDateTimeEncoder
+import org.grails.datastore.bson.codecs.encoders.LocalTimeEncoder
+import org.grails.datastore.bson.codecs.encoders.OffsetDateTimeEncoder
+import org.grails.datastore.bson.codecs.encoders.OffsetTimeEncoder
+import org.grails.datastore.bson.codecs.encoders.PeriodEncoder
+import org.grails.datastore.bson.codecs.encoders.ZonedDateTimeEncoder
 import org.grails.datastore.mapping.engine.EntityAccess
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.model.types.Simple
+
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
+import java.time.Period
+import java.time.ZonedDateTime
 
 /**
  * A {@PropertyDecoder} capable of decoding {@link org.grails.datastore.mapping.model.types.Simple} properties
@@ -226,6 +243,15 @@ class SimpleDecoder implements PropertyDecoder<Simple> {
                 entityAccess.setPropertyNoConversion( property.name, calendar)
             }
         }
+
+        SIMPLE_TYPE_DECODERS[LocalDate] = new LocalDateDecoder()
+        SIMPLE_TYPE_DECODERS[LocalDateTime] = new LocalDateTimeDecoder()
+        SIMPLE_TYPE_DECODERS[LocalTime] = new LocalTimeDecoder()
+        SIMPLE_TYPE_DECODERS[OffsetDateTime] = new OffsetDateTimeDecoder()
+        SIMPLE_TYPE_DECODERS[OffsetTime] = new OffsetTimeDecoder()
+        SIMPLE_TYPE_DECODERS[ZonedDateTime] = new ZonedDateTimeDecoder()
+        SIMPLE_TYPE_DECODERS[Period] = new PeriodDecoder()
+        SIMPLE_TYPE_DECODERS[Instant] = new InstantDecoder()
 
         SIMPLE_TYPE_DECODERS[Binary] = new TypeDecoder() {
             @Override

@@ -14,6 +14,15 @@ import org.grails.datastore.mapping.engine.internal.MappingUtils
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.model.types.Simple
 
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
+import java.time.Period
+import java.time.ZonedDateTime
+
 /**
  * An encoder for simple types persistable by MongoDB
  *
@@ -100,6 +109,16 @@ class SimpleEncoder implements PropertyEncoder<Simple> {
                 writer.writeString( ((TimeZone)value).ID )
             }
         }
+
+        SIMPLE_TYPE_ENCODERS[LocalDate] = new LocalDateEncoder()
+        SIMPLE_TYPE_ENCODERS[LocalDateTime] = new LocalDateTimeEncoder()
+        SIMPLE_TYPE_ENCODERS[LocalTime] = new LocalTimeEncoder()
+        SIMPLE_TYPE_ENCODERS[OffsetDateTime] = new OffsetDateTimeEncoder()
+        SIMPLE_TYPE_ENCODERS[OffsetTime] = new OffsetTimeEncoder()
+        SIMPLE_TYPE_ENCODERS[ZonedDateTime] = new ZonedDateTimeEncoder()
+        SIMPLE_TYPE_ENCODERS[Period] = new PeriodEncoder()
+        SIMPLE_TYPE_ENCODERS[Instant] = new InstantEncoder()
+
         SIMPLE_TYPE_ENCODERS[([] as byte[]).getClass()] = new TypeEncoder() {
             @Override
             void encode(BsonWriter writer, PersistentProperty property, Object value) {
