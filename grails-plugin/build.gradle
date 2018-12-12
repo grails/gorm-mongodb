@@ -18,6 +18,8 @@ configurations.all {
     }
 }
 dependencies {
+    documentation ("org.grails:grails-core")
+    documentation ("org.grails:grails-spring")
     compileOnly("org.grails:grails-core:")
     compileOnly("org.grails:grails-bootstrap")
     compileOnly "org.grails:grails-test-mixins:3.3.0"
