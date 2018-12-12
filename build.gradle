@@ -1,9 +1,14 @@
+import groovyx.net.http.RESTClient
+
+import static groovyx.net.http.ContentType.JSON
+
 buildscript {
     repositories {
         mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
     }
     dependencies {
+        classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.1"
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
         // classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
@@ -151,9 +156,7 @@ subprojects { project ->
     }
 
     apply plugin: 'maven-publish'
-    if(isGrails3PluginProject) {
-        apply plugin: 'com.jfrog.bintray'
-    }
+    apply plugin: 'com.jfrog.bintray'
     //apply plugin: "io.github.groovylang.groovydoc"
 
     sourceCompatibility = "1.8"
@@ -254,51 +257,85 @@ subprojects { project ->
         }
     }   
 
-    if (isGrails3PluginProject) {
-        bintray {
+    bintray {
 
-            def u = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
-            def p = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
+        def u = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
+        def p = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
 
-            user = u
-            key = p
-            publications = ['maven']
-            publish = true
-            dryRun = false
-            pkg {
-                if(isGrails3PluginProject) {
-                    repo = 'plugins'
-                }
-                else {
-                    repo = 'grails-core'
-                }
-                userOrg = 'grails'
-                name = projectInfo.projectArtifactId
-                desc = projectInfo.projectDescription
-                websiteUrl = projectInfo.projectURL
-                issueTrackerUrl = projectInfo.projectIssueTrackerUrl
-                vcsUrl = projectInfo.projectVcsUrl
-                licenses = ['Apache-2.0']
-                publicDownloadNumbers = true
-                version {
-                    name = project.version
-                    gpg {
-                        sign = true
-                        passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
-                    }
-                    mavenCentralSync {
-                        sync = false
-                        def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
-                        def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
-                        user = ossUser
-                        password = ossPass
-                    }
-
-                }
+        user = u
+        key = p
+        publications = ['maven']
+        publish = true
+        dryRun = false
+        pkg {
+            if(isGrails3PluginProject) {
+                repo = 'plugins'
             }
-        }                 
+            else {
+                repo = 'grails-core'
+            }
+            userOrg = 'grails'
+            name = projectInfo.projectArtifactId
+            desc = projectInfo.projectDescription
+            websiteUrl = projectInfo.projectURL
+            issueTrackerUrl = projectInfo.projectIssueTrackerUrl
+            vcsUrl = projectInfo.projectVcsUrl
+            licenses = ['Apache-2.0']
+            publicDownloadNumbers = true
+            version {
+                name = project.version
+                gpg {
+                    sign = true
+                    passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
+                }
+                mavenCentralSync {
+                    sync = false
+                    def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
+                    def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
+                    user = ossUser
+                    password = ossPass
+                }
+
+            }
+        }
     }
 
+    if (!isGrails3PluginProject) {
+        task synchronizeWithMavenCentral() {
+            description = "Syncs with Maven Central/Sonatype"
+            doLast {
+                println """
+Synchronizing with Maven central. This may take a few minutes ...
+If this fails, log on to http://oss.sonatype.org/ using the centralUser credentials
+and progress through process manually -> Close -> Publish ... under staging repositories
+"""
+                try {
+                    try {
+                        def mavenClent = new RESTClient("https://repo.maven.apache.org/maven2/")
+                        mavenClent.get(path:"${project.group.replace('.','/')}/$project.name/$projectVersion/$project.name-${projectVersion}.jar")
+                    } catch(groovyx.net.http.HttpResponseException e) {
+                        // doesn't exist.. try sync
+                        def client = new RESTClient('https://api.bintray.com/maven_central_sync/grails/grails-core/')
+                        client.headers['Authorization'] = 'Basic ' + "$bintrayUser:$bintrayKey".getBytes('iso-8859-1').encodeBase64()
+                        def body = /{}/
+                        def resp = client.post(
+                                path: "$bintray.pkg.name/versions/$projectVersion",
+                                body: body,
+                                requestContentType: JSON
+                        )
+                        assert resp.status == 200
+                        println resp.data.status
+                        println resp.data.messages.join('\n')
+                    }
+                } catch (groovyx.net.http.HttpResponseException e) {
+                    println "Error: $e"
+                    println "Message: $e.message"
+                    println "Body: $e.response.data"
+                    throw e
+                }
+            }
+        }
+    }
 }
 
 class PublishingConvention {
