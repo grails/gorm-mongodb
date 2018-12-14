@@ -30,8 +30,7 @@ import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.bson.types.*;
-import org.grails.datastore.bson.codecs.BigDecimalCodec;
-import org.grails.datastore.bson.codecs.CodecExtensions;
+import org.grails.datastore.bson.codecs.*;
 import org.grails.datastore.bson.codecs.encoders.SimpleEncoder;
 import org.grails.datastore.gorm.mongo.geo.*;
 import org.grails.datastore.gorm.mongo.simple.EnumType;
@@ -48,7 +47,6 @@ import org.grails.datastore.mapping.model.types.Identity;
 import org.grails.datastore.mapping.mongo.MongoConstants;
 import org.grails.datastore.mapping.mongo.MongoDatastore;
 import org.grails.datastore.mapping.mongo.connections.AbstractMongoConnectionSourceSettings;
-import org.grails.datastore.bson.codecs.CodecCustomTypeMarshaller;
 import org.grails.datastore.mapping.reflect.ClassUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterRegistry;
@@ -167,6 +165,15 @@ public class MongoMappingContext extends DocumentMappingContext {
         for (Codec codec : codecList) {
             codecs.add(codec);
         }
+
+        codecs.add(new InstantCodec());
+        codecs.add(new LocalDateCodec());
+        codecs.add(new LocalDateTimeCodec());
+        codecs.add(new LocalTimeCodec());
+        codecs.add(new OffsetDateTimeCodec());
+        codecs.add(new OffsetTimeCodec());
+        codecs.add(new PeriodCodec());
+        codecs.add(new ZonedDateTimeCodec());
 
         if(mongoConnectionSourceSettings.getCodecRegistry() != null) {
             this.codecRegistry = CodecRegistries.fromRegistries(
