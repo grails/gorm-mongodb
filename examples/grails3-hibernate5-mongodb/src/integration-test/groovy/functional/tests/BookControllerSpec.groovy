@@ -2,7 +2,6 @@ package functional.tests
 
 import geb.spock.GebSpec
 import grails.testing.mixin.integration.Integration
-import spock.lang.Ignore
 
 @Integration(applicationClass = Application)
 class BookControllerSpec extends GebSpec {
@@ -15,7 +14,6 @@ class BookControllerSpec extends GebSpec {
         	title == "Book List"
     }
 
-    @Ignore
     void "Test save book"() {
         when:
         go "/book/create"
