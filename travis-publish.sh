@@ -25,7 +25,7 @@ if [[ $TRAVIS_REPO_SLUG == "grails/gorm-mongodb" && $TRAVIS_PULL_REQUEST == 'fal
   else
     echo "publishing snapshot"
     # for snapshots only to repo.grails.org
-    ./gradlew publish || EXIT_STATUS=$?
+    ./gradlew publish --no-daemon --stacktrace || EXIT_STATUS=$?
   fi
 
 
