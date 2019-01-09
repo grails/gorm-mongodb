@@ -1,7 +1,5 @@
 package functional.tests
 
-import grails.mongodb.MongoEntity
-
 class Book {
 
     String title
