@@ -15,6 +15,10 @@ configurations.all {
             !details.requested.name.contains('bson')) {
             details.useVersion(gormVersion)
         }
+        if(details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
+            details.useVersion(groovyVersion)   
+        }
+
     }
 }
 dependencies {
