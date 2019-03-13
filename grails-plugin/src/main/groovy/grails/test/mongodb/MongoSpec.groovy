@@ -35,7 +35,7 @@ abstract class MongoSpec extends Specification {
     MongoDatastore mongoDatastore
 
     @Shared
-    Session session
+    Session mongoSession
 
     /**
      * @return Obtains the mapping context
@@ -104,13 +104,13 @@ abstract class MongoSpec extends Specification {
 
     void setup() {
         boolean existing = mongoDatastore.hasCurrentSession()
-        session = existing ? mongoDatastore.currentSession : DatastoreUtils.bindSession(mongoDatastore.connect())
+        mongoSession = existing ? mongoDatastore.currentSession : DatastoreUtils.bindSession(mongoDatastore.connect())
     }
 
     void cleanup() {
         if (!mongoDatastore.hasCurrentSession()) {
             TransactionSynchronizationManager.unbindResource(mongoDatastore)
-            DatastoreUtils.closeSessionOrRegisterDeferredClose(session, mongoDatastore)
+            DatastoreUtils.closeSessionOrRegisterDeferredClose(mongoSession, mongoDatastore)
         }
     }
 
