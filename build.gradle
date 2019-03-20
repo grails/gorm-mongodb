@@ -302,6 +302,11 @@ subprojects { project ->
     }
 
     if (!isGrails3PluginProject) {
+        def bintrayUser = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
+        def bintrayKey = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
+        def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
+        def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
+
         task synchronizeWithMavenCentral() {
             description = "Syncs with Maven Central/Sonatype"
             doLast {
@@ -313,14 +318,14 @@ and progress through process manually -> Close -> Publish ... under staging repo
                 try {
                     try {
                         def mavenClent = new RESTClient("https://repo.maven.apache.org/maven2/")
-                        mavenClent.get(path:"${project.group.replace('.','/')}/$project.name/$projectVersion/$project.name-${projectVersion}.jar")
+                        mavenClent.get(path:"${project.group.replace('.','/')}/$project.name/$project.version/$project.name-${project.version}.jar")
                     } catch(groovyx.net.http.HttpResponseException e) {
                         // doesn't exist.. try sync
                         def client = new RESTClient('https://api.bintray.com/maven_central_sync/grails/grails-core/')
                         client.headers['Authorization'] = 'Basic ' + "$bintrayUser:$bintrayKey".getBytes('iso-8859-1').encodeBase64()
                         def body = /{}/
                         def resp = client.post(
-                                path: "$bintray.pkg.name/versions/$projectVersion",
+                                path: "$bintray.pkg.name/versions/$project.version",
                                 body: body,
                                 requestContentType: JSON
                         )
