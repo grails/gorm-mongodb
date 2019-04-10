@@ -10,28 +10,25 @@ echo "Publishing for branch $TRAVIS_BRANCH JDK: $TRAVIS_JDK_VERSION"
 
 if [[ $TRAVIS_REPO_SLUG == "grails/gorm-mongodb" && $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
 
-  echo "Publishing archives"
-  export GRADLE_OPTS="-Xmx1500m -Dfile.encoding=UTF-8"
-  if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-    # for releases we upload to Bintray and Sonatype OSS
-      if [[ -n $TRAVIS_TAG ]]; then
-          ./gradlew publish bintrayUpload --no-daemon --stacktrace || EXIT_STATUS=$?
-        if [[ $EXIT_STATUS -eq 0 ]]; then
-          ./gradlew synchronizeWithMavenCentral --no-daemon
-        fi
-      else
-          ./gradlew publish --no-daemon --stacktrace || EXIT_STATUS=$?
-      fi
-  else
-    echo "publishing snapshot"
-    # for snapshots only to repo.grails.org
-    ./gradlew publish --no-daemon --stacktrace || EXIT_STATUS=$?
-  fi
+  # echo "Publishing archives"
+  # export GRADLE_OPTS="-Xmx1500m -Dfile.encoding=UTF-8"
+  # if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
+  #   # for releases we upload to Bintray and Sonatype OSS
+  #     if [[ -n $TRAVIS_TAG ]]; then
+  #         ./gradlew publish bintrayUpload --no-daemon --stacktrace || EXIT_STATUS=$?
+  #     else
+  #         ./gradlew publish --no-daemon --stacktrace || EXIT_STATUS=$?
+  #     fi
+  # else
+  #   echo "publishing snapshot"
+  #   # for snapshots only to repo.grails.org
+  #   ./gradlew publish --no-daemon --stacktrace || EXIT_STATUS=$?
+  # fi
 
 
-  if [[ $EXIT_STATUS -eq 0 ]]; then
-    echo "Publishing Successful."
-  fi
+  # if [[ $EXIT_STATUS -eq 0 ]]; then
+  #   echo "Publishing Successful."
+  # fi
 
 
   if [[ $EXIT_STATUS -eq 0 ]]; then
@@ -75,8 +72,13 @@ if [[ $TRAVIS_REPO_SLUG == "grails/gorm-mongodb" && $TRAVIS_PULL_REQUEST == 'fal
 
     git commit -a -m "Updating MongoDB Docs for Travis build: https://travis-ci.org/$TRAVIS_REPO_SLUG/builds/$TRAVIS_BUILD_ID"
     git push origin HEAD
-    cd ../../..
+    cd ..
     rm -rf gh-pages
+    # if [[ $EXIT_STATUS -eq 0 ]]; then
+    #     if [[ -n $TRAVIS_TAG ]]; then
+    #       ./gradlew synchronizeWithMavenCentral --no-daemon
+    #     fi
+    # fi        
   fi  
 fi
 
