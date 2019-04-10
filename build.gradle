@@ -4,7 +4,6 @@ import static groovyx.net.http.ContentType.JSON
 
 buildscript {
     repositories {
-        mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
     }
     dependencies {
@@ -26,7 +25,7 @@ version "7.0.0.RELEASE"
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    hibernatePluginVersion = '7.0.0.RELEASE'
+    hibernatePluginVersion = '7.0.0'
     isCiBuild = project.hasProperty("isCiBuild")
     isBuildSnapshot = project.version.endsWith("BUILD-SNAPSHOT")
     servletApiVersion = "4.0.1"
@@ -37,10 +36,7 @@ ext {
 
 subprojects { project ->
     repositories {
-        mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
-        maven { url "https://oss.jfrog.org/artifactory/oss-snapshot-local" }
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     if(project.name.startsWith("examples")) {
         if(project.name.contains('grails3')) {
