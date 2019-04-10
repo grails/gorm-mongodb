@@ -22,11 +22,11 @@ buildscript {
 logger.lifecycle "GORM VERSION = ${project.datastoreVersion}"
 
 group "org.grails"
-version "7.0.0.BUILD-SNAPSHOT"
+version "7.0.0.RELEASE"
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    hibernatePluginVersion = '7.0.0.BUILD-SNAPSHOT'
+    hibernatePluginVersion = '7.0.0.RELEASE'
     isCiBuild = project.hasProperty("isCiBuild")
     isBuildSnapshot = project.version.endsWith("BUILD-SNAPSHOT")
     servletApiVersion = "4.0.1"
