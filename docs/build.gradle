@@ -5,8 +5,7 @@ ext {
 
     coreProjects = [
             'core',
-            'gorm',
-            'gorm-plugin-support'
+            'gorm'
     ]
 
 }
@@ -19,7 +18,7 @@ dependencies {
     documentation "org.codehaus.groovy:groovy-all:$groovyVersion"
     documentation 'org.fusesource.jansi:jansi:1.12'
     for(p in coreProjects) {
-        documentation "org.grails:grails-datastore-$p:$gormVersion"
+        documentation "org.grails:grails-datastore-$p:$datastoreVersion"
     }
     project.rootProject.subprojects.findAll { !it.name.contains('-rx-') }.each { subproject ->
         if(subproject.name != "docs" && !subproject.name.startsWith('examples')) {

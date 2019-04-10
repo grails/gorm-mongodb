@@ -13,7 +13,7 @@ configurations.all {
             details.requested.name.startsWith('grails-datastore') &&
             !details.requested.name.contains('mongodb') &&
             !details.requested.name.contains('bson')) {
-            details.useVersion(gormVersion)
+            details.useVersion(datastoreVersion)
         }
         if(details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
             details.useVersion(groovyVersion)   
@@ -34,8 +34,8 @@ dependencies {
     // compileOnly "org.grails.plugins:converters:$grails3Version"
     // compile "org.grails:grails-web-common:$grails3Version"
 
-    compile "org.grails:grails-datastore-web:$gormVersion"
-    compile "org.grails:grails-datastore-gorm-support:$gormVersion", {
+    compile "org.grails:grails-datastore-web:$datastoreVersion"
+    compile "org.grails:grails-datastore-gorm-support:$datastoreVersion", {
         exclude group:'org.springframework', module:'spring-context'
         exclude group:'org.springframework', module:'spring-core'
         exclude group:'org.springframework', module:'spring-beans'

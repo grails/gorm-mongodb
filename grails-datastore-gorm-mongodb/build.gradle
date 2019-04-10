@@ -2,22 +2,22 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 dependencies {
     compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
-    compile "org.grails:grails-datastore-gorm-validation:$gormVersion"
-    compile "org.grails:grails-datastore-gorm:$gormVersion"
+    compile "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
+    compile "org.grails:grails-datastore-gorm:$datastoreVersion"
 
-    compileOnly("org.grails:grails-datastore-gorm-support:$gormVersion") {
+    compileOnly("org.grails:grails-datastore-gorm-support:$datastoreVersion") {
         exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
     }
 
     compile(project(":grails-datastore-gorm-bson"))
 
-    testCompile "org.grails:grails-datastore-gorm-tck:$gormVersion"
+    testCompile "org.grails:grails-datastore-gorm-tck:$datastoreVersion"
 
     testRuntime "org.springframework:spring-aop:$springVersion"
 
     compileOnly "javax.servlet:javax.servlet-api:$servletApiVersion"
     testCompile("org.hibernate:hibernate-validator:$hibernateValidatorVersion")
-    testCompile("org.grails:grails-datastore-gorm-support:$gormVersion") {
+    testCompile("org.grails:grails-datastore-gorm-support:$datastoreVersion") {
         exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
     }
     testRuntime('org.glassfish.web:el-impl:2.2')
