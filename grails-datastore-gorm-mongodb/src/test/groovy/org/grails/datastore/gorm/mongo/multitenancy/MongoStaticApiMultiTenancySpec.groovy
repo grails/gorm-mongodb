@@ -2,6 +2,10 @@ package org.grails.datastore.gorm.mongo.multitenancy
 
 import com.mongodb.client.model.Filters
 import grails.gorm.MultiTenant
+import grails.gorm.multitenancy.CurrentTenant
+import grails.gorm.multitenancy.Tenants
+import grails.gorm.multitenancy.WithoutTenant
+import grails.gorm.services.Service
 import grails.mongodb.MongoEntity
 import grails.persistence.Entity
 import org.bson.types.ObjectId
@@ -17,6 +21,8 @@ class MongoStaticApiMultiTenancySpec extends Specification {
 
     @Shared  @AutoCleanup MongoDatastore datastore
 
+    @Shared BookService bookService
+
     void setupSpec() {
         Map config = [
                 "grails.gorm.multiTenancy.mode"               : "DISCRIMINATOR",
@@ -24,6 +30,7 @@ class MongoStaticApiMultiTenancySpec extends Specification {
                 (MongoSettings.SETTING_URL)                   : "mongodb://localhost/defaultDb",
         ]
         this.datastore = new MongoDatastore(config, getDomainClasses() as Class[])
+        this.bookService = datastore.getService(BookService)
     }
 
     void setup() {
@@ -250,6 +257,45 @@ class MongoStaticApiMultiTenancySpec extends Specification {
         result.size() == 1
     }
 
+    void "test withoutTenant should results ignoring tenant information"() {
+        setup:
+        Book.DB.drop()
+        datastore.buildIndex()
+        Integer count = null
+
+        when:
+        Tenants.withoutId {
+            count = Book.count()
+        }
+
+        then:
+        count == 0
+        bookService.count() == 0
+
+        when:
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "mix")
+        createBook("Grails 3 - Step by Step")
+        Tenants.withoutId {
+            count = Book.count()
+        }
+
+        then:
+        count == 1
+        bookService.count() == 1
+
+        when:
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "groovy")
+        createBook("Making Java Groovy")
+        Tenants.withoutId {
+            count = Book.count()
+        }
+
+        then:
+        count == 2
+        bookService.count() == 2
+        Book.collection.count() == 2
+    }
+
     List getDomainClasses() {
         [Book]
     }
@@ -269,6 +315,17 @@ class MongoStaticApiMultiTenancySpec extends Specification {
             createBook(title)
         }
     }
+
+}
+
+@CurrentTenant
+@Service(Book)
+abstract class BookService {
+
+    abstract Book save(String title)
+
+    @WithoutTenant
+    abstract Number count()
 
 }
 
