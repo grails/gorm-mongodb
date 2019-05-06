@@ -8,6 +8,7 @@ import grails.gorm.multitenancy.WithoutTenant
 import grails.gorm.services.Service
 import grails.mongodb.MongoEntity
 import grails.persistence.Entity
+import org.bson.Document
 import org.bson.types.ObjectId
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.config.MongoSettings
@@ -261,7 +262,7 @@ class MongoStaticApiMultiTenancySpec extends Specification {
         setup:
         Book.DB.drop()
         datastore.buildIndex()
-        Integer count = null
+        Number count = null
 
         when:
         Tenants.withoutId {
@@ -294,6 +295,41 @@ class MongoStaticApiMultiTenancySpec extends Specification {
         count == 2
         bookService.count() == 2
         Book.collection.count() == 2
+    }
+
+    void "test wrapFilterWithMultiTenancy should not add tenantId filter in case of WithoutTenant/WithoutId"() {
+        setup:
+        Book.DB.drop()
+        datastore.buildIndex()
+        Number count = null
+
+        when:
+        Tenants.withoutId {
+            count = Book.count(new Document())
+        }
+
+        then:
+        count == 0
+
+        when:
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "mix")
+        createBook("Grails 3 - Step by Step")
+        Tenants.withoutId {
+            count = Book.count(new Document())
+        }
+
+        then:
+        count == 1
+
+        when:
+        System.setProperty(SystemPropertyTenantResolver.PROPERTY_NAME, "groovy")
+        createBook("Making Java Groovy")
+        Tenants.withoutId {
+            count = Book.count(new Document())
+        }
+
+        then:
+        count == 2
     }
 
     List getDomainClasses() {
