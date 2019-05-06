@@ -22,6 +22,7 @@ import org.grails.datastore.gorm.finders.FinderMethod
 import org.grails.datastore.gorm.mongo.MongoCriteriaBuilder
 import org.grails.datastore.mapping.core.Datastore
 import org.grails.datastore.mapping.core.Session
+import org.grails.datastore.mapping.core.connections.ConnectionSource
 import org.grails.datastore.mapping.engine.EntityPersister
 import org.grails.datastore.mapping.engine.internal.MappingUtils
 import org.grails.datastore.mapping.mongo.AbstractMongoSession
@@ -278,10 +279,13 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
 
     protected Bson wrapFilterWithMultiTenancy(Bson filter) {
         if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR && persistentEntity.isMultiTenant()) {
-            filter = Filters.and(
-                    Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass())),
-                    filter
-            )
+            Serializable tenantId = Tenants.currentId((Class<Datastore>) datastore.getClass())
+            if (tenantId != ConnectionSource.DEFAULT) {
+                filter = Filters.and(
+                        Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), tenantId),
+                        filter
+                )
+            }
         }
         return filter
     }
@@ -289,9 +293,12 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
     private List<Bson> preparePipeline(List pipeline) {
         List<Bson> newPipeline = new ArrayList<Bson>()
         if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR && persistentEntity.isMultiTenant()) {
-            newPipeline.add(
-                    Aggregates.match(Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), Tenants.currentId((Class<Datastore>) datastore.getClass())))
-            )
+            Serializable tenantId = Tenants.currentId((Class<Datastore>) datastore.getClass())
+            if (tenantId != ConnectionSource.DEFAULT) {
+                newPipeline.add(
+                        Aggregates.match(Filters.eq(MappingUtils.getTargetKey(persistentEntity.tenantId), tenantId))
+                )
+            }
         }
         for (o in pipeline) {
             if (o instanceof Bson) {

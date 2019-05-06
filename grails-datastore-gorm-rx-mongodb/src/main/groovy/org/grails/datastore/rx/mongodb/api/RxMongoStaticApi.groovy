@@ -15,6 +15,7 @@ import groovy.transform.CompileStatic
 import org.bson.BsonDocument
 import org.bson.Document
 import org.bson.conversions.Bson
+import org.grails.datastore.mapping.core.connections.ConnectionSource
 import org.grails.datastore.mapping.engine.internal.MappingUtils
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.multitenancy.MultiTenancySettings
@@ -23,10 +24,11 @@ import org.grails.datastore.rx.mongodb.RxMongoDatastoreClientImplementor
 import org.grails.datastore.rx.mongodb.client.DelegatingRxMongoDatastoreClient
 import org.grails.gorm.rx.api.RxGormStaticApi
 import rx.Observable
+
 /**
  * Subclasses {@link RxMongoStaticApi} and provides additional functionality specific to MongoDB
  *
- * @param <D> The type of the domain class
+ * @param < D >  The type of the domain class
  * @author Graeme Rocher
  */
 @CompileStatic
@@ -129,17 +131,16 @@ class RxMongoStaticApi<D> extends RxGormStaticApi<D> implements RxMongoAllOperat
     Observable<D> search(String query, Map options = Collections.emptyMap()) {
         def coll = mongoDatastoreClient.getCollection(entity, entity.javaClass)
         Bson search
-        if(options.language) {
+        if (options.language) {
             search = Filters.text(query, new TextSearchOptions().language(options.language.toString()))
-        }
-        else {
+        } else {
             search = Filters.text(query)
         }
         def findObservable = coll.find(search)
-        int offset = options.offset instanceof Number ? ((Number)options.offset).intValue() : 0
-        int max = options.max instanceof Number ? ((Number)options.max).intValue() : -1
-        if(offset > 0) findObservable.skip(offset)
-        if(max > -1) findObservable.limit(max)
+        int offset = options.offset instanceof Number ? ((Number) options.offset).intValue() : 0
+        int max = options.max instanceof Number ? ((Number) options.max).intValue() : -1
+        if (offset > 0) findObservable.skip(offset)
+        if (max > -1) findObservable.limit(max)
         findObservable = addMultiTenantFilterIfNecessary(findObservable)
         findObservable.toObservable()
     }
@@ -150,10 +151,9 @@ class RxMongoStaticApi<D> extends RxGormStaticApi<D> implements RxMongoAllOperat
         def coll = mongoDatastoreClient.getCollection(entity, entity.javaClass)
 
         Bson search
-        if(options.language) {
+        if (options.language) {
             search = Filters.text(query, new TextSearchOptions().language(options.language.toString()))
-        }
-        else {
+        } else {
             search = Filters.text(query)
         }
 
@@ -171,18 +171,18 @@ class RxMongoStaticApi<D> extends RxGormStaticApi<D> implements RxMongoAllOperat
     Observable<D> aggregate(List pipeline, Map<String, Object> options = Collections.emptyMap()) {
         def mongoCollection = mongoDatastoreClient.getCollection(entity, entity.javaClass)
 
-        if(options.readPreference != null) {
+        if (options.readPreference != null) {
             mongoCollection = mongoCollection.withReadPreference(ReadPreference.valueOf(options.readPreference.toString()))
         }
         List<Bson> newPipeline = preparePipeline(pipeline)
         AggregateObservable aggregateObservable = mongoCollection.aggregate(newPipeline)
-        for(opt in options.keySet()) {
-            if(aggregateObservable.respondsTo(opt)) {
-                setOption((Object)aggregateObservable, opt, options)
+        for (opt in options.keySet()) {
+            if (aggregateObservable.respondsTo(opt)) {
+                setOption((Object) aggregateObservable, opt, options)
             }
         }
 
-        return (Observable<D>)aggregateObservable.toObservable()
+        return (Observable<D>) aggregateObservable.toObservable()
     }
 
     @CompileDynamic
@@ -193,30 +193,37 @@ class RxMongoStaticApi<D> extends RxGormStaticApi<D> implements RxMongoAllOperat
     private List<Bson> preparePipeline(List pipeline) {
         List<Bson> newPipeline = new ArrayList<Bson>()
         if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR) {
-            newPipeline.add(
-                    Filters.eq(MappingUtils.getTargetKey(entity.tenantId), Tenants.currentId((Class<RxDatastoreClient>) datastoreClient.getClass()))
-            )
+            Serializable tenantId = Tenants.currentId((Class<RxDatastoreClient>) datastoreClient.getClass())
+            if (tenantId != ConnectionSource.DEFAULT) {
+                newPipeline.add(
+                        Filters.eq(MappingUtils.getTargetKey(entity.tenantId), tenantId)
+                )
+            }
         }
         for (o in pipeline) {
             if (o instanceof Bson) {
-                newPipeline << (Bson)o
+                newPipeline << (Bson) o
             } else if (o instanceof Map) {
                 newPipeline << new Document((Map) o)
             }
         }
         newPipeline
     }
+
     protected <FT> FindObservable<FT> addMultiTenantFilterIfNecessary(FindObservable<FT> findIterable) {
         if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.DISCRIMINATOR) {
-            return findIterable.filter(
-                    Filters.eq(MappingUtils.getTargetKey(entity.tenantId), Tenants.currentId((Class<RxDatastoreClient>) datastoreClient.getClass()))
-            )
+            Serializable tenantId = Tenants.currentId((Class<RxDatastoreClient>) datastoreClient.getClass())
+            if (tenantId != ConnectionSource.DEFAULT) {
+                return findIterable.filter(
+                        Filters.eq(MappingUtils.getTargetKey(entity.tenantId), tenantId)
+                )
+            }
         }
         return findIterable
     }
 
     @Override
     BsonDocument toBsonDocument(D instance) {
-        return ((RxMongoEntity)instance).toBsonDocument()
+        return ((RxMongoEntity) instance).toBsonDocument()
     }
 }
