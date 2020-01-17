@@ -22,9 +22,14 @@ class BookSpec extends Specification {
     void "Test database per tenant"() {
         setup:
         mongoDatastore.mongoClient.listDatabaseNames().forEach( { String name ->
-            mongoDatastore.mongoClient.getDatabase(name).drop()
+            try {
+                mongoDatastore.mongoClient.getDatabase(name).drop()    
+            } catch(e) {
+                // continue and ignore, probably permission issue
+            }
+            
         } as Block)
-
+        
         when:"A query is executed"
         Book.list()
 
