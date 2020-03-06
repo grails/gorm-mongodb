@@ -37,6 +37,12 @@ ext {
 subprojects { project ->
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
+        if(groovyVersion && groovyVersion.endsWith('-SNAPSHOT')) {
+            maven {
+                name 'JFrog OSS snapshot repo'
+                url 'https://oss.jfrog.org/oss-snapshot-local/'
+            }
+        }
     }
     if(project.name.startsWith("examples")) {
         if(project.name.contains('grails3')) {
