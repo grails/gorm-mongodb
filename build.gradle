@@ -77,6 +77,25 @@ subprojects { project ->
             apply plugin:"com.energizedwork.webdriver-binaries"
         }
 
+        apply plugin: "java"
+
+        dependencies {
+            testCompile "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
+            testCompile "org.spockframework:spock-core:$spockVersion", {
+                exclude group: 'junit', module: 'junit-dep'
+                exclude group: 'org.codehaus.groovy', module: 'groovy-all'
+                exclude group: 'org.hamcrest', module: 'hamcrest-core'
+                transitive = false
+            }
+            testCompile "org.junit.jupiter:junit-jupiter-api:5.6.0"
+            testCompile "org.junit.platform:junit-platform-runner:1.6.0"
+            testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.0"
+        }
+
+        test {
+            useJUnitPlatform()
+        }
+
         return
     }
 
@@ -178,21 +197,23 @@ subprojects { project ->
         compile "org.codehaus.groovy:groovy:$groovyVersion"
         compile "org.codehaus.groovy:groovy-templates:$groovyVersion"
 
-        testCompile "org.codehaus.groovy:groovy-test:$groovyVersion"
         testCompile "org.codehaus.groovy:groovy-json:$groovyVersion"
         testCompile "org.codehaus.groovy:groovy-templates:$groovyVersion"
-        testCompile "junit:junit:$junitVersion"
 
         documentation "org.fusesource.jansi:jansi:$jansiVersion"
         documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
         documentation 'info.picocli:picocli:3.8.2'
 
+        testCompile "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
         testCompile "org.spockframework:spock-core:$spockVersion", {
             exclude group: 'junit', module: 'junit-dep'
             exclude group: 'org.codehaus.groovy', module: 'groovy-all'
             exclude group: 'org.hamcrest', module: 'hamcrest-core'
             transitive = false
         }
+        testCompile "org.junit.jupiter:junit-jupiter-api:5.6.0"
+        testCompile "org.junit.platform:junit-platform-runner:1.6.0"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.0"
     }
 
     configurations {

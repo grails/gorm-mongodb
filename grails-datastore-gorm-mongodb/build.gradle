@@ -25,6 +25,7 @@ dependencies {
 
 
 test {
+    useJUnitPlatform()
     if (isTravisBuild) {
         maxParallelForks = 1
         forkEvery = 10
