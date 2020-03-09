@@ -1,6 +1,5 @@
 package org.grails.datastore.gorm.mongo
 
-import groovy.transform.NotYetImplemented
 import org.bson.BsonReader
 import org.bson.BsonWriter
 import org.bson.codecs.Codec

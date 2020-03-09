@@ -2,10 +2,8 @@ package org.grails.datastore.gorm.mongo
 
 import grails.gorm.tests.GormDatastoreSpec
 import grails.persistence.Entity
-import groovy.transform.NotYetImplemented
 import org.bson.types.ObjectId
 import spock.lang.Ignore
-import spock.lang.Issue
 
 /**
  * Created by graemerocher on 22/04/16.
@@ -132,7 +130,6 @@ class EmbeddedSetAssignedIdSpec extends GormDatastoreSpec {
     }
 
     @Ignore
-    @NotYetImplemented
     void "Test update nested embedded association graph using a custom method defined on the domain instance"() {
         when:"an object graph is created with nested items"
         new Itemized(name: "i1").save(flush:true)
