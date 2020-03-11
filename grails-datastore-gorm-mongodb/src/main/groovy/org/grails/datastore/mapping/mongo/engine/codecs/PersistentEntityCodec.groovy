@@ -68,7 +68,8 @@ import javax.persistence.FetchType
  * @author Graeme Rocher
  * @since 4.1
  */
-@CompileStatic
+//TODO: Re-enable once the Groovy bug is fixed.
+//@CompileStatic
 class PersistentEntityCodec extends BsonPersistentEntityCodec {
     private static final String BLANK_STRING = ""
     public static final String MONGO_SET_OPERATOR = '$set'

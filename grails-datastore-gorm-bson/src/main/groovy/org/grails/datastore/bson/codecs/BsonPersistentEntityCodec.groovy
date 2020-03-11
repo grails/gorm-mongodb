@@ -25,7 +25,8 @@ import org.grails.datastore.mapping.model.types.*
  * @author Graeme Rocher
  * @since 6.0
  */
-@CompileStatic
+//TODO: Re-enable once the Groovy bug is fixed.
+//@CompileStatic
 class BsonPersistentEntityCodec implements Codec {
     public static final EncoderContext DEFAULT_ENCODER_CONTEXT = EncoderContext.builder().build()
     public static final DecoderContext DEFAULT_DECODER_CONTEXT = DecoderContext.builder().build()
