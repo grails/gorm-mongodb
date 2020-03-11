@@ -68,8 +68,7 @@ import javax.persistence.FetchType
  * @author Graeme Rocher
  * @since 4.1
  */
-//TODO: Re-enable once the Groovy bug is fixed.
-//@CompileStatic
+@CompileStatic
 class PersistentEntityCodec extends BsonPersistentEntityCodec {
     private static final String BLANK_STRING = ""
     public static final String MONGO_SET_OPERATOR = '$set'
@@ -256,7 +255,7 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
                         }
                         else {
                             def propKind = prop.getClass().superclass
-                            PropertyEncoder<Object> propertyEncoder = (PropertyEncoder<Object>)getPropertyEncoder(propKind)
+                            PropertyEncoder<? extends PersistentProperty> propertyEncoder = getPropertyEncoder((Class<? extends PersistentProperty>)propKind)
                             propertyEncoder?.encode(writer, prop, v, access, encoderContext, codecRegistry)
                         }
 
@@ -341,7 +340,7 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
                 def propKind = version.getClass().superclass
                 MongoCodecEntityPersister.incrementEntityVersion(access)
                 def v = access.getProperty(version.name)
-                getPropertyEncoder(propKind)?.encode(writer, version, v, access, encoderContext, codecRegistry)
+                getPropertyEncoder((Class<? extends PersistentProperty>) propKind)?.encode(writer, version, v, access, encoderContext, codecRegistry)
             }
 
             writer.writeEndDocument()
@@ -615,7 +614,7 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
                             identityEncoder.encode writer, ref, encoderContext
                         }
                         else {
-                            Codec<Object> identityEncoder = (Codec<Object>)codecRegistry.get(associationId.getClass())
+                            Codec<Object> identityEncoder = (Codec<Object>) codecRegistry.get((Class<? extends Object>) associationId.getClass())
                             identityEncoder.encode writer, associationId, encoderContext
                         }
                     }

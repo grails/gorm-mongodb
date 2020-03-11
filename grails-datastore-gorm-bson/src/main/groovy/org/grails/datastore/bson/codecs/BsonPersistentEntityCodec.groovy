@@ -25,8 +25,7 @@ import org.grails.datastore.mapping.model.types.*
  * @author Graeme Rocher
  * @since 6.0
  */
-//TODO: Re-enable once the Groovy bug is fixed.
-//@CompileStatic
+@CompileStatic
 class BsonPersistentEntityCodec implements Codec {
     public static final EncoderContext DEFAULT_ENCODER_CONTEXT = EncoderContext.builder().build()
     public static final DecoderContext DEFAULT_DECODER_CONTEXT = DecoderContext.builder().build()
@@ -119,7 +118,7 @@ class BsonPersistentEntityCodec implements Codec {
                             access.setPropertyNoConversion(property.name, bsonReader.readString())
                         }
                         else {
-                            getPropertyDecoder(propKind)?.decode(bsonReader, property, access, decoderContext, codecRegistry)
+                            getPropertyDecoder((Class<? extends PersistentProperty>)propKind)?.decode(bsonReader, property, access, decoderContext, codecRegistry)
                         }
 
                     }
@@ -177,7 +176,7 @@ class BsonPersistentEntityCodec implements Codec {
             def propKind = prop.getClass().superclass
             Object v = access.getProperty(prop.name)
             if (v != null) {
-                PropertyEncoder<PersistentProperty> encoder = (PropertyEncoder<PersistentProperty>)getPropertyEncoder(propKind)
+                PropertyEncoder<? extends PersistentProperty> encoder = getPropertyEncoder((Class<? extends PersistentProperty>)propKind)
                 encoder?.encode(writer, (PersistentProperty) prop, v, access, encoderContext, codecRegistry)
             }
         }
@@ -250,7 +249,7 @@ class BsonPersistentEntityCodec implements Codec {
                         else {
                             def propKind = prop.getClass().superclass
                             if (prop instanceof PersistentProperty) {
-                                PropertyEncoder<PersistentProperty> propertyEncoder = (PropertyEncoder<PersistentProperty>) getPropertyEncoder(propKind)
+                                PropertyEncoder<? extends PersistentProperty> propertyEncoder = getPropertyEncoder((Class<? extends PersistentProperty>)propKind)
                                 propertyEncoder?.encode(writer, prop, v, access, encoderContext, codecRegistry)
                             }
                         }
