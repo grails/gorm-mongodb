@@ -97,6 +97,4 @@ test.doFirst {
             project.file("src/test/groovy/${relativePath}.groovy").exists()
         }
     }
-//    TODO: Remove this once https://github.com/grails/grails-data-mapping/issues/1288 is fixed
-    exclude '**/BuiltinUniqueConstraintWorksWithTargetProxiesConstraintsSpec.class'
 }
