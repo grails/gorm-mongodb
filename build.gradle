@@ -36,7 +36,6 @@ ext {
 
 subprojects { project ->
     repositories {
-        mavenLocal()
         maven { url "https://repo.grails.org/grails/core" }
     }
     if(project.name.startsWith("examples")) {
