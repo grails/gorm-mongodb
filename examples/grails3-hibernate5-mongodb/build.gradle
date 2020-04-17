@@ -44,6 +44,7 @@ webdriverBinaries {
     geckodriver "$geckodriverVersion"
 }
 tasks.withType(Test) {
+    useJUnitPlatform()
     systemProperty "geb.env", System.getProperty('geb.env')
     systemProperty "geb.build.reportsDir", reporting.file("geb/integrationTest")
 }

@@ -2,7 +2,7 @@ package org.grails.datastore.gorm.mongo
 
 import grails.gorm.annotation.Entity
 import grails.gorm.tests.GormDatastoreSpec
-import groovy.transform.NotYetImplemented
+import spock.lang.Ignore
 import spock.lang.Shared
 
 class WhereQueryInCriteriaSpec extends GormDatastoreSpec {
@@ -57,7 +57,8 @@ class WhereQueryInCriteriaSpec extends GormDatastoreSpec {
         dogs[1].name == 'Chapter 4'
     }
 
-    @NotYetImplemented // MongoDB doesn't support joins so this won't work
+    // MongoDB doesn't support joins so this won't work
+    @Ignore
     void "test where query in with list on left side"() {
         given:
         buildTestData()
