@@ -1,5 +1,8 @@
 dependencies {
+    documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
     compile "org.grails:grails-datastore-gorm:$datastoreVersion"
     compile "org.mongodb:bson:$mongodbDriverVersion"
 
 }
+
+groovydoc.classpath += configurations.documentation

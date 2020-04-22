@@ -204,7 +204,6 @@ subprojects { project ->
         documentation "org.fusesource.jansi:jansi:$jansiVersion"
         documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
         documentation 'info.picocli:picocli:3.8.2'
-        documentation "com.github.javaparser:javaparser-core:$javaParserCoreVersion"
 
         testCompile "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
         testCompile "org.spockframework:spock-core:$spockVersion", {
