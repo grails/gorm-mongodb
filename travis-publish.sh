@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Publishing..."
+
 EXIT_STATUS=0
 
 if [ "${TRAVIS_JDK_VERSION}" == "openjdk11" ] ; then
@@ -10,25 +12,20 @@ echo "Publishing for branch $TRAVIS_BRANCH JDK: $TRAVIS_JDK_VERSION"
 
 if [[ $TRAVIS_REPO_SLUG == "grails/gorm-mongodb" && $TRAVIS_PULL_REQUEST == 'false' && $EXIT_STATUS -eq 0 ]]; then
 
-  # echo "Publishing archives"
-  # export GRADLE_OPTS="-Xmx1500m -Dfile.encoding=UTF-8"
-  # if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
-  #   # for releases we upload to Bintray and Sonatype OSS
-  #     if [[ -n $TRAVIS_TAG ]]; then
-  #         ./gradlew publish bintrayUpload --no-daemon --stacktrace || EXIT_STATUS=$?
-  #     else
-  #         ./gradlew publish --no-daemon --stacktrace || EXIT_STATUS=$?
-  #     fi
-  # else
-  #   echo "publishing snapshot"
-  #   # for snapshots only to repo.grails.org
-  #   ./gradlew publish --no-daemon --stacktrace || EXIT_STATUS=$?
-  # fi
-
-
-  # if [[ $EXIT_STATUS -eq 0 ]]; then
-  #   echo "Publishing Successful."
-  # fi
+   echo "Publishing archives"
+   export GRADLE_OPTS="-Xmx1500m -Dfile.encoding=UTF-8"
+   if [[ $TRAVIS_TAG =~ ^v[[:digit:]] ]]; then
+     # for releases we upload to Bintray and Sonatype OSS
+       if [[ -n $TRAVIS_TAG ]]; then
+           ./gradlew publish bintrayUpload --no-daemon --stacktrace || EXIT_STATUS=$?
+       else
+           ./gradlew publish --no-daemon --stacktrace || EXIT_STATUS=$?
+       fi
+   else
+     echo "publishing snapshot"
+     # for snapshots only to repo.grails.org
+     ./gradlew publish --no-daemon --stacktrace || EXIT_STATUS=$?
+   fi
 
 
   if [[ $EXIT_STATUS -eq 0 ]]; then
@@ -74,11 +71,11 @@ if [[ $TRAVIS_REPO_SLUG == "grails/gorm-mongodb" && $TRAVIS_PULL_REQUEST == 'fal
     git push origin HEAD
     cd ..
     rm -rf gh-pages
-    # if [[ $EXIT_STATUS -eq 0 ]]; then
-    #     if [[ -n $TRAVIS_TAG ]]; then
-    #       ./gradlew synchronizeWithMavenCentral --no-daemon
-    #     fi
-    # fi        
+    if [[ $EXIT_STATUS -eq 0 ]]; then
+       if [[ -n $TRAVIS_TAG ]]; then
+         ./gradlew synchronizeWithMavenCentral --no-daemon
+       fi
+    fi
   fi  
 fi
 
