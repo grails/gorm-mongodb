@@ -185,6 +185,10 @@ subprojects { project ->
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
 
+    tasks.withType(Groovydoc) {
+        classpath += configurations.documentation
+    }
+
     configurations.all {
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
             def dependencyName = details.requested.name
@@ -204,6 +208,7 @@ subprojects { project ->
         documentation "org.fusesource.jansi:jansi:$jansiVersion"
         documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
         documentation 'info.picocli:picocli:3.8.2'
+        documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
 
         testCompile "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
         testCompile "org.spockframework:spock-core:$spockVersion", {
