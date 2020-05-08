@@ -30,7 +30,9 @@ This will force GORM for MongoDB to issue an update for the given property name.
 
 ==== Dirty Checking and Proxies
 
-DirtyCheckable use the link:../api/org/grails/datastore/mapping/dirty/checking/DirtyCheckable.html#markDirty(java.lang.String,java.lang.Object,java.lang.Object)[markDirty()] to mark a property/association as dirty which internally use the `equals()` method to compare values. So, it might initialize the association proxy if you are accessing a property on association other than `id`. You could avoid this by overriding the `equals()` method as follows:
+Dirty checking uses the `equals()` method to determine if a property has changed. In the case of associations, it is important to recognize that if the association is a proxy, comparing properties on the domain that are not related to the identifier will initialize the proxy, causing another database query.
+
+If the association does not define `equals()` method, then the default Groovy behavior of verifying the instances are the same will be used. Because proxies are not the same instance as an instance loaded from the database, which can cause confusing behavior. It is recommended to implement the `equals()` method if you need to check the dirtiness of an association. For example:
 
 [source, groovy]
 ----
@@ -38,6 +40,10 @@ class Author {
     Long id
     String name
 
+     /**
+     * This ensures that if either or both of the instances
+     * have a null id (new instances), they are not equal.
+     */
     @Override
     boolean equals(o) {
         if (!(o instanceof Author)) return false
