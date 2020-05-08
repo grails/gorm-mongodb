@@ -19,7 +19,7 @@ collection type.
 One of the implications of this is if you override the collection with a non-dirty checking aware type it can disable
 dirty checking and prevent the property from being updated.
 
-If any of your updates are not updating the properties that you anticipate you can force an update using the `markDirty` method:
+If any of your updates are not updating the properties that you anticipate you can force an update using the link:../api/org/grails/datastore/mapping/dirty/checking/DirtyCheckable.html#markDirty(java.lang.String)[markDirty()] method:
 
 [source,groovy]
 ----
@@ -27,3 +27,30 @@ person.markDirty('firstName')
 ----
 
 This will force GORM for MongoDB to issue an update for the given property name.
+
+==== Dirty Checking and Proxies
+
+DirtyCheckable use the link:../api/org/grails/datastore/mapping/dirty/checking/DirtyCheckable.html#markDirty(java.lang.String,java.lang.Object,java.lang.Object)[markDirty()] to mark a property/association as dirty which internally use the `equals()` method to compare values. So, it might initialize the association proxy if you are accessing a property on association other than `id`. You could avoid this by overriding the `equals()` method as follows:
+
+[source, groovy]
+----
+class Author {
+    Long id
+    String name
+
+    @Override
+    boolean equals(o) {
+        if (!(o instanceof Author)) return false
+        if (this.is(o)) return true
+        Author that = (Author) o
+        if (id !=null && that.id !=null) return id == that.id
+        return false
+    }
+}
+
+class Book {
+    Long id
+    String title
+    Author author
+}
+----
