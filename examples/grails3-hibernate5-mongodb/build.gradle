@@ -11,7 +11,7 @@ dependencies {
         exclude module:'grails-datastore-simple'
     }
     compile "org.grails:grails-web-boot:$grailsVersion"
-    compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
+    compile "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
     compile project(":grails-plugin")
     compile "org.grails.plugins:hibernate5:$hibernatePluginVersion"
     compile "org.hibernate:hibernate-ehcache:$hibernateCoreVersion"

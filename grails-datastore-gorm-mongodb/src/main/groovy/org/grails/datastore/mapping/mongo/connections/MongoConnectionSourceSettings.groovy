@@ -1,6 +1,6 @@
 package org.grails.datastore.mapping.mongo.connections
 
-import com.mongodb.MongoClientOptions
+import com.mongodb.MongoClientSettings
 import groovy.transform.AutoClone
 import groovy.transform.builder.Builder
 import groovy.transform.builder.SimpleStrategy
@@ -18,5 +18,5 @@ class MongoConnectionSourceSettings extends AbstractMongoConnectionSourceSetting
     /**
      * The MongoClientOptions object
      */
-    MongoClientOptions.Builder options = MongoClientOptions.builder()
+    MongoClientSettings.Builder options = MongoClientSettings.builder()
 }

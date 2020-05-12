@@ -14,7 +14,7 @@ ext['groovy.version'] = "$groovyVersion"
 
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
-    compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
+    compile "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
 
     compile project(":gorm-mongodb-spring-boot")
 

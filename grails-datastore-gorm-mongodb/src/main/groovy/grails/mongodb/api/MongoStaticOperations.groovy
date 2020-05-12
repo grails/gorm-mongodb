@@ -1,6 +1,5 @@
 package grails.mongodb.api
 
-import com.mongodb.AggregationOptions
 import com.mongodb.ReadPreference
 import com.mongodb.client.AggregateIterable
 import com.mongodb.client.FindIterable
@@ -11,6 +10,9 @@ import grails.gorm.api.GormStaticOperations
 import org.bson.Document
 import org.bson.conversions.Bson
 import org.grails.datastore.gorm.mongo.MongoCriteriaBuilder
+
+import java.util.function.Function
+
 /**
  * Static operations for GORM for MongoDB
  *
@@ -117,19 +119,19 @@ interface MongoStaticOperations<D> extends GormStaticOperations<D> {
      * Execute a MongoDB aggregation pipeline. Note that the pipeline should return documents that represent this domain class as each return document will be converted to a domain instance in the result set
      *
      * @param pipeline The pipeline
-     * @param options The options (optional)
+     * @param doWithAggregate A callback to modify the aggregate iterable
      * @return A mongodb result list
      */
-    List<D> aggregate(List pipeline, AggregationOptions options )
+    List<D> aggregate(List pipeline, Function<AggregateIterable, AggregateIterable> doWithAggregate)
 
     /**
      * Execute a MongoDB aggregation pipeline. Note that the pipeline should return documents that represent this domain class as each return document will be converted to a domain instance in the result set
      *
      * @param pipeline The pipeline
-     * @param options The options (optional)
+     * @param doWithAggregate A callback to modify the aggregate iterable
      * @return A mongodb result list
      */
-    List<D> aggregate(List pipeline, AggregationOptions options, ReadPreference readPreference)
+    List<D> aggregate(List pipeline, Function<AggregateIterable, AggregateIterable> doWithAggregate, ReadPreference readPreference)
     /**
      * Search for entities using the given query
      *

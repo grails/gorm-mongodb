@@ -14,7 +14,7 @@
  */
 package org.grails.datastore.mapping.mongo.config;
 
-import com.mongodb.MongoClientURI;
+import com.mongodb.ConnectionString;
 import groovy.lang.Closure;
 
 import java.beans.PropertyDescriptor;
@@ -269,9 +269,8 @@ public class MongoMappingContext extends DocumentMappingContext {
     public static String getDefaultDatabaseName(PropertyResolver configuration) {
         String connectionString = configuration.getProperty(MongoDatastore.SETTING_CONNECTION_STRING, String.class, null);
 
-        if(connectionString != null) {
-            MongoClientURI mongoClientURI = new MongoClientURI(connectionString);
-            String database = mongoClientURI.getDatabase();
+        if (connectionString != null) {
+            String database = new ConnectionString(connectionString).getDatabase();
             if(database != null) {
                 return database;
             }

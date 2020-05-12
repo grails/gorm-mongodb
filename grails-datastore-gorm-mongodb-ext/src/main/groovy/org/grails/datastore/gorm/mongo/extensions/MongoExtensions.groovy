@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit
 
 import static java.util.Arrays.asList
 import static java.util.concurrent.TimeUnit.MILLISECONDS
+
 /**
  * Extra methods for MongoDB API
  *

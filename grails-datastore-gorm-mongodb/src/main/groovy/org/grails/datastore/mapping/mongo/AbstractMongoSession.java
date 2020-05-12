@@ -14,8 +14,8 @@
  */
 package org.grails.datastore.mapping.mongo;
 
-import com.mongodb.MongoClient;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.MongoClient;
 import org.bson.Document;
 import org.grails.datastore.mapping.core.AbstractSession;
 import org.grails.datastore.mapping.core.impl.PendingOperation;

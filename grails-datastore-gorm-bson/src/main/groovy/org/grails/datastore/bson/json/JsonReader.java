@@ -449,35 +449,15 @@ public class JsonReader extends AbstractBsonReader {
     }
 
     @Override
-    public void mark() {
-        if (mark != null) {
-            throw new BSONException("A mark already exists; it needs to be reset before creating a new one");
-        }
-        mark = new Mark();
-    }
-
-    @Override
     public BsonReaderMark getMark() {
-        if (mark != null) {
-            throw new BSONException("A mark already exists; it needs to be reset before creating a new one");
-        }
-        mark = new Mark();
-        return mark;
-    }
-
-    @Override
-    public void reset() {
-        if (mark == null) {
-            throw new BSONException("trying to reset a mark before creating it");
-        }
-        mark.reset();
-        mark = null;
+        return new Mark();
     }
 
     @Override
     protected Context getContext() {
         return (Context) super.getContext();
     }
+
     protected class Mark extends AbstractBsonReader.Mark {
         private JsonToken pushedToken;
         private Object currentValue;

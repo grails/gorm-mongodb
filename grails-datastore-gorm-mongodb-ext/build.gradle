@@ -1,4 +1,4 @@
 dependencies {
-    compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
+    compile "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
     compile project(":grails-datastore-gorm-mongodb")
 }
