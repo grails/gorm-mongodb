@@ -123,7 +123,7 @@ class MongoClientOptionsBuilder {
                     }
                     else if(!List.isAssignableFrom(argType)){
                         try {
-                            def value = propertyResolver.getProperty(propertyPath, argType, null)
+                            def value = propertyResolver.getProperty(propertyPath, (Class) argType, null)
                             if(value != null) {
                                 method.invoke(builder, value)
                             }

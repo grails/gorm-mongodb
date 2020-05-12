@@ -1,8 +1,7 @@
 package org.grails.datastore.mapping.mongo.config
 
-import com.mongodb.MongoClientOptions
+import com.mongodb.MongoClientSettings
 import com.mongodb.ReadPreference
-import com.mongodb.ServerAddress
 import org.springframework.core.env.MapPropertySource
 import org.springframework.core.env.StandardEnvironment
 import spock.lang.Specification
@@ -24,7 +23,7 @@ class MongoClientOptionsBuilderSpec extends Specification {
         resolver.propertySources.addFirst(new MapPropertySource("test", myMap))
 
         def builder = new MongoClientOptionsBuilder(resolver)
-        MongoClientOptions clientSettings = builder.build().build()
+        MongoClientSettings clientSettings = builder.build().build()
 
         then:"The settings are correct"
         clientSettings.readPreference == ReadPreference.secondary()
