@@ -25,6 +25,9 @@ dependencies {
     testCompile "org.grails:grails-gorm-testing-support:$testingSupportVersion"
     testCompile "org.grails:grails-web-testing-support:$testingSupportVersion"
     testCompile "de.bwaldvogel:mongo-java-server:$mongoJavaServerVersion"
+    testCompile "io.netty:netty-transport:4.1.49.Final"
+    testCompile "io.netty:netty-codec:4.1.49.Final"
+    testCompile "io.netty:netty-handler:4.1.49.Final"
 
     testCompile("org.grails.plugins:geb") {
         exclude group: 'org.gebish', module: 'geb-spock'
