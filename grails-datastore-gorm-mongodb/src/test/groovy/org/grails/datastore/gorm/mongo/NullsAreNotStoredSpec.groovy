@@ -1,9 +1,6 @@
 package org.grails.datastore.gorm.mongo
 
 import grails.gorm.tests.GormDatastoreSpec
-import com.mongodb.Mongo
-import com.mongodb.DB
-import com.mongodb.DBObject
 import grails.mongodb.MongoEntity
 import org.bson.Document
 import org.bson.types.ObjectId
@@ -13,6 +10,7 @@ import grails.persistence.Entity
  *
  */
 class NullsAreNotStoredSpec extends GormDatastoreSpec {
+
     @Override
     List getDomainClasses() {
         [NANSPerson]

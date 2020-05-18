@@ -1,8 +1,6 @@
 package grails.mongodb.bootstrap
 
-import com.mongodb.DB
-import com.mongodb.Mongo
-import com.mongodb.MongoClient
+import com.mongodb.client.MongoClient
 import grails.mongodb.MongoEntity
 import grails.mongodb.geo.Point
 import grails.persistence.Entity
@@ -15,9 +13,7 @@ import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.config.MongoMappingContext
 import org.grails.datastore.mapping.query.Query
-import org.springframework.beans.factory.support.BeanDefinitionBuilder
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
-import org.springframework.context.support.GenericApplicationContext
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -105,8 +101,7 @@ class MongoDbDataStoreSpringInitializerSpec extends Specification{
     void "Test that constraints and Geo types work"() {
         given:"the initializer used to setup GORM for MongoDB"
             def initializer = new MongoDbDataStoreSpringInitializer(Person)
-            def applicationContext = initializer.configure()
-            def mongo = applicationContext.getBean(Mongo)
+            initializer.configure()
             Person.DB.drop()
 
         when:"we try to persist an invalid object"

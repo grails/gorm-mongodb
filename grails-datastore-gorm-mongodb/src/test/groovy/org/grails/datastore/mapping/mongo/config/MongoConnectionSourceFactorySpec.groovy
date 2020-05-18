@@ -1,6 +1,6 @@
 package org.grails.datastore.mapping.mongo.config
 
-import com.mongodb.MongoClient
+import com.mongodb.client.MongoClient
 import com.mongodb.ReadPreference
 import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.core.connections.ConnectionSource
@@ -8,7 +8,6 @@ import org.grails.datastore.mapping.core.connections.ConnectionSources
 import org.grails.datastore.mapping.core.connections.ConnectionSourcesInitializer
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceFactory
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettings
-import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceSettingsBuilder
 import spock.lang.Specification
 
 /**

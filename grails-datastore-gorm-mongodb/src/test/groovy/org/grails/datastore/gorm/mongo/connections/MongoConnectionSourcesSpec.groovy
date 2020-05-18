@@ -1,7 +1,6 @@
 package org.grails.datastore.gorm.mongo.connections
 
-import com.mongodb.MongoClient
-import com.mongodb.client.MongoDatabase
+import com.mongodb.client.MongoClient
 import org.bson.Document
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.mongo.MongoDatastore
@@ -20,7 +19,7 @@ class MongoConnectionSourcesSpec extends Specification {
     @Shared @AutoCleanup MongoDatastore datastore
 
     void setupSpec() {
-        MongoClient client = new MongoClient()
+/*        MongoClient client = new MongoClient()
         def database = client.getDatabase("defaultDb")
         database.drop()
         database.getCollection("mongo.connections").insertOne(
@@ -28,7 +27,7 @@ class MongoConnectionSourcesSpec extends Specification {
         )
         database.getCollection("mongo.connections").insertOne(
                 new Document(name:"test2", url:"mongodb://localhost/test2Db")
-        )
+        )*/
         Map config = [
                 "grails.gorm.connectionSourcesClass"          : MongoConnectionSources,
                 "grails.gorm.multiTenancy.mode"               :"DATABASE",

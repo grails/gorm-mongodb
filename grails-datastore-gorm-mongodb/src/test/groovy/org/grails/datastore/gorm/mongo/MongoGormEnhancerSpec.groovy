@@ -3,12 +3,12 @@ package org.grails.datastore.gorm.mongo
 import com.mongodb.client.MongoCollection
 import grails.gorm.tests.GormDatastoreSpec
 
-import com.mongodb.DBCollection
 import grails.mongodb.MongoEntity
 import spock.lang.*
 
 @IgnoreIf( { System.getenv('TRAVIS_BRANCH') != null } )
 class MongoGormEnhancerSpec extends GormDatastoreSpec{
+
     def "Test is MongoEntity"() {
         expect:
         MongoEntity.isAssignableFrom(MyMongoEntity)
