@@ -19,20 +19,19 @@ class MongoConnectionSourcesSpec extends Specification {
     @Shared @AutoCleanup MongoDatastore datastore
 
     void setupSpec() {
-/*        MongoClient client = new MongoClient()
-        def database = client.getDatabase("defaultDb")
-        database.drop()
-        database.getCollection("mongo.connections").insertOne(
-                new Document(name:"test1", url:"mongodb://localhost/test1Db")
-        )
-        database.getCollection("mongo.connections").insertOne(
-                new Document(name:"test2", url:"mongodb://localhost/test2Db")
-        )*/
         Map config = [
                 "grails.gorm.connectionSourcesClass"          : MongoConnectionSources,
                 "grails.gorm.multiTenancy.mode"               :"DATABASE",
                 "grails.gorm.multiTenancy.tenantResolverClass":SystemPropertyTenantResolver,
-                (MongoSettings.SETTING_URL)                   : "mongodb://localhost/defaultDb"
+                (MongoSettings.SETTING_URL)                   : "mongodb://localhost/defaultDb",
+                (MongoSettings.SETTING_CONNECTIONS): [
+                        test1: [
+                                url: "mongodb://localhost/test1Db"
+                        ],
+                        test2: [
+                                url: "mongodb://localhost/test2Db"
+                        ]
+                ]
         ]
         this.datastore = new MongoDatastore(config, CompanyB)
     }
