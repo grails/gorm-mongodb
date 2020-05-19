@@ -5,8 +5,6 @@ import grails.persistence.Entity
 import org.bson.Document
 import org.bson.types.ObjectId
 
-import com.mongodb.DBObject
-
 /**
  * @author Graeme Rocher
  */

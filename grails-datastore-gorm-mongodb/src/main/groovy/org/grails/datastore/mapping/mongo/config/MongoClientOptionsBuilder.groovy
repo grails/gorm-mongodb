@@ -1,7 +1,7 @@
 package org.grails.datastore.mapping.mongo.config
 
 import com.mongodb.ConnectionString
-import com.mongodb.MongoClientOptions
+import com.mongodb.MongoClientSettings
 import com.mongodb.MongoCredential
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
@@ -11,7 +11,7 @@ import org.springframework.util.ReflectionUtils
 
 import java.lang.reflect.Modifier
 /**
- * Helper class for building {@link MongoClientOptions} from a {@link PropertyResolver}
+ * Helper class for building {@link MongoClientSettings} from a {@link PropertyResolver}
  *
  * @author Graeme Rocher
  * @since 6.0
@@ -54,8 +54,8 @@ class MongoClientOptionsBuilder {
         mongoCredential = uAndP ? MongoCredential.createCredential(username, databaseName, password.toCharArray()) : null
     }
 
-    MongoClientOptions.Builder build() {
-        MongoClientOptions.Builder builder = MongoClientOptions.builder()
+    MongoClientSettings.Builder build() {
+        MongoClientSettings.Builder builder = MongoClientSettings.builder()
         buildInternal(builder, prefix, true)
         return builder
     }
@@ -89,15 +89,14 @@ class MongoClientOptionsBuilder {
                 def builderMethod = ReflectionUtils.findMethod(argType, 'builder')
                 String propertyPath = "${startingPrefix}.${ methodName}"
                 if (builderMethod != null && Modifier.isStatic(builderMethod.modifiers)) {
-
-                    def newBuilder = builderMethod.invoke(argType)
-                    if(newBuilder.respondsTo("applyConnectionString")) {
-                        applyConnectionString(newBuilder, connectionString)
+                    if (propertyResolver.containsProperty(propertyPath)) {
+                        def newBuilder = builderMethod.invoke(argType)
+                        if (newBuilder.respondsTo("applyConnectionString")) {
+                            applyConnectionString(newBuilder, connectionString)
+                        }
+                        method.invoke(builder, buildInternal(newBuilder, propertyPath))
                     }
-                    method.invoke(builder, buildInternal(newBuilder, propertyPath))
-
                 } else {
-
                     if(argType.isEnum()) {
                         def value = propertyResolver.getProperty(propertyPath, "")
                         if (value) {
@@ -123,7 +122,7 @@ class MongoClientOptionsBuilder {
                     }
                     else if(!List.isAssignableFrom(argType)){
                         try {
-                            def value = propertyResolver.getProperty(propertyPath, argType, null)
+                            def value = propertyResolver.getProperty(propertyPath, (Class) argType, null)
                             if(value != null) {
                                 method.invoke(builder, value)
                             }

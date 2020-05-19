@@ -1,9 +1,9 @@
 package org.grails.datastore.gorm.mongo.api
 
-import com.mongodb.AggregationOptions
-import com.mongodb.MongoClient
 import com.mongodb.ReadPreference
+import com.mongodb.client.AggregateIterable
 import com.mongodb.client.FindIterable
+import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
 import com.mongodb.client.model.Aggregates
@@ -30,6 +30,8 @@ import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.query.MongoQuery
 import org.grails.datastore.mapping.multitenancy.MultiTenancySettings
 import org.springframework.transaction.PlatformTransactionManager
+
+import java.util.function.Function
 
 /**
  * MongoDB static API implementation
@@ -75,7 +77,7 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
             def entity = session.mappingContext.getPersistentEntity(persistentClass.name)
             filter = wrapFilterWithMultiTenancy(filter)
             return session.getCollection(entity)
-                    .count(filter)
+                    .countDocuments(filter)
         }
     }
 
@@ -166,7 +168,7 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
     }
 
     @Override
-    List<D> aggregate(List pipeline, AggregationOptions options = AggregationOptions.builder().build()) {
+    List<D> aggregate(List pipeline, Function<AggregateIterable, AggregateIterable> doWithAggregate = Function.identity()) {
         (List<D>)withSession( { AbstractMongoSession session ->
             def persistentEntity = session.mappingContext.getPersistentEntity(persistentClass.name)
             def mongoCollection = session.getCollection(persistentEntity)
@@ -178,30 +180,26 @@ class MongoStaticApi<D> extends GormStaticApi<D> implements MongoAllOperations<D
             }
 
             List<? extends Bson> newPipeline = preparePipeline(pipeline)
-            def aggregateIterable = mongoCollection.aggregate(newPipeline)
-            if(options.allowDiskUse) {
-                aggregateIterable.allowDiskUse(options.allowDiskUse)
+            AggregateIterable aggregateIterable = mongoCollection.aggregate(newPipeline)
+            if (doWithAggregate != null) {
+                aggregateIterable = doWithAggregate.apply(aggregateIterable)
             }
-            if(options.batchSize) {
-                aggregateIterable.batchSize(options.batchSize)
-            }
-
             new MongoQuery.MongoResultList(aggregateIterable.iterator(), 0, (EntityPersister)session.getPersister(persistentEntity) as EntityPersister)
         } )
     }
 
 
     @Override
-    List<D> aggregate(List pipeline, AggregationOptions options, ReadPreference readPreference) {
+    List<D> aggregate(List pipeline, Function<AggregateIterable, AggregateIterable> doWithAggregate, ReadPreference readPreference) {
         (List<D>)withSession( { AbstractMongoSession session ->
             def persistentEntity = session.mappingContext.getPersistentEntity(persistentClass.name)
             List<? extends Bson> newPipeline = preparePipeline(pipeline)
             def mongoCollection = session.getCollection(persistentEntity)
                     .withReadPreference(readPreference)
             def aggregateIterable = mongoCollection.aggregate(newPipeline)
-            aggregateIterable.allowDiskUse(options.allowDiskUse)
-            aggregateIterable.batchSize(options.batchSize)
-
+            if (doWithAggregate != null) {
+                aggregateIterable = doWithAggregate.apply(aggregateIterable)
+            }
             new MongoQuery.MongoResultList(aggregateIterable.iterator(), 0, (EntityPersister)session.getPersister(persistentEntity))
         } )
     }

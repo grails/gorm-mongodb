@@ -104,5 +104,10 @@ class BsonQuerySpec extends Specification {
         def <T> Codec<T> get(Class<T> clazz) {
             return new BsonPersistentEntityCodec(this, mappingContext.getPersistentEntity(clazz.name))
         }
+
+        @Override
+        def <T> Codec<T> get(Class<T> clazz, CodecRegistry registry) {
+            return get(clazz)
+        }
     }
 }

@@ -15,8 +15,9 @@
 
 package org.grails.datastore.gorm.mongodb.boot.autoconfigure
 
-import com.mongodb.MongoClient
-import com.mongodb.MongoClientOptions
+import com.mongodb.MongoClientSettings
+import com.mongodb.client.MongoClient
+import com.mongodb.client.MongoClients
 import groovy.transform.CompileStatic
 import org.grails.datastore.gorm.events.ConfigurableApplicationContextEventPublisher
 import org.grails.datastore.mapping.mongo.MongoDatastore
@@ -28,7 +29,6 @@ import org.springframework.boot.autoconfigure.AutoConfigurationPackages
 import org.springframework.boot.autoconfigure.AutoConfigureAfter
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
-import org.springframework.boot.autoconfigure.mongo.MongoClientFactory
 import org.springframework.boot.autoconfigure.mongo.MongoProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -60,10 +60,7 @@ class MongoDbGormAutoConfiguration implements ApplicationContextAware{
     MongoClient mongo
 
     @Autowired(required = false)
-    MongoClientOptions mongoOptions
-
-    @Autowired(required = false)
-    MongoClientFactory mongoClientFactory
+    MongoClientSettings mongoOptions
 
     ConfigurableApplicationContext applicationContext
 
@@ -90,7 +87,7 @@ class MongoDbGormAutoConfiguration implements ApplicationContextAware{
             datastore = new MongoDatastore(mongo, environment,eventPublisher, packages as Package[])
         }
         else if(mongoProperties != null) {
-            this.mongo = mongoClientFactory.createMongoClient(mongoOptions)
+            this.mongo = MongoClients.create(mongoOptions)
             datastore = new MongoDatastore(mongo, environment,eventPublisher, packages as Package[])
         }
         else {

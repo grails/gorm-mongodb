@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 package org.grails.datastore.mapping.mongo
-import com.mongodb.MongoClient
 import com.mongodb.WriteConcern
 import com.mongodb.bulk.BulkWriteResult
 import com.mongodb.client.FindIterable
+import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.DeleteManyModel
 import com.mongodb.client.model.DeleteOneModel

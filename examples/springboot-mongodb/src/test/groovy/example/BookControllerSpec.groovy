@@ -11,6 +11,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 
+/**
+ * This test relies on a local instance of MongoDB running
+ */
 class BookControllerSpec extends Specification {
 
     @Shared @AutoCleanup MongoDatastore datastore = new MongoDatastore(getClass().getPackage())
@@ -23,10 +26,7 @@ class BookControllerSpec extends Specification {
         given:
         def mockMvc = MockMvcBuilders.standaloneSetup(bookController).build()
         Book.DB.drop()
-        Book.saveAll(
-            new Book(title: "The Stand"),
-            new Book(title: "It")
-        )
+        Book.saveAll(new Book(title: "The Stand"), new Book(title: "It"))
         datastore.currentSession.flush()
 
         when:

@@ -14,8 +14,8 @@
  */
 package grails.mongodb.bootstrap
 
-import com.mongodb.MongoClient
-import com.mongodb.MongoClientOptions
+import com.mongodb.MongoClientSettings
+import com.mongodb.client.MongoClient
 import grails.mongodb.MongoEntity
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
@@ -50,7 +50,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
     protected String mongoOptionsBeanName = "mongoOptions"
     protected String databaseName = DEFAULT_DATABASE_NAME
     protected Closure defaultMapping
-    protected MongoClientOptions mongoOptions
+    protected MongoClientSettings mongoOptions
     protected MongoClient mongo
 
     @Override
@@ -154,7 +154,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
     /**
      * Sets the MongoOptions instance to use when constructing the Mongo instance
      */
-    void setMongoOptions(MongoClientOptions mongoOptions) {
+    void setMongoOptions(MongoClientSettings mongoOptions) {
         this.mongoOptions = mongoOptions
     }
     /**

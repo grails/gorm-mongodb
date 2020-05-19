@@ -4,7 +4,6 @@ import grails.gorm.tests.GormDatastoreSpec
 import grails.persistence.Entity
 import org.bson.Document
 import org.bson.types.ObjectId
-import spock.lang.Ignore
 import spock.lang.Issue
 
 /**

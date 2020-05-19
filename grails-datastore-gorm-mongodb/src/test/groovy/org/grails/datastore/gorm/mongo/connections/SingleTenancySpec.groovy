@@ -137,6 +137,7 @@ class SingleTenancySpec extends Specification {
     }
 
 }
+
 @Entity
 class CompanyB implements MongoEntity<CompanyB>, MultiTenant {
     ObjectId id

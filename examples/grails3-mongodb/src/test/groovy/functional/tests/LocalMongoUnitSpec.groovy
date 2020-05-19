@@ -7,17 +7,8 @@ import spock.lang.Ignore
 
 class LocalMongoUnitSpec extends MongoSpec implements EmbeddedMongoClient {
 
-    // Specs ...
-    @Override
-    void setup() {
-        Book.DB.drop()
-    }
-
 //end::structure[]
     void "Test GORM access"(){
-        setup:
-        Book.DB.drop()
-
         when:
         Book book = new Book(title: 'El Quijote').save(flush: true)
 

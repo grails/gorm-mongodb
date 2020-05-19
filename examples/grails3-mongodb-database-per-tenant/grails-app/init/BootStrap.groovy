@@ -1,5 +1,3 @@
-import com.mongodb.MongoClient
-import functional.tests.*
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.springframework.beans.factory.annotation.Autowired
 

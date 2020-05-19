@@ -44,7 +44,7 @@ public class JsonWriter extends AbstractBsonWriter {
     protected final JsonWriterSettings settings;
 
     public JsonWriter(Writer target) {
-        this(target, new JsonWriterSettings());
+        this(target, JsonWriterSettings.builder().build());
     }
 
     public JsonWriter(Writer target, JsonWriterSettings settings) {

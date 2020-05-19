@@ -1,16 +1,15 @@
 package org.grails.datastore.gorm.mongo
 
-import com.mongodb.MongoClient
+import com.mongodb.client.MongoClient
+import com.mongodb.client.MongoDatabase
 import grails.gorm.tests.GormDatastoreSpec
+import grails.mongodb.MongoEntity
 import grails.persistence.Entity
 import org.grails.datastore.mapping.document.config.DocumentPersistentEntity
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.mongo.AbstractMongoSession
-import org.grails.datastore.mapping.mongo.MongoSession
 import org.grails.datastore.mapping.mongo.config.MongoAttribute
 import org.grails.datastore.mapping.mongo.config.MongoCollection
-
-import com.mongodb.DB
 import com.mongodb.WriteConcern
 import spock.lang.*
 
@@ -22,9 +21,9 @@ class MongoEntityConfigSpec extends GormDatastoreSpec{
             session.mappingContext.addPersistentEntity MyMongoEntity
 
             def client = (MongoClient)session.nativeInterface
-            DB db = client.getDB(session.defaultDatabase)
+            MongoDatabase db = client.getDatabase(session.defaultDatabase)
 
-            db.dropDatabase()
+            db.drop()
             // db.resetIndexCache() // this method is missing from more recent driver versions
 
         when:
@@ -41,7 +40,7 @@ class MongoEntityConfigSpec extends GormDatastoreSpec{
             coll != null
             coll.collection == 'mycollection'
             coll.database == "test2"
-            coll.writeConcern == WriteConcern.FSYNC_SAFE
+            coll.writeConcern == WriteConcern.JOURNALED
             attr != null
             attr.index == true
             attr.targetName == 'myattribute'
@@ -60,7 +59,8 @@ class MongoEntityConfigSpec extends GormDatastoreSpec{
 }
 
 @Entity
-class MyMongoEntity {
+class MyMongoEntity implements MongoEntity<MyMongoEntity> {
+
     String id
 
     String name
@@ -71,7 +71,7 @@ class MyMongoEntity {
         collection "mycollection"
         database "test2"
         shard "name"
-        writeConcern WriteConcern.FSYNC_SAFE
+        writeConcern WriteConcern.JOURNALED
         index summary:"text"
 
         name index:true, attr:"myattribute", indexAttributes: [unique:true]

@@ -1,6 +1,6 @@
 package grails.test.mongodb
 
-import com.mongodb.MongoClient
+import com.mongodb.client.MongoClient
 import grails.config.Config
 import groovy.transform.CompileStatic
 import org.grails.config.PropertySourcesConfig

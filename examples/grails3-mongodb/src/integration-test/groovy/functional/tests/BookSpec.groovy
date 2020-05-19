@@ -1,6 +1,6 @@
 package functional.tests
 
-import com.mongodb.MongoClient
+import com.mongodb.client.MongoClient
 import grails.testing.mixin.integration.Integration
 
 import grails.validation.ValidationException

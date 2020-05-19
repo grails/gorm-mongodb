@@ -1,5 +1,6 @@
 package org.grails.datastore.gorm.mongo
 
+import com.mongodb.client.MongoClient
 import grails.gorm.tests.GormDatastoreSpec
 import grails.gorm.tests.Person
 import org.grails.datastore.mapping.mongo.MongoDatastore
@@ -16,7 +17,7 @@ class SwitchDatabaseAtRuntimeSpec extends GormDatastoreSpec {
     }
 
     void setup() {
-        mongoClient.getDB('thesimpsons').dropDatabase()
+        ((MongoClient) session.nativeInterface).getDatabase('thesimpsons').drop()
     }
 
 

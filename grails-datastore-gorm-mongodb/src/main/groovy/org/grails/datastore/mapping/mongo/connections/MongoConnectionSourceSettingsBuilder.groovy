@@ -1,7 +1,7 @@
 package org.grails.datastore.mapping.mongo.connections
 
 import com.mongodb.ConnectionString
-import com.mongodb.MongoClientOptions
+import com.mongodb.MongoClientSettings
 import com.mongodb.MongoCredential
 import groovy.transform.CompileStatic
 import org.grails.datastore.mapping.config.ConfigurationBuilder
@@ -19,7 +19,7 @@ import org.springframework.util.ReflectionUtils
 @CompileStatic
 class MongoConnectionSourceSettingsBuilder extends ConfigurationBuilder<MongoConnectionSourceSettings, MongoConnectionSourceSettings>{
 
-    MongoClientOptions.Builder clientOptionsBuilder
+    MongoClientSettings.Builder clientOptionsBuilder
 
     MongoConnectionSourceSettingsBuilder(PropertyResolver propertyResolver, String configurationPrefix, ConnectionSourceSettings fallback) {
         super(propertyResolver, configurationPrefix, fallback)
@@ -45,8 +45,8 @@ class MongoConnectionSourceSettingsBuilder extends ConfigurationBuilder<MongoCon
 
     @Override
     protected void newChildBuilder(Object builder, String configurationPath) {
-        if(builder instanceof MongoClientOptions.Builder) {
-            clientOptionsBuilder = (MongoClientOptions.Builder)builder
+        if(builder instanceof MongoClientSettings.Builder) {
+            clientOptionsBuilder = (MongoClientSettings.Builder)builder
         }
         applyConnectionString(builder)
         applyCredentials(builder)
@@ -54,8 +54,8 @@ class MongoConnectionSourceSettingsBuilder extends ConfigurationBuilder<MongoCon
 
     @Override
     Object newChildBuilderForFallback(Object childBuilder, Object fallbackConfig) {
-        if(( childBuilder instanceof MongoClientOptions.Builder) && (fallbackConfig instanceof MongoClientOptions.Builder)) {
-            return MongoClientOptions.builder(((MongoClientOptions.Builder)fallbackConfig).build())
+        if(( childBuilder instanceof MongoClientSettings.Builder) && (fallbackConfig instanceof MongoClientSettings.Builder)) {
+            return MongoClientSettings.builder(((MongoClientSettings.Builder)fallbackConfig).build())
         }
         return childBuilder
     }

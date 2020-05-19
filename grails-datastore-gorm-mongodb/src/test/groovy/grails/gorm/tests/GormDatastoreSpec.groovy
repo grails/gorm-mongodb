@@ -1,7 +1,7 @@
 package grails.gorm.tests
 
 import com.mongodb.BasicDBObject
-import com.mongodb.MongoClient
+import com.mongodb.client.MongoClient
 import grails.core.DefaultGrailsApplication
 import grails.core.GrailsApplication
 import grails.gorm.validation.PersistentEntityValidator
@@ -26,6 +26,7 @@ import org.springframework.validation.Validator
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
+
 /**
  * Created by graemerocher on 06/06/16.
  */
@@ -123,7 +124,7 @@ abstract class GormDatastoreSpec extends Specification {
     void cleanup() {
         session.disconnect()
         DatastoreUtils.unbindSession(session)
-        mongoDatastore.getMongoClient().dropDatabase(mongoDatastore.defaultDatabase)
+        mongoDatastore.getMongoClient().getDatabase(mongoDatastore.defaultDatabase).drop()
         mongoDatastore.buildIndex()
         for(cls in getDomainClasses()) {
             GormEnhancer.findValidationApi(cls).setValidator(null)

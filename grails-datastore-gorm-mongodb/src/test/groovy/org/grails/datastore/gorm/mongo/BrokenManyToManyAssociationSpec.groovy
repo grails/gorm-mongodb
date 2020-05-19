@@ -1,8 +1,7 @@
 package org.grails.datastore.gorm.mongo
 
-import com.mongodb.BasicDBObject
-import com.mongodb.DBCollection
 import grails.gorm.tests.GormDatastoreSpec
+import grails.mongodb.MongoEntity
 import grails.persistence.Entity
 import org.bson.Document
 
@@ -47,14 +46,14 @@ class BrokenManyToManyAssociationSpec extends GormDatastoreSpec {
 }
 
 @Entity
-class ReferencingEntity {
+class ReferencingEntity implements MongoEntity<ReferencingEntity> {
     String id
     Set<ReferencedEntity> referencedEntities
     static hasMany = [referencedEntities: ReferencedEntity]
 }
 
 @Entity
-class ReferencedEntity {
+class ReferencedEntity implements MongoEntity<ReferencedEntity> {
     String id
     static belongsTo = ReferencingEntity
     Set<ReferencingEntity> referencingEntities

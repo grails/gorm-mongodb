@@ -3,7 +3,6 @@ package org.grails.datastore.gorm.mongo
 import grails.gorm.tests.GormDatastoreSpec
 import grails.persistence.Entity
 
-import com.mongodb.DBObject
 import org.bson.Document
 
 class EmbeddedWithNonEmbeddedAssociationsSpec extends GormDatastoreSpec {

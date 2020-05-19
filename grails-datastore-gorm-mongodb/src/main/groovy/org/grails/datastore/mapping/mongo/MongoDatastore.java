@@ -16,8 +16,8 @@
 package org.grails.datastore.mapping.mongo;
 
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.IndexOptions;
 import grails.gorm.multitenancy.Tenants;
@@ -172,7 +172,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         codecRegistry = CodecRegistries.fromRegistries(
                 CodecRegistries.fromProviders(new CodecExtensions(), new PersistentEntityCodeRegistry()),
                 mappingContext.getCodecRegistry(),
-                MongoClient.getDefaultCodecRegistry()
+                MongoClientSettings.getDefaultCodecRegistry()
         );
 
         DatastoreTransactionManager datastoreTransactionManager = new DatastoreTransactionManager();
@@ -314,12 +314,12 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
-     * @param clientOptions The {@link MongoClientOptions} instance
+     * @param clientOptions The {@link MongoClientSettings} instance
      * @param configuration The configuration
      * @param eventPublisher The Spring ApplicationContext
      * @param mappingContext The mapping context
      */
-    public MongoDatastore(MongoClientOptions.Builder clientOptions, PropertyResolver configuration, MongoMappingContext mappingContext, ConfigurableApplicationEventPublisher eventPublisher) {
+    public MongoDatastore(MongoClientSettings.Builder clientOptions, PropertyResolver configuration, MongoMappingContext mappingContext, ConfigurableApplicationEventPublisher eventPublisher) {
         this(createMongoClient(configuration, clientOptions, mappingContext),  configuration, mappingContext,  eventPublisher);
     }
 
@@ -327,11 +327,11 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     /**
      * Configures a new {@link MongoDatastore} for the given arguments
      *
-     * @param clientOptions The {@link MongoClientOptions} instance
+     * @param clientOptions The {@link MongoClientSettings} instance
      * @param configuration The configuration
      * @param mappingContext The mapping context
      */
-    public MongoDatastore(MongoClientOptions.Builder clientOptions, PropertyResolver configuration, MongoMappingContext mappingContext) {
+    public MongoDatastore(MongoClientSettings.Builder clientOptions, PropertyResolver configuration, MongoMappingContext mappingContext) {
         this(createMongoClient(configuration, clientOptions, mappingContext),  configuration, mappingContext,  new DefaultApplicationEventPublisher());
     }
 
@@ -922,14 +922,13 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
      */
     protected static ConnectionSources<MongoClient, MongoConnectionSourceSettings> createDefaultConnectionSources(MongoClient mongoClient, PropertyResolver configuration, MongoMappingContext mappingContext) {
         MongoConnectionSourceSettings settings = new MongoConnectionSourceSettings();
-        settings.setOptions(MongoClientOptions.builder(mongoClient.getMongoClientOptions()));
         settings.setDatabaseName(mappingContext.getDefaultDatabaseName());
         ConnectionSource<MongoClient, MongoConnectionSourceSettings> defaultConnectionSource = new DefaultConnectionSource<>(ConnectionSource.DEFAULT, mongoClient, settings);
         return new InMemoryConnectionSources<>(defaultConnectionSource, new MongoConnectionSourceFactory(), configuration);
     }
 
 
-    protected static MongoClient createMongoClient(PropertyResolver configuration, MongoClientOptions.Builder mongoOptions, MongoMappingContext mappingContext) {
+    protected static MongoClient createMongoClient(PropertyResolver configuration, MongoClientSettings.Builder mongoOptions, MongoMappingContext mappingContext) {
         MongoConnectionSourceFactory mongoConnectionSourceFactory = new MongoConnectionSourceFactory();
         mongoConnectionSourceFactory.setClientOptionsBuilder(mongoOptions);
         return mongoConnectionSourceFactory.create(ConnectionSource.DEFAULT, configuration).getSource();

@@ -15,8 +15,8 @@
  */
 package grails.mongodb
 
-import com.mongodb.AggregationOptions
 import com.mongodb.ReadPreference
+import com.mongodb.client.AggregateIterable
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
@@ -36,6 +36,8 @@ import org.grails.datastore.mapping.engine.EntityPersister
 import org.grails.datastore.mapping.mongo.AbstractMongoSession
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.engine.MongoEntityPersister
+
+import java.util.function.Function
 
 /**
  * Enhances the default {@link GormEntity} class with MongoDB specific methods
@@ -227,22 +229,22 @@ trait MongoEntity<D> implements GormEntity<D>, DynamicAttributes {
      * Execute a MongoDB aggregation pipeline. Note that the pipeline should return documents that represent this domain class as each return document will be converted to a domain instance in the result set
      *
      * @param pipeline The pipeline
-     * @param options The options (optional)
+     * @param doWithAggregate The function to transform the aggregate iterable (optional)
      * @return A mongodb result list
      */
-    static List<D> aggregate(List pipeline, AggregationOptions options = AggregationOptions.builder().build()) {
-        currentMongoStaticApi().aggregate(pipeline, options)
+    static List<D> aggregate(List pipeline, Function<AggregateIterable, AggregateIterable> doWithAggregate = Function.identity()) {
+        currentMongoStaticApi().aggregate(pipeline, doWithAggregate)
     }
 
     /**
      * Execute a MongoDB aggregation pipeline. Note that the pipeline should return documents that represent this domain class as each return document will be converted to a domain instance in the result set
      *
      * @param pipeline The pipeline
-     * @param options The options (optional)
+     * @param doWithAggregate The function to transform the aggregate iterable (optional)
      * @return A mongodb result list
      */
-    static List<D> aggregate(List pipeline, AggregationOptions options, ReadPreference readPreference) {
-        currentMongoStaticApi().aggregate(pipeline,options, readPreference)
+    static List<D> aggregate(List pipeline, Function<AggregateIterable, AggregateIterable> doWithAggregate, ReadPreference readPreference) {
+        currentMongoStaticApi().aggregate(pipeline, doWithAggregate, readPreference)
     }
 
     /**

@@ -1,7 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 dependencies {
-    compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
+    compile "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
     compile "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
     compile "org.grails:grails-datastore-gorm:$datastoreVersion"
 
