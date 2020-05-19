@@ -523,6 +523,8 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
                 Object hint = queryArguments.get(HINT_ARGUMENT);
                 if (hint instanceof Map) {
                     cursor = cursor.hint(new Document((Map<String, Object>) hint));
+                } else {
+                    cursor = cursor.hintString(hint.toString());
                 }
             }
         }

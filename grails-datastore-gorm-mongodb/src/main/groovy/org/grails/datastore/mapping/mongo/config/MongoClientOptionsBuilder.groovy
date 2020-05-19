@@ -89,15 +89,14 @@ class MongoClientOptionsBuilder {
                 def builderMethod = ReflectionUtils.findMethod(argType, 'builder')
                 String propertyPath = "${startingPrefix}.${ methodName}"
                 if (builderMethod != null && Modifier.isStatic(builderMethod.modifiers)) {
-
-                    def newBuilder = builderMethod.invoke(argType)
-                    if(newBuilder.respondsTo("applyConnectionString")) {
-                        applyConnectionString(newBuilder, connectionString)
+                    if (propertyResolver.containsProperty(propertyPath)) {
+                        def newBuilder = builderMethod.invoke(argType)
+                        if (newBuilder.respondsTo("applyConnectionString")) {
+                            applyConnectionString(newBuilder, connectionString)
+                        }
+                        method.invoke(builder, buildInternal(newBuilder, propertyPath))
                     }
-                    method.invoke(builder, buildInternal(newBuilder, propertyPath))
-
                 } else {
-
                     if(argType.isEnum()) {
                         def value = propertyResolver.getProperty(propertyPath, "")
                         if (value) {

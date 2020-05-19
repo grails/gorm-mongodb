@@ -27,9 +27,9 @@ class InheritanceQueryingSpec extends GormDatastoreSpec {
 
     def "Test collection and count sizes"() {
         expect: "Collections to have 2 documents"
-        C.collection.count()==2
-        B.collection.count()==2
-        A.collection.count()==2
+        C.collection.countDocuments()==2
+        B.collection.countDocuments()==2
+        A.collection.countDocuments()==2
 
         and: "A/B have 2, C has 1"
         C.count()==1

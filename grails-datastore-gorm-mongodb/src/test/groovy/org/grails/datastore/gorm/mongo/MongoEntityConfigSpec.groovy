@@ -23,7 +23,7 @@ class MongoEntityConfigSpec extends GormDatastoreSpec{
             def client = (MongoClient)session.nativeInterface
             MongoDatabase db = client.getDatabase(session.defaultDatabase)
 
-            db.dropDatabase()
+            db.drop()
             // db.resetIndexCache() // this method is missing from more recent driver versions
 
         when:
@@ -40,7 +40,7 @@ class MongoEntityConfigSpec extends GormDatastoreSpec{
             coll != null
             coll.collection == 'mycollection'
             coll.database == "test2"
-            coll.writeConcern == WriteConcern.FSYNC_SAFE
+            coll.writeConcern == WriteConcern.JOURNALED
             attr != null
             attr.index == true
             attr.targetName == 'myattribute'
@@ -71,7 +71,7 @@ class MyMongoEntity implements MongoEntity<MyMongoEntity> {
         collection "mycollection"
         database "test2"
         shard "name"
-        writeConcern WriteConcern.FSYNC_SAFE
+        writeConcern WriteConcern.JOURNALED
         index summary:"text"
 
         name index:true, attr:"myattribute", indexAttributes: [unique:true]

@@ -38,6 +38,6 @@ class ServerStream {
     static mapping = {
         version false
         compoundIndex server :1, stream:1, indexAttributes:[unique:true, dropDups:true]
-        writeConcern WriteConcern.SAFE
+        writeConcern WriteConcern.ACKNOWLEDGED
     }
 }
