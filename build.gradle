@@ -25,7 +25,7 @@ version "7.0.1.BUILD-SNAPSHOT"
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
-    hibernatePluginVersion = '7.0.0'
+    hibernatePluginVersion = '7.0.3'
     isCiBuild = project.hasProperty("isCiBuild")
     isBuildSnapshot = project.version.endsWith("BUILD-SNAPSHOT")
     servletApiVersion = "4.0.1"
