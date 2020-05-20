@@ -3,6 +3,7 @@ Below are the details of the changes across releases:
 ==== 7.1
 
 * Support Groovy 3
+* Upgrade to mongodb-driver-sync 4.0.3
 
 ==== 7.0
 
