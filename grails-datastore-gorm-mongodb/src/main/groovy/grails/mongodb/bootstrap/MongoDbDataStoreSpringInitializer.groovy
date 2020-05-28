@@ -20,23 +20,28 @@ import grails.mongodb.MongoEntity
 import groovy.transform.CompileStatic
 import groovy.transform.InheritConstructors
 import org.grails.datastore.gorm.bootstrap.AbstractDatastoreInitializer
-import org.grails.datastore.gorm.bootstrap.support.ServiceRegistryFactoryBean
 import org.grails.datastore.gorm.events.ConfigurableApplicationContextEventPublisher
 import org.grails.datastore.gorm.events.DefaultApplicationEventPublisher
 import org.grails.datastore.gorm.plugin.support.PersistenceContextInterceptorAggregator
 import org.grails.datastore.gorm.support.AbstractDatastorePersistenceContextInterceptor
 import org.grails.datastore.gorm.support.DatastorePersistenceContextInterceptor
 import org.grails.datastore.mapping.core.grailsversion.GrailsVersion
+import org.grails.datastore.mapping.config.DatastoreServiceMethodInvokingFactoryBean
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceFactory
 import org.grails.datastore.mapping.validation.BeanFactoryValidatorRegistry
 import org.springframework.beans.factory.BeanFactory
+import org.grails.datastore.mapping.reflect.NameUtils
+import org.grails.datastore.mapping.services.Service
+import org.grails.datastore.mapping.services.ServiceDefinition
+import org.grails.datastore.mapping.services.SoftServiceLoader
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.util.ClassUtils
+
 /**
  * Used to initialize GORM for MongoDB outside of Grails
  *
@@ -118,8 +123,6 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
                 registerAlias "mongoMappingContext", "grailsDomainClassMappingContext"
             }
 
-            mongoDatastoreServiceRegistry(ServiceRegistryFactoryBean, ref("mongoDatastore"))
-
             mongoTransactionManager(mongoDatastore:"getTransactionManager")
             mongoAutoTimestampEventListener(mongoDatastore:"getAutoTimestampEventListener")
             mongoPersistenceInterceptor(getPersistenceInterceptorClass(), ref("mongoDatastore"))
@@ -136,6 +139,16 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
                     datastore = ref("mongoDatastore")
                 }
             }
+
+            loadDataServices(secondaryDatastore ? "mongo" : null)
+                    .each {serviceName, serviceClass->
+                        "$serviceName"(DatastoreServiceMethodInvokingFactoryBean) {
+                            targetObject = ref("mongoDatastore")
+                            targetMethod = 'getService'
+                            arguments = [serviceClass]
+                        }
+                    }
+
         }
     }
 
