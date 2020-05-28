@@ -1,0 +1,31 @@
+group "examples"
+
+apply plugin:"org.grails.grails-web"
+apply plugin:"org.grails.plugins.views-json"
+
+dependencies {
+    compile "org.springframework.boot:spring-boot-starter-logging"
+    compile "org.springframework.boot:spring-boot-autoconfigure"
+    compile "org.grails:grails-core"
+    compile "org.springframework.boot:spring-boot-starter-actuator"
+    compile "org.springframework.boot:spring-boot-starter-tomcat"
+    compile ("org.grails:grails-dependencies") {
+        exclude module:'grails-datastore-simple'
+    }
+    compile "org.grails:grails-plugin-codecs"
+    compile "org.grails:grails-plugin-services"
+    compile "org.grails:grails-plugin-datasource"
+    compile "org.grails:grails-web-boot"
+    compile "org.grails:grails-logging"
+    compile "org.grails.plugins:cache"
+    compile "org.grails.plugins:events"
+    compile project(":grails-plugin")
+    compile "org.mongodb:mongodb-driver:$mongodbDriverVersion"
+    compile "org.mongodb:mongodb-driver-core:$mongodbDriverVersion"
+    compile "org.grails.plugins:views-json"
+    compile "org.grails.plugins:views-json-templates"
+    compile 'org.grails.plugins:spring-security-rest:3.0.1'
+    profile "org.grails.profiles:rest-api"
+    testCompile "org.grails:grails-gorm-testing-support"
+    testCompile "org.grails:grails-web-testing-support"
+}
