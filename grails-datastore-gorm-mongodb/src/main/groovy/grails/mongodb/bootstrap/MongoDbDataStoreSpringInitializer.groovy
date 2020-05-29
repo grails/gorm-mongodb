@@ -25,7 +25,7 @@ import org.grails.datastore.gorm.events.DefaultApplicationEventPublisher
 import org.grails.datastore.gorm.plugin.support.PersistenceContextInterceptorAggregator
 import org.grails.datastore.gorm.support.AbstractDatastorePersistenceContextInterceptor
 import org.grails.datastore.gorm.support.DatastorePersistenceContextInterceptor
-import org.grails.datastore.mapping.config.GormMethodInvokingFactoryBean
+import org.grails.datastore.mapping.config.DatastoreServiceMethodInvokingFactoryBean
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.mongo.connections.MongoConnectionSourceFactory
 import org.grails.datastore.mapping.reflect.NameUtils
@@ -140,7 +140,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
             for (ServiceDefinition<Service> serviceDefinition: services) {
                 if (serviceDefinition.isPresent()) {
                     final Class<Service> clazz = serviceDefinition.getType()
-                    if (clazz.simpleName.startsWith('$')) {
+                    if (clazz.simpleName.startsWith('$') && clazz.simpleName.endsWith('Implementation')) {
                         String serviceClassName = clazz.name - '$' - 'Implementation'
                         final ClassLoader cl = org.grails.datastore.mapping.reflect.ClassUtils.classLoader
                         final Class<?> serviceClass = cl.loadClass(serviceClassName)
@@ -154,7 +154,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
                             serviceName = 'mongo' + NameUtils.capitalize(serviceName)
                         }
                         if (serviceClass != null && serviceClass != Object.class) {
-                            "$serviceName"(GormMethodInvokingFactoryBean) {
+                            "$serviceName"(DatastoreServiceMethodInvokingFactoryBean) {
                                 targetObject = ref('mongoDatastore')
                                 targetMethod = 'getService'
                                 arguments = [serviceClass]
