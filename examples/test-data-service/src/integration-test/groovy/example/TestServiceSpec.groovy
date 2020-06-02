@@ -29,6 +29,12 @@ class TestServiceSpec extends Specification {
         testBean.bookRepo != null
     }
 
+    void "test autowire by name works"() {
+
+        expect:
+        testBean.bookService != null
+    }
+
     void "test that there is only one bookService"() {
         expect:
         bookServiceList.size() == 1
