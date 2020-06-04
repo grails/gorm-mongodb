@@ -3,8 +3,6 @@ group "examples"
 apply plugin:"org.grails.grails-web"
 apply plugin:"org.grails.plugins.views-json"
 
-ext['gorm.version'] = datastoreVersion
-
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-logging"
     compile "org.springframework.boot:spring-boot-autoconfigure"

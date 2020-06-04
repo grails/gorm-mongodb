@@ -40,6 +40,8 @@ subprojects { project ->
         maven { url "https://repo.grails.org/grails/core" }
     }
     if(project.name.startsWith("examples")) {
+        ext['gorm.version'] = datastoreVersion
+
         if(project.name.contains('grails3')) {
 
             apply plugin:"org.grails.grails-web"
