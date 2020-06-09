@@ -25,5 +25,8 @@ project(":examples-grails3-hibernate5-mongodb").projectDir = new File(settingsDi
 include 'examples-springboot-mongodb'
 project(":examples-springboot-mongodb").projectDir = new File(settingsDir, "examples/springboot-mongodb")
 
+include 'examples-test-data-service'
+project(":examples-test-data-service").projectDir = new File(settingsDir, "examples/test-data-service")
+
 
 

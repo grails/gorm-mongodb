@@ -15,6 +15,7 @@ buildscript {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.6.1'
         classpath "gradle.plugin.com.energizedwork.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
+        classpath "org.grails.plugins:views-gradle:2.0.0"
     }
 }
 
@@ -39,6 +40,8 @@ subprojects { project ->
         maven { url "https://repo.grails.org/grails/core" }
     }
     if(project.name.startsWith("examples")) {
+        ext['gorm.version'] = datastoreVersion
+
         if(project.name.contains('grails3')) {
 
             apply plugin:"org.grails.grails-web"
