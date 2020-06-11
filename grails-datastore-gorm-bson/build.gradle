@@ -1,5 +1,4 @@
 dependencies {
-    compile "org.grails:grails-datastore-gorm:$datastoreVersion"
-    compile "org.mongodb:bson:$mongodbDriverVersion"
-
+    api "org.grails:grails-datastore-gorm:$datastoreVersion"
+    api "org.mongodb:bson:$mongodbDriverVersion"
 }

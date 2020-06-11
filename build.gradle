@@ -11,7 +11,6 @@ buildscript {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
         // classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
-        // classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.6.1'
         classpath "gradle.plugin.com.energizedwork.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
@@ -46,18 +45,24 @@ subprojects { project ->
         }
     }
     if(project.name.startsWith("examples")) {
+
+        apply plugin: 'groovy'
+
         if(project.name.contains('grails3')) {
 
             apply plugin:"org.grails.grails-web"
             apply plugin:"org.grails.grails-gsp"
 
-            tasks.withType(Test) {
-                testLogging {
-                    showStandardStreams = true
-                    exceptionFormat = 'full'
-                }
+            //TODO: Remove the below {@code integrationTestCompile} logic once the Grails core version is updated.
+            dependencies {
+                integrationTestCompile configurations.testCompileClasspath
+                integrationTestRuntime configurations.testRuntimeClasspath
             }
+
+            //TODO: Remove the below lines once the {@link org.grails.gradle.plugin.web.gsp.GroovyPageCompileTask} is updated with correct classpath settings.
+            compileGroovyPages.classpath += configurations.compileClasspath
         }
+
         configurations.all {
             resolutionStrategy.eachDependency { DependencyResolveDetails details ->
                 if(details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
@@ -78,18 +83,20 @@ subprojects { project ->
             apply plugin:"com.energizedwork.webdriver-binaries"
         }
 
-        apply plugin: "java"
-
         dependencies {
-            testCompile "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
-            testCompile("org.spockframework:spock-core:$spockVersion") { transitive = false }
-            testCompile "org.junit.jupiter:junit-jupiter-api:5.6.0"
-            testCompile "org.junit.platform:junit-platform-runner:1.6.0"
+            testImplementation "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
+            testImplementation "org.spockframework:spock-core:$spockVersion", { transitive = false }
+            testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.0"
+            testImplementation "org.junit.platform:junit-platform-runner:1.6.0"
             testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.0"
         }
 
-        test {
+        tasks.withType(Test) {
             useJUnitPlatform()
+            testLogging {
+                showStandardStreams = true
+                exceptionFormat = 'full'
+            }
         }
 
         return
@@ -138,14 +145,10 @@ subprojects { project ->
         }
     }
 
-    configurations {
-        documentation
-
-        all {
-            resolutionStrategy {
-                cacheDynamicVersionsFor 0, 'hours'
-                cacheChangingModulesFor 0, 'hours'
-            }
+    configurations.all {
+        resolutionStrategy {
+            cacheDynamicVersionsFor 0, 'hours'
+            cacheChangingModulesFor 0, 'hours'
         }
     }
 
@@ -173,16 +176,12 @@ subprojects { project ->
         }
     }
 
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.bintray'
-    //apply plugin: "io.github.groovylang.groovydoc"
+    apply plugin: "java-library"
+    apply plugin: "maven-publish"
+    apply plugin: "com.jfrog.bintray"
 
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
-
-    tasks.withType(Groovydoc) {
-        classpath += configurations.documentation
-    }
 
     configurations.all {
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
@@ -193,24 +192,30 @@ subprojects { project ->
         }
     }
 
-    dependencies {
-        compile "org.codehaus.groovy:groovy:$groovyVersion"
-        compile "org.codehaus.groovy:groovy-templates:$groovyVersion"
+    configurations {
+        documentation
+    }
 
-        testCompile "org.codehaus.groovy:groovy-json:$groovyVersion"
-        testCompile "org.codehaus.groovy:groovy-templates:$groovyVersion"
+    dependencies {
+        api "org.codehaus.groovy:groovy:$groovyVersion"
+        api "org.codehaus.groovy:groovy-templates:$groovyVersion"
+
+        testImplementation "org.codehaus.groovy:groovy-json:$groovyVersion"
+        testImplementation "org.codehaus.groovy:groovy-templates:$groovyVersion"
 
         documentation "org.fusesource.jansi:jansi:$jansiVersion"
         documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
         documentation 'info.picocli:picocli:3.8.2'
         documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
 
-        testCompile "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
-        testCompile("org.spockframework:spock-core:$spockVersion") { transitive = false }
-        testCompile "org.junit.jupiter:junit-jupiter-api:5.6.0"
-        testCompile "org.junit.platform:junit-platform-runner:1.6.0"
+        testImplementation "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
+        testImplementation "org.spockframework:spock-core:$spockVersion", { transitive = false }
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.0"
+        testImplementation "org.junit.platform:junit-platform-runner:1.6.0"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.0"
     }
+
+    groovydoc.classpath += configurations.documentation
 
     configurations {
         all {
