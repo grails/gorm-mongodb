@@ -9,6 +9,7 @@ dependencies {
         exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
     }
 
+    implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
     compile(project(":grails-datastore-gorm-bson"))
 
     testCompile "org.grails:grails-datastore-gorm-tck:$datastoreVersion"
