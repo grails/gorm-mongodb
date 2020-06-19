@@ -1,27 +1,25 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 dependencies {
-    compile "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
-    compile "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
-    compile "org.grails:grails-datastore-gorm:$datastoreVersion"
-
-    compileOnly("org.grails:grails-datastore-gorm-support:$datastoreVersion") {
-        exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
-    }
+    api "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
+    api "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
+    api "org.grails:grails-datastore-gorm:$datastoreVersion"
+    api project(":grails-datastore-gorm-bson")
 
     implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
-    compile(project(":grails-datastore-gorm-bson"))
 
-    testCompile "org.grails:grails-datastore-gorm-tck:$datastoreVersion"
-
-    testRuntime "org.springframework:spring-aop:$springVersion"
-
-    compileOnly "javax.servlet:javax.servlet-api:$servletApiVersion"
-    testCompile("org.hibernate:hibernate-validator:$hibernateValidatorVersion")
-    testCompile("org.grails:grails-datastore-gorm-support:$datastoreVersion") {
+    compileOnly "org.grails:grails-datastore-gorm-support:$datastoreVersion", {
         exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
     }
-    testRuntime('org.glassfish.web:el-impl:2.2')
+    compileOnly "javax.servlet:javax.servlet-api:$servletApiVersion"
+    
+    testImplementation "org.grails:grails-datastore-gorm-tck:$datastoreVersion"
+    testImplementation "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
+    testImplementation "org.grails:grails-datastore-gorm-support:$datastoreVersion", {
+        exclude group: "org.grails", module:"grails-datastore-gorm-hibernate-core"
+    }
+    testRuntimeOnly 'org.glassfish.web:el-impl:2.2'
+    testRuntimeOnly "org.springframework:spring-aop:$springVersion"
 }
 
 
@@ -65,7 +63,7 @@ test.doFirst {
     }    
     def tckClassesFile = project
                             .configurations
-                            .testCompile
+                            .testCompileClasspath
                             .resolvedConfiguration
                             .getResolvedArtifacts()
                             .find { resolved ->

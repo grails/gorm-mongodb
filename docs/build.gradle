@@ -13,10 +13,30 @@ ext {
 version rootProject.version
 
 apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'groovy'
+
+configurations {
+    documentation
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
+            details.useVersion(groovyVersion)
+        }
+        if (details.requested.group == 'org.springframework') {
+            details.useVersion(springVersion)
+        }
+        if (details.requested.group == "org.springframework.boot") {
+            details.useVersion(springBootVersion)
+        }
+    }
+}
 
 dependencies {
-    documentation "org.codehaus.groovy:groovy-all:$groovyVersion"
-    documentation 'org.fusesource.jansi:jansi:1.12'
+    documentation "org.fusesource.jansi:jansi:$jansiVersion"
+    documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
+    documentation "com.github.javaparser:javaparser-core:$javaParserCoreVersion"
     for(p in coreProjects) {
         documentation "org.grails:grails-datastore-$p:$datastoreVersion"
     }
@@ -78,39 +98,37 @@ task copyDocs(type: Copy, dependsOn:asciidoctor) {
     into "${project.buildDir}/docs/manual"
 }
 
-//task groovydoc(type:org.groovy.lang.groovydoc.tasks.GroovydocTask, dependsOn:fetchSource) {
-//    docTitle = "GORM for MongoDB - ${project.version}"
-//    destinationDir = project.file("build/docs/api")
-//    notimestamp = true
-//    noversionstamp = true
-//
-//    def files
-//    for(p in coreProjects) {
-//        if(files == null) {
-//            files = project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
-//        }
-//        else {
-//            files += project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
-//        }
-//    }
-//    project.rootProject.subprojects
-//                        .findAll { !it.name.contains('-rx-') && !it.name.startsWith('examples') }
-//                        .each { subproject ->
-//        if(subproject.file('src/main/groovy').exists()) {
-//            files += subproject.files("src/main/groovy")
-//        }
-//    }
-//    source = files
-//    classpath += configurations.documentation
-//    jvmArgs "-Xmx1024m"
-//}
+tasks.withType(Groovydoc) {
+    dependsOn(fetchSource)
+    docTitle = "GORM for MongoDB - ${project.version}"
+    destinationDir = project.file("build/docs/api")
+
+    def files
+    for(p in coreProjects) {
+        if(files == null) {
+            files = project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
+        }
+        else {
+            files += project.files("${checkOutDir}/gorm-src/grails-datastore-${p}/src/main/groovy")
+        }
+    }
+    project.rootProject.subprojects
+                        .findAll { !it.name.contains('-rx-') && !it.name.startsWith('examples') }
+                        .each { subproject ->
+        if(subproject.file('src/main/groovy').exists()) {
+            files += subproject.files("src/main/groovy")
+        }
+    }
+    source = files
+    classpath += configurations.documentation
+}
 
 task copyResources(type:Copy) {
     from 'src/docs/resources'
     into "${project.buildDir}/docs"
 }
 
-task docs(dependsOn:[asciidoctor, copyDocs, copyResources] + subprojects.findAll { project -> project.tasks.findByName('groovydoc')}
+task docs(dependsOn:[asciidoctor, copyDocs, groovydoc, copyResources] + subprojects.findAll { project -> project.tasks.findByName('groovydoc')}
                 .collect { project -> project.tasks.groovydoc })
 
 //task assemble(type: Zip, dependsOn:docs) {

@@ -3,24 +3,16 @@ dependencies {
         exclude group:'org.codehaus.groovy', module:'groovy'
     }
 
-    compile "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
-
-    compile "org.codehaus.groovy:groovy:$groovyVersion"
-    compile project(":grails-datastore-gorm-mongodb"), {
+    api "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
+    api "org.codehaus.groovy:groovy:$groovyVersion"
+    api project(":grails-datastore-gorm-mongodb"), {
         exclude group:'org.grails', module:'grails-datastore-gorm-plugin-support'
     }
-    compile project(":grails-datastore-gorm-mongodb-ext"), {
+    api project(":grails-datastore-gorm-mongodb-ext"), {
         exclude group:'org.grails', module:'grails-datastore-gorm-mongodb'
     }
-    compile "org.springframework:spring-tx:$springVersion"
-
-    testCompile "org.springframework.boot:spring-boot-cli:$springBootVersion", {
+    api "org.springframework:spring-tx:$springVersion"
+    testImplementation "org.springframework.boot:spring-boot-cli:$springBootVersion", {
         exclude group:'org.codehaus.groovy', module:'groovy'
     }
-
-    testCompile "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
-    testCompile("org.spockframework:spock-core:$spockVersion") { transitive = false }
-    testCompile "org.junit.jupiter:junit-jupiter-api:5.6.0"
-    testCompile "org.junit.platform:junit-platform-runner:1.6.0"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.0"
 }

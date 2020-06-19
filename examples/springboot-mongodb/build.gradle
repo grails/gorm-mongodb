@@ -7,19 +7,17 @@ buildscript {
     }
 }
 
-apply plugin:"groovy"
 apply plugin: 'org.springframework.boot'
 
 ext['groovy.version'] = "$groovyVersion"
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
-    compile "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
+    implementation "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+    implementation "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
+    implementation project(":gorm-mongodb-spring-boot")
 
-    compile project(":gorm-mongodb-spring-boot")
-
-    testCompile("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
-    testCompile("org.spockframework:spock-core:$spockVersion")
+    testImplementation"org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+    testImplementation"org.spockframework:spock-core:$spockVersion"
 }
 
 configurations.all {
