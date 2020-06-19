@@ -8,6 +8,7 @@ cache:
 jdk:
 - openjdk8
 - openjdk11
+- openjdk14
 services:
   - mongodb
 addons:
