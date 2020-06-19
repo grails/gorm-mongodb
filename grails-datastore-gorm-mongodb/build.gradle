@@ -4,23 +4,22 @@ dependencies {
     api "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
     api "org.grails:grails-datastore-gorm-validation:$datastoreVersion"
     api "org.grails:grails-datastore-gorm:$datastoreVersion"
+    api project(":grails-datastore-gorm-bson")
+
+    implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
 
     compileOnly "org.grails:grails-datastore-gorm-support:$datastoreVersion", {
         exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
     }
-
-    api project(":grails-datastore-gorm-bson")
-
-    testImplementation "org.grails:grails-datastore-gorm-tck:$datastoreVersion"
-
-    testRuntime "org.springframework:spring-aop:$springVersion"
-
     compileOnly "javax.servlet:javax.servlet-api:$servletApiVersion"
+    
+    testImplementation "org.grails:grails-datastore-gorm-tck:$datastoreVersion"
     testImplementation "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
     testImplementation "org.grails:grails-datastore-gorm-support:$datastoreVersion", {
         exclude group: "org.grails", module:"grails-datastore-gorm-hibernate-core"
     }
     testRuntimeOnly 'org.glassfish.web:el-impl:2.2'
+    testRuntimeOnly "org.springframework:spring-aop:$springVersion"
 }
 
 
