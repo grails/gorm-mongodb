@@ -26,8 +26,7 @@ class BookSpec extends Specification {
                 mongoDatastore.mongoClient.getDatabase(name).drop()    
             } catch(e) {
                 // continue and ignore, probably permission issue
-            }
-            
+            }         
         } as Block)
         
         when:"A query is executed"
