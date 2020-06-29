@@ -1,7 +1,8 @@
 package functional.tests
 
 import com.mongodb.MongoClient
-import grails.test.mixin.integration.Integration
+import grails.testing.mixin.integration.Integration
+
 import grails.validation.ValidationException
 import org.springframework.beans.factory.annotation.Autowired
 import spock.lang.Specification
@@ -9,7 +10,7 @@ import spock.lang.Specification
 /**
  * Created by graemerocher on 12/09/2016.
  */
-@Integration
+@Integration(applicationClass = Application)
 class BookSpec extends Specification {
 
     @Autowired

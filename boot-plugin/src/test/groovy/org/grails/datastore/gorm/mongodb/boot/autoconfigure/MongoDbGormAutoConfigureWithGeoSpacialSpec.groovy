@@ -1,11 +1,10 @@
 package org.grails.datastore.gorm.mongodb.boot.autoconfigure
 
-import com.mongodb.Mongo
 import grails.gorm.annotation.Entity
 import grails.mongodb.geo.Point
 import org.bson.types.ObjectId
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages
-import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfiguration
+import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Configuration
@@ -26,10 +25,9 @@ class MongoDbGormAutoConfigureWithGeoSpacialSpec extends Specification{
     void setup() {
         AutoConfigurationPackages.register(context, "org.grails.datastore.gorm.mongodb.boot.autoconfigure")
 
-        this.context.register( TestConfiguration, MongoAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
+        this.context.register(TestConfiguration, MongoAutoConfiguration.class,
+                              PropertyPlaceholderAutoConfiguration.class);
     }
-
 
     void 'Test that GORM is correctly configured'() {
 
@@ -59,7 +57,6 @@ class MongoDbGormAutoConfigureWithGeoSpacialSpec extends Specification{
     @Import(MongoDbGormAutoConfiguration)
     static class TestConfiguration {
     }
-
 }
 
 @Entity
@@ -77,4 +74,3 @@ class City {
         location geoIndex:'2dsphere'
     }
 }
-

@@ -1,15 +1,8 @@
 package functional.tests
 
-import com.github.fakemongo.Fongo
-import com.mongodb.MongoClient
 import grails.test.mongodb.MongoSpec
 
-class BookUnitSpec extends MongoSpec {
-
-    @Override
-    MongoClient createMongoClient() {
-        return new Fongo(getClass().name).mongo
-    }
+class BookUnitSpec extends MongoSpec implements EmbeddedMongoClient {
 
     void "Test low-level API extensions"() {
         when:

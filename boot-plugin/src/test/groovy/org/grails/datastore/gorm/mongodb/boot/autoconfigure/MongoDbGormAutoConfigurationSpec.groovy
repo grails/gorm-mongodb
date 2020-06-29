@@ -3,7 +3,7 @@ package org.grails.datastore.gorm.mongodb.boot.autoconfigure
 import grails.gorm.annotation.Entity
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.boot.autoconfigure.PropertyPlaceholderAutoConfiguration
+import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan
@@ -25,8 +25,8 @@ class MongoDbGormAutoConfigurationSpec extends Specification{
     void setup() {
 
         AutoConfigurationPackages.register(context, "org.grails.datastore.gorm.mongodb.boot.autoconfigure")
-        this.context.register( TestConfiguration, MongoAutoConfiguration.class,
-                PropertyPlaceholderAutoConfiguration.class);
+        this.context.register(TestConfiguration, MongoAutoConfiguration.class,
+                              PropertyPlaceholderAutoConfiguration.class);
     }
 
 
@@ -44,9 +44,7 @@ class MongoDbGormAutoConfigurationSpec extends Specification{
     @Import(MongoDbGormAutoConfiguration)
     static class TestConfiguration {
     }
-
 }
-
 
 @Entity
 class Person {
@@ -54,4 +52,3 @@ class Person {
     String lastName
     Integer age = 18
 }
-

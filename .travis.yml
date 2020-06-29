@@ -1,12 +1,23 @@
-sudo: false
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-  - "$HOME/.gradle"
-  - "$HOME/.m2/repository"
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 jdk:
 - openjdk8
+- openjdk11
 services:
   - mongodb
+addons:
+  chrome: stable
+  firefox: latest
+  apt:
+    sources:
+      - mongodb-3.0-precise
+    packages:
+      - mongodb-org-server
 env:
   global:
   - TERM=dumb

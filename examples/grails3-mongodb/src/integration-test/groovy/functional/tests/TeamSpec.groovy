@@ -1,9 +1,10 @@
 package functional.tests
 
-import grails.test.mixin.integration.Integration
+import grails.testing.mixin.integration.Integration
+
 import spock.lang.Specification
 
-@Integration
+@Integration(applicationClass = Application)
 class TeamSpec extends Specification {
 
     void "get() doesn't throw NPE"() {

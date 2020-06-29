@@ -4,8 +4,6 @@ build/
 *.iml
 target/
 *.zip
-grails2-plugin/plugins/
-grails2-plugin/plugin.xml
 secring.gpg
 
 **/out/
@@ -21,3 +19,4 @@ gradle-app.setting
 
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
+.DS_Store

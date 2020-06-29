@@ -49,7 +49,12 @@ class SchemaBasedMultiTenancySpec extends Specification {
     void "Test persist and retrieve entities with multi tenancy"() {
         setup:
         CompanyB.eachTenant {
-            CompanyB.DB.drop()
+            try {
+                CompanyB.DB.drop()    
+            } catch(e) {
+                // continue
+            }
+            
         }
 
         when:"A tenant id is present"
@@ -86,7 +91,7 @@ class SchemaBasedMultiTenancySpec extends Specification {
         }
 
         then:"The result is correct"
-        tenantIds == [test1:2, test2:1]
+        tenantIds == [admin:0, test1:2, test2:1]
     }
 
     List getDomainClasses() {

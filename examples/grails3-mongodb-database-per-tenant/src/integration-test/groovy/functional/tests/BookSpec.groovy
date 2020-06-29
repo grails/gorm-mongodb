@@ -2,7 +2,8 @@ package functional.tests
 
 import com.mongodb.Block
 import grails.gorm.multitenancy.Tenants
-import grails.test.mixin.integration.Integration
+import grails.testing.mixin.integration.Integration
+
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.grails.datastore.mapping.multitenancy.exceptions.TenantNotFoundException
 import org.grails.datastore.mapping.multitenancy.resolvers.SystemPropertyTenantResolver
@@ -13,7 +14,7 @@ import spock.lang.Specification
 /**
  * Created by graemerocher on 17/10/16.
  */
-@Integration
+@Integration(applicationClass = Application)
 class BookSpec extends Specification {
     @Autowired
     MongoDatastore mongoDatastore
@@ -21,11 +22,13 @@ class BookSpec extends Specification {
     void "Test database per tenant"() {
         setup:
         mongoDatastore.mongoClient.listDatabaseNames().forEach( { String name ->
-            if (name != 'admin') {
-                mongoDatastore.mongoClient.getDatabase(name).drop()
-            }
+            try {
+                mongoDatastore.mongoClient.getDatabase(name).drop()    
+            } catch(e) {
+                // continue and ignore, probably permission issue
+            }         
         } as Block)
-
+        
         when:"A query is executed"
         Book.list()
 

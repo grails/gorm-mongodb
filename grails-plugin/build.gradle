@@ -1,9 +1,9 @@
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 dependencyManagement {
     imports {
-        mavenBom "org.grails:grails-bom:$grailsVersion"
+        mavenBom "org.grails:grails-bom:$grails3Version"
     }
     applyMavenExclusions false
 }
@@ -13,25 +13,29 @@ configurations.all {
             details.requested.name.startsWith('grails-datastore') &&
             !details.requested.name.contains('mongodb') &&
             !details.requested.name.contains('bson')) {
-            details.useVersion(gormVersion)
+            details.useVersion(datastoreVersion)
         }
+        if(details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
+            details.useVersion(groovyVersion)   
+        }
+
     }
 }
 dependencies {
-
-
+    documentation ("org.grails:grails-core")
+    documentation ("org.grails:grails-spring")
     compileOnly("org.grails:grails-core:")
     compileOnly("org.grails:grails-bootstrap")
-    compileOnly("org.grails:grails-plugin-converters") {
-        exclude module:'grails-datastore-simple'
-    }
-    compileOnly("org.grails:grails-plugin-testing:$grailsVersion")
+    compileOnly "org.grails:grails-test-mixins:3.3.0"
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
 
-    compileOnly 'javax.servlet:javax.servlet-api:3.1.0'
+    compileOnly "org.spockframework:spock-core:$spockVersion"
 
+    // compileOnly "org.grails.plugins:converters:$grails3Version"
+    // compile "org.grails:grails-web-common:$grails3Version"
 
-    compile "org.grails:grails-datastore-web:$gormVersion"
-    compile "org.grails:grails-datastore-gorm-support:$gormVersion", {
+    compile "org.grails:grails-datastore-web:$datastoreVersion"
+    compile "org.grails:grails-datastore-gorm-support:$datastoreVersion", {
         exclude group:'org.springframework', module:'spring-context'
         exclude group:'org.springframework', module:'spring-core'
         exclude group:'org.springframework', module:'spring-beans'

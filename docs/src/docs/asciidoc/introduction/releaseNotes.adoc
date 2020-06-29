@@ -1,5 +1,12 @@
 Below are the details of the changes across releases:
 
+==== 7.0
+
+* Support for MongoDB Driver 3.10.0
+* Support for Java 11
+* Removal of RxJava 1.x Module
+* Java 8 Minimum
+
 ==== 6.1
 
 * GORM Data Services Support

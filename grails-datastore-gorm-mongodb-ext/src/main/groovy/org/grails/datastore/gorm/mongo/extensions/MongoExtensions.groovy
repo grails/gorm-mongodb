@@ -128,6 +128,10 @@ class MongoExtensions {
         iterable.filter(new Document(filter))
     }
 
+    /**
+     * @deprecated See {@link FindIterable#modifiers(org.bson.conversions.Bson)}
+     */
+    @Deprecated
     static FindIterable<Document> modifiers(FindIterable<Document> iterable, Map<String,Object> modifiers) {
         iterable.modifiers(new Document(modifiers))
     }
@@ -784,7 +788,10 @@ class MongoExtensions {
     }
 
     static UpdateResult replaceOne(MongoCollection<Document> collection, Map<String, Object> filter, Document replacement, Map<String,Object> options) {
-        collection.replaceOne((Bson)new Document(filter), replacement, MongoConstants.mapToObject(UpdateOptions, options))
+        collection.replaceOne(
+                (Bson)new Document(filter),
+                replacement,
+                MongoConstants.mapToObject(ReplaceOptions, options))
     }
 
     static Document findOneAndDelete(MongoCollection<Document> collection, Map<String, Object> filter) {

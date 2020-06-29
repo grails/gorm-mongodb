@@ -1,28 +1,32 @@
 
 // core
-include "grails-datastore-gorm-bson",
-        "grails-datastore-gorm-mongodb",
-        "grails-datastore-gorm-mongodb-ext",
-        "grails-datastore-gorm-rx-bson",
-        "grails-datastore-gorm-rx-mongodb"
+include "grails-datastore-gorm-bson"
+include "grails-datastore-gorm-mongodb"
+include "grails-datastore-gorm-mongodb-ext"
 
 // documentation
 include 'docs'
 
 // plugins
 include "boot-plugin"
-include 'grails2-plugin'
+project(':boot-plugin').name = 'gorm-mongodb-spring-boot'
 include 'grails-plugin'
-include 'rx-plugin'
-
 
 // examples
-include 'examples/grails3-mongodb'
-include 'examples/grails3-mongodb-database-per-tenant'
-include 'examples/grails3-rxmongodb'
-include 'examples/grails3-hibernate4-mongodb'
-include 'examples/springboot-mongodb'
+include 'examples-grails3-mongodb'
+project(":examples-grails3-mongodb").projectDir = new File(settingsDir, "examples/grails3-mongodb")
+
+include 'examples-grails3-mongodb-database-per-tenant'
+project(":examples-grails3-mongodb-database-per-tenant").projectDir = new File(settingsDir, "examples/grails3-mongodb-database-per-tenant")
+
+include 'examples-grails3-hibernate5-mongodb'
+project(":examples-grails3-hibernate5-mongodb").projectDir = new File(settingsDir, "examples/grails3-hibernate5-mongodb")
+
+include 'examples-springboot-mongodb'
+project(":examples-springboot-mongodb").projectDir = new File(settingsDir, "examples/springboot-mongodb")
+
+include 'examples-test-data-service'
+project(":examples-test-data-service").projectDir = new File(settingsDir, "examples/test-data-service")
 
 
-findProject(':boot-plugin').name = 'gorm-mongodb-spring-boot'
 
