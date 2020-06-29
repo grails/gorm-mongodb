@@ -44,6 +44,7 @@ import org.grails.datastore.gorm.validation.constraints.builtin.UniqueConstraint
 import org.grails.datastore.gorm.validation.constraints.registry.ConstraintRegistry;
 import org.grails.datastore.gorm.validation.listener.ValidationEventListener;
 import org.grails.datastore.gorm.validation.registry.support.ValidatorRegistries;
+import org.grails.datastore.mapping.config.Settings;
 import org.grails.datastore.mapping.core.*;
 import org.grails.datastore.mapping.core.connections.*;
 import org.grails.datastore.mapping.core.exceptions.ConfigurationException;
@@ -141,8 +142,49 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
 
         this.mongo = defaultConnectionSource.getSource();
         this.multiTenancyMode = multiTenancySettings.getMode();
+        this.eventPublisher = eventPublisher;
+        this.defaultDatabase = settings.getDatabase();
+        this.defaultFlushMode = settings.getFlushMode();
+        this.stateless = settings.isStateless();
+        this.codecEngine = settings.getEngine().equals(MongoConstants.CODEC_ENGINE);
+        codecRegistry = CodecRegistries.fromRegistries(
+                CodecRegistries.fromProviders(new CodecExtensions(), new PersistentEntityCodeRegistry()),
+                mappingContext.getCodecRegistry(),
+                MongoClientSettings.getDefaultCodecRegistry()
+        );
 
-        if(multiTenancyMode == MultiTenancySettings.MultiTenancyMode.SCHEMA) {
+        DatastoreTransactionManager datastoreTransactionManager = new DatastoreTransactionManager();
+        datastoreTransactionManager.setDatastore(this);
+        transactionManager = datastoreTransactionManager;
+        for(PersistentEntity entity : mappingContext.getPersistentEntities()) {
+            registerEntity(entity);
+        }
+        if (!(connectionSources instanceof SingletonConnectionSources)) {
+            final MongoDatastore parent = this;
+            Iterable<ConnectionSource<MongoClient, MongoConnectionSourceSettings>> allConnectionSources = connectionSources.getAllConnectionSources();
+            for (final ConnectionSource<MongoClient, MongoConnectionSourceSettings> connectionSource : allConnectionSources) {
+                SingletonConnectionSources<MongoClient, MongoConnectionSourceSettings> singletonConnectionSources = new SingletonConnectionSources<>(connectionSource, connectionSources.getBaseConfiguration());
+                MongoDatastore childDatastore;
+
+                if (ConnectionSource.DEFAULT.equals(connectionSource.getName())) {
+                    childDatastore = this;
+                } else {
+                    childDatastore = createChildDatastore(mappingContext, eventPublisher, parent, singletonConnectionSources);
+                }
+                datastoresByConnectionSource.put(connectionSource.getName(), childDatastore);
+            }
+
+            connectionSources.addListener(new ConnectionSourcesListener<MongoClient, MongoConnectionSourceSettings>() {
+                public void newConnectionSource(final ConnectionSource<MongoClient, MongoConnectionSourceSettings> connectionSource) {
+                    final SingletonConnectionSources<MongoClient, MongoConnectionSourceSettings> singletonConnectionSources = new SingletonConnectionSources<>(connectionSource, connectionSources.getBaseConfiguration());
+                    MongoDatastore childDatastore = createChildDatastore(mappingContext, eventPublisher, parent, singletonConnectionSources);
+                    datastoresByConnectionSource.put(connectionSource.getName(), childDatastore);
+                    registerAllEntitiesWithEnhancer();
+                }
+            });
+        }
+
+        if (multiTenancyMode == MultiTenancySettings.MultiTenancyMode.SCHEMA) {
             final TenantResolver baseResolver = multiTenancySettings.getTenantResolver();
             this.tenantResolver = new AllTenantsResolver() {
                 @Override
@@ -160,80 +202,39 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
                     return baseResolver.resolveTenantIdentifier();
                 }
             };
-        }
-        else {
+        } else {
             this.tenantResolver = multiTenancySettings.getTenantResolver();
-        }
-        this.eventPublisher = eventPublisher;
-        this.defaultDatabase = settings.getDatabase();
-        this.defaultFlushMode = settings.getFlushMode();
-        this.stateless = settings.isStateless();
-        this.codecEngine = settings.getEngine().equals(MongoConstants.CODEC_ENGINE);
-        codecRegistry = CodecRegistries.fromRegistries(
-                CodecRegistries.fromProviders(new CodecExtensions(), new PersistentEntityCodeRegistry()),
-                mappingContext.getCodecRegistry(),
-                MongoClientSettings.getDefaultCodecRegistry()
-        );
-
-        DatastoreTransactionManager datastoreTransactionManager = new DatastoreTransactionManager();
-        datastoreTransactionManager.setDatastore(this);
-        transactionManager = datastoreTransactionManager;
-
-        for(PersistentEntity entity : mappingContext.getPersistentEntities()) {
-            registerEntity(entity);
-        }
-        if(!(connectionSources instanceof SingletonConnectionSources)) {
-
-            Iterable<ConnectionSource<MongoClient, MongoConnectionSourceSettings>> allConnectionSources = connectionSources.getAllConnectionSources();
-            for (final ConnectionSource<MongoClient, MongoConnectionSourceSettings> connectionSource : allConnectionSources) {
-                SingletonConnectionSources singletonConnectionSources = new SingletonConnectionSources(connectionSource, connectionSources.getBaseConfiguration());
-                MongoDatastore childDatastore;
-
-                if(ConnectionSource.DEFAULT.equals(connectionSource.getName())) {
-                    childDatastore = this;
-                }
-                else {
-                    childDatastore = new MongoDatastore(singletonConnectionSources, mappingContext, eventPublisher) {
-                        @Override
-                        protected MongoGormEnhancer initialize(MongoConnectionSourceSettings settings) {
-                            super.buildIndex();
-                            return null;
-                        }
-                        @Override
-                        public String toString() {
-                            return "MongoDatastore: " + connectionSource.getName();
-                        }
-                    };
-                }
-                datastoresByConnectionSource.put(connectionSource.getName(), childDatastore);
-            }
-
-            connectionSources.addListener(new ConnectionSourcesListener<MongoClient, MongoConnectionSourceSettings>() {
-                public void newConnectionSource(final ConnectionSource<MongoClient,MongoConnectionSourceSettings> connectionSource) {
-                    final SingletonConnectionSources singletonConnectionSources = new SingletonConnectionSources(connectionSource, connectionSources.getBaseConfiguration());
-                    MongoDatastore childDatastore = new MongoDatastore(singletonConnectionSources, mappingContext, eventPublisher) {
-                        @Override
-                        protected MongoGormEnhancer initialize(MongoConnectionSourceSettings settings) {
-                            super.buildIndex();
-                            return null;
-                        }
-
-                        @Override
-                        public String toString() {
-                            return "MongoDatastore: " + connectionSource.getName();
-                        }
-                    };
-                    datastoresByConnectionSource.put(connectionSource.getName(), childDatastore);
-                    for (PersistentEntity persistentEntity : mappingContext.getPersistentEntities()) {
-                        gormEnhancer.registerEntity(persistentEntity);
-                    }
-                }
-            });
         }
 
         this.autoTimestampEventListener = new AutoTimestampEventListener(this);
         registerEventListeners(this.eventPublisher);
         this.gormEnhancer = initialize(settings);
+    }
+
+    private MongoDatastore createChildDatastore(MongoMappingContext mappingContext,
+                                                    ConfigurableApplicationEventPublisher eventPublisher,
+                                                    final MongoDatastore parent,
+                                                    SingletonConnectionSources<MongoClient, MongoConnectionSourceSettings> singletonConnectionSources) {
+        return new MongoDatastore(singletonConnectionSources, mappingContext, eventPublisher) {
+            @Override
+            protected MongoGormEnhancer initialize(final MongoConnectionSourceSettings settings) {
+                super.buildIndex();
+                return null;
+            }
+
+            @Override
+            public MongoDatastore getDatastoreForConnection(String connectionName) {
+                if (connectionName.equals(Settings.SETTING_DATASOURCE) || connectionName.equals(ConnectionSource.DEFAULT)) {
+                    return parent;
+                } else {
+                    MongoDatastore mongoDatastore = parent.datastoresByConnectionSource.get(connectionName);
+                    if (mongoDatastore == null) {
+                        throw new ConfigurationException("DataSource not found for name [" + connectionName + "] in configuration. Please check your multiple data sources configuration and try again.");
+                    }
+                    return mongoDatastore;
+                }
+            }
+        };
     }
 
     /**
@@ -701,6 +702,12 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
         return true;
     }
 
+    protected void registerAllEntitiesWithEnhancer() {
+        for (PersistentEntity persistentEntity : mappingContext.getPersistentEntities()) {
+            gormEnhancer.registerEntity(persistentEntity);
+        }
+    }
+
     @Override
     protected Session createSession(PropertyResolver connDetails) {
         if (stateless) {
@@ -1003,7 +1010,15 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
 
     @Override
     public Datastore getDatastoreForConnection(String connectionName) {
-        return this.getDatastoreForConnection(connectionName);
+        if(connectionName.equals(Settings.SETTING_DATASOURCE) || connectionName.equals(ConnectionSource.DEFAULT)) {
+            return this;
+        } else {
+            MongoDatastore mongoDatastore = this.datastoresByConnectionSource.get(connectionName);
+            if(mongoDatastore == null) {
+                throw new ConfigurationException("DataSource not found for name ["+connectionName+"] in configuration. Please check your multiple data sources configuration and try again.");
+            }
+            return mongoDatastore;
+        }
     }
 
     @Override
