@@ -4,7 +4,7 @@ cache:
   - "$HOME/.gradle"
   - "$HOME/.m2/repository"
 jdk:
-- oraclejdk8
+- openjdk8
 services:
   - mongodb
 env:
