@@ -23,12 +23,14 @@ class BookSpec extends Specification {
         setup:
         mongoDatastore.mongoClient.listDatabaseNames().forEach(dbName-> {
             try {
-                mongoDatastore.mongoClient.getDatabase(dbName).drop()
+                if (name != 'admin') {
+                    mongoDatastore.mongoClient.getDatabase(dbName).drop()
+                }
             } catch(e) {
                 // continue and ignore, probably permission issue
             }
         })
-        
+
         when:"A query is executed"
         Book.list()
 
