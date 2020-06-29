@@ -21,7 +21,9 @@ class BookSpec extends Specification {
     void "Test database per tenant"() {
         setup:
         mongoDatastore.mongoClient.listDatabaseNames().forEach( { String name ->
-            mongoDatastore.mongoClient.getDatabase(name).drop()
+            if (name != 'admin') {
+                mongoDatastore.mongoClient.getDatabase(name).drop()
+            }
         } as Block)
 
         when:"A query is executed"
