@@ -897,7 +897,7 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
 
     @Override
     @PreDestroy
-    public void close() throws IOException {
+    public void close() {
         try {
             super.destroy();
         } catch (Exception e) {
@@ -907,6 +907,8 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
             if (connectionSources != null) {
                 connectionSources.close();
             }
+        } catch(IOException e) {
+            LOG.error("There was an error shutting down GORM for an entity: " + e.getMessage(), e);
         } finally {
 
             if(gormEnhancer != null) {

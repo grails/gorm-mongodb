@@ -19,7 +19,6 @@ import org.grails.datastore.gorm.mongo.Book;
 import org.grails.datastore.mapping.core.Session;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.mongo.MongoDatastore;
-import org.grails.datastore.mapping.query.Query;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,13 +26,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Stack;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 /**
  * @author Graeme Rocher
  * @since 1.0
@@ -54,12 +50,8 @@ public class MongoResultListJavaForEachTest {
     @After
     public void cleanup() {
         transactionManager.commit(transaction);
-        if(datastore != null) {
-            try {
-                datastore.close();
-            } catch (IOException e) {
-                // ignore
-            }
+        if (datastore != null) {
+            datastore.close();
         }
     }
 
