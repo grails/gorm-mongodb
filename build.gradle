@@ -182,7 +182,7 @@ subprojects { project ->
 
         documentation "org.fusesource.jansi:jansi:$jansiVersion"
         documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
-        documentation 'info.picocli:picocli:3.8.2'
+        documentation 'info.picocli:picocli:4.4.0'
 
         testCompile "org.spockframework:spock-core:$spockVersion", {
             exclude group: 'junit', module: 'junit-dep'
