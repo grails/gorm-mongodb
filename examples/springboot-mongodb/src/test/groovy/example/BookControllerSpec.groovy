@@ -7,9 +7,10 @@ import spock.lang.AutoCleanup
 import spock.lang.Shared
 import spock.lang.Specification
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import static org.springframework.http.MediaType.APPLICATION_JSON
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 /**
  * This test relies on a local instance of MongoDB running
@@ -35,7 +36,7 @@ class BookControllerSpec extends Specification {
         then:
         response
             .andExpect(status().isOk())
-            .andExpect(content().contentType(APPLICATION_JSON_UTF8))
+            .andExpect(content().contentType(APPLICATION_JSON))
             .andExpect(content().json('{"title":"It","id":2}'))
 
     }
