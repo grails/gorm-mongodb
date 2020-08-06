@@ -85,13 +85,15 @@ class SchemaBasedMultiTenancySpec extends Specification {
         }
 
         when:"each tenant is iterated over"
-        Map tenantIds = [:]
+        final Map<String, Integer> companyCount = [:]
         CompanyB.eachTenant { String tenantId ->
-            tenantIds.put(tenantId, CompanyB.count())
+            companyCount.put(tenantId, CompanyB.count())
         }
 
         then:"The result is correct"
-        tenantIds == [admin:0, test1:2, test2:1]
+        companyCount['admin'] == 0
+        companyCount['test1'] == 2
+        companyCount['test2'] == 1
     }
 
     List getDomainClasses() {
