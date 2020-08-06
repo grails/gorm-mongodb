@@ -3,7 +3,7 @@ targetCompatibility = 1.8
 
 dependencyManagement {
     imports {
-        mavenBom "org.grails:grails-bom:$grails3Version"
+        mavenBom "org.grails:grails-bom:$grailsVersion"
     }
     applyMavenExclusions false
 }
