@@ -3,6 +3,17 @@ group "examples"
 apply plugin:"org.grails.grails-web"
 apply plugin:"org.grails.plugins.views-json"
 
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.springframework') {
+            details.useVersion(springVersion)
+        }
+        if (details.requested.group == 'org.mongodb') {
+            details.useVersion(mongodbDriverVersion)
+        }
+    }
+}
+
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-logging"
     implementation "org.springframework.boot:spring-boot-autoconfigure"
@@ -20,10 +31,10 @@ dependencies {
     implementation "org.grails.plugins:cache"
     implementation "org.grails.plugins:events"
     implementation project(":grails-plugin")
-    implementation "org.mongodb:mongodb-driver-core:$mongodbDriverVersion"
     implementation "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
     implementation "org.grails.plugins:views-json"
     implementation "org.grails.plugins:views-json-templates"
+    implementation 'org.grails.plugins:spring-security-core:4.0.2'
     implementation 'org.grails.plugins:spring-security-rest:3.0.1'
     profile "org.grails.profiles:rest-api"
     testImplementation "org.grails:grails-gorm-testing-support"
