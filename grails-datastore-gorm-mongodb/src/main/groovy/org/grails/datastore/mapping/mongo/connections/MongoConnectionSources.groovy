@@ -1,6 +1,5 @@
 package org.grails.datastore.mapping.mongo.connections
 
-import com.mongodb.MongoClient
 import com.mongodb.client.FindIterable
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoCollection
