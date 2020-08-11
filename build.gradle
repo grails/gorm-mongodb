@@ -54,15 +54,6 @@ subprojects { project ->
 
             apply plugin:"org.grails.grails-web"
             apply plugin:"org.grails.grails-gsp"
-
-            //TODO: Remove the below {@code integrationTestCompile} logic once the Grails core version is updated.
-            dependencies {
-                integrationTestCompile configurations.testCompileClasspath
-                integrationTestRuntime configurations.testRuntimeClasspath
-            }
-
-            //TODO: Remove the below lines once the {@link org.grails.gradle.plugin.web.gsp.GroovyPageCompileTask} is updated with correct classpath settings.
-            compileGroovyPages.classpath += configurations.compileClasspath
         }
 
         configurations.all {
