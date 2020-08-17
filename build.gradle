@@ -182,6 +182,20 @@ subprojects { project ->
             if(dependencyName.startsWith('mongodb-driver') &&  !dependencyName.contains('-rx')) {
                 details.useVersion(mongodbDriverVersion)
             }
+            if( details.requested.group == 'org.grails' &&
+                    details.requested.name in ['grails-datastore-core',
+                                               'grails-datastore-async',
+                                               'grails-datastore-gorm',
+                                               'grails-datastore-gorm-async',
+                                               'grails-datastore-gorm-rx',
+                                               'grails-datastore-gorm-support',
+                                               'grails-datastore-gorm-tck',
+                                               'grails-datastore-gorm-test',
+                                               'grails-datastore-gorm-validation',
+                                               'grails-datastore-web']
+            ) {
+                details.useVersion(datastoreVersion)
+            }
         }
     }
 
