@@ -14,7 +14,7 @@ buildscript {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.6.1'
         classpath "gradle.plugin.com.energizedwork.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
-        classpath "org.grails.plugins:views-gradle:2.0.2"
+        classpath "org.grails.plugins:views-gradle:2.1.0.M1"
     }
 }
 
@@ -195,6 +195,10 @@ subprojects { project ->
                                                'grails-datastore-web']
             ) {
                 details.useVersion(datastoreVersion)
+            }
+
+            if (details.requested.group == 'org.mongodb' && details.requested.module.name != 'mongodb-driver-rx') {
+                details.useVersion(mongodbDriverVersion)
             }
         }
     }
