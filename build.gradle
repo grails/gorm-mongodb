@@ -21,8 +21,8 @@ buildscript {
 logger.lifecycle "GORM VERSION = ${project.datastoreVersion}"
 
 group "org.grails"
-version "7.1.0.M3"
-//version "7.1.0.BUILD-SNAPSHOT"
+//version "7.1.0.M4"
+version "7.1.0.BUILD-SNAPSHOT"
 
 ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
