@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired
 @Service(Student)
 abstract class StudentService {
 
-    @Autowired
     TestService testServiceBean
 
     abstract Student get(Serializable id)
