@@ -49,6 +49,7 @@ subprojects { project ->
 
         apply plugin: 'groovy'
         ext['gorm.version'] = datastoreVersion
+        ext['h2.version'] = h2Version
 
         if(project.name.contains('grails3')) {
 
