@@ -4,6 +4,7 @@ Below are the details of the changes across releases:
 
 * Support Groovy 3
 * Upgrade to mongodb-driver-sync 4.0.3
+* Autowire bean by type in the Data Service.
 
 ==== 7.0
 
