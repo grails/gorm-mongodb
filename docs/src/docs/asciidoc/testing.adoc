@@ -23,5 +23,5 @@ is large, classpath scanning may be slow, so it's better to override the method 
 
 [source,groovy]
 ----
-include::{sourcedir}/examples/grails3-hibernate4-mongodb/src/test/groovy/functional/tests/BookFongoSpec.groovy[tags=getDomainClasses,indent=0]
+include::{sourcedir}/examples/grails3-hibernate5-mongodb/src/test/groovy/functional/tests/BookFongoSpec.groovy[tags=getDomainClasses,indent=0]
 ----
