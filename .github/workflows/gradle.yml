@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         java: ['8', '11', '14']
-        mongodb-version: ['4.4']
+        mongodb-version: ['4.0']
     env:
       WORKSPACE: ${{ github.workspace }}
       GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
