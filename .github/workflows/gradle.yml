@@ -3,11 +3,11 @@ on:
   push:
     branches:
       - master
-      - '[6-9]+.[0-9]+.x'
+      - '[7-9]+.[1-9]+.x'
   pull_request:
     branches:
       - master
-      - '[6-9]+.[0-9]+.x'
+      - '[7-9]+.[1-9]+.x'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,6 +18,7 @@ jobs:
     env:
       WORKSPACE: ${{ github.workspace }}
       GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
+      RUN_TESTS_ONLY: false
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
@@ -39,8 +40,8 @@ jobs:
           mongodb-version: ${{ matrix.mongodb-version }}
       - name: Compile and Run Tests
         run: |
-          ./gradlew --no-daemon compileGroovy
-          ./gradlew --no-daemon compileTestGroovy
+          ./gradlew compileGroovy --no-daemon
+          ./gradlew compileTestGroovy --no-daemon
           ./gradlew -Dgeb.env=chromeHeadless check --no-daemon
       - name: Publish Test Report
         uses: scacap/action-surefire-report@v1
@@ -48,7 +49,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           report_paths: '**/build/test-results/test/TEST-*.xml'
       - name: Publish to repo.grails.org
-        if: success() && github.event_name == 'push' && matrix.java == '8'
+        if: success() && github.event_name == 'push' && matrix.java == '8' && env.RUN_TESTS_ONLY == false
         env:
           SECRING_FILE: ${{ secrets.SECRING_FILE }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
@@ -58,13 +59,25 @@ jobs:
         run: |
           echo $SECRING_FILE | base64 -d > secring.gpg
           ./gradlew -Dorg.gradle.internal.publish.checksums.insecure=true -Psigning.keyId="$SIGNING_KEY" -Psigning.password="$SIGNING_PASSPHRASE" -Psigning.secretKeyRingFile="secring.gpg" publish
+          echo "Publishing Documentation..."
+          ./gradlew docs:docs
+      - name: Determine docs target repository
+        if: success() && github.event_name == 'push' && matrix.java == '8' && env.RUN_TESTS_ONLY == false
+        uses: haya14busa/action-cond@v1
+        id: docs_target
+        with:
+          cond: ${{ github.repository == 'grails/gorm-mongodb' }}
+          if_true: "grails/grails-data-mapping"
+          if_false: ${{ github.repository }}
       - name: Publish to Github Pages
-        if: success() && github.event_name == 'push' && matrix.java == '8'
+        if: success() && github.event_name == 'push' && matrix.java == '8' && env.RUN_TESTS_ONLY == false
         uses: micronaut-projects/github-pages-deploy-action@master
         env:
-          TARGET_REPOSITORY: ${{ github.repository }}
+          TARGET_REPOSITORY: ${{ steps.docs_target.outputs.value }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: build/docs
+          FOLDER: docs/build/docs
+          DOC_SUB_FOLDER: mongodb
+          DOC_FOLDER: gh-pages
           COMMIT_EMAIL: behlp@objectcomputing.com
           COMMIT_NAME: Puneet Behl
