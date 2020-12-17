@@ -39,7 +39,6 @@ import org.grails.datastore.mapping.collection.PersistentSet
 import org.grails.datastore.mapping.collection.PersistentSortedSet
 import org.grails.datastore.mapping.core.AbstractDatastore
 import org.grails.datastore.mapping.core.DatastoreException
-import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckable
 import org.grails.datastore.mapping.dirty.checking.DirtyCheckableCollection
@@ -51,7 +50,6 @@ import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.datastore.mapping.model.types.*
-import org.grails.datastore.mapping.mongo.AbstractMongoSession
 import org.grails.datastore.mapping.mongo.MongoCodecSession
 import org.grails.datastore.mapping.mongo.MongoConstants
 import org.grails.datastore.mapping.mongo.MongoDatastore
@@ -60,7 +58,6 @@ import org.grails.datastore.mapping.mongo.engine.MongoCodecEntityPersister
 import org.grails.datastore.mapping.query.Query
 import org.grails.datastore.mapping.reflect.FieldEntityAccess
 
-import javax.persistence.CascadeType
 import javax.persistence.FetchType
 /**
  * A MongoDB codec for persisting {@link PersistentEntity} instances
@@ -78,43 +75,40 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
     public static final String SCHEMALESS_ATTRIBUTES = "schemaless.attributes"
 
     static {
-        registerEncoder(
-        Identity,
-        new IdentityEncoder() {
+        registerEncoder(Identity, (PropertyEncoder) new IdentityEncoder() {
             @Override
             protected String getIdentifierName(Identity property) {
                 MongoConstants.MONGO_ID_FIELD
             }
         })
 
-        registerEncoder(Embedded, new EmbeddedEncoder() {
+        registerEncoder(Embedded, (PropertyEncoder) new EmbeddedEncoder() {
             @Override
             protected BsonPersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
                 return new PersistentEntityCodec(codecRegistry, associatedEntity)
             }
         })
 
-        registerDecoder(Embedded,new EmbeddedDecoder(){
+        registerDecoder(Embedded, (PropertyDecoder) new EmbeddedDecoder() {
             @Override
             protected BsonPersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
                 return new PersistentEntityCodec(codecRegistry, associatedEntity)
             }
         })
 
-        registerEncoder(EmbeddedCollection, new EmbeddedCollectionEncoder() {
+        registerEncoder(EmbeddedCollection, (PropertyEncoder) new EmbeddedCollectionEncoder() {
             @Override
             protected BsonPersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
                 return new PersistentEntityCodec(codecRegistry, associatedEntity)
             }
         })
 
-        registerDecoder(EmbeddedCollection,new EmbeddedCollectionDecoder(){
+        registerDecoder(EmbeddedCollection, (PropertyDecoder) new EmbeddedCollectionDecoder() {
             @Override
             protected BsonPersistentEntityCodec createEmbeddedEntityCodec(CodecRegistry codecRegistry, PersistentEntity associatedEntity) {
                 return new PersistentEntityCodec(codecRegistry, associatedEntity)
             }
         })
-
 
         registerEncoder(OneToOne, new ToOneEncoder())
         registerDecoder(OneToOne, new ToOneDecoder())
