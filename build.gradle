@@ -90,7 +90,7 @@ subprojects { project ->
             testImplementation "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
             testImplementation "org.spockframework:spock-core:$spockVersion", { transitive = false }
             testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
-            testImplementation "org.junit.platform:junit-platform-runner:1.6.2"
+            testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformVersion"
             testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
         }
 
@@ -232,9 +232,9 @@ subprojects { project ->
 
         testImplementation "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
         testImplementation "org.spockframework:spock-core:$spockVersion", { transitive = false }
-        testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.0"
-        testImplementation "org.junit.platform:junit-platform-runner:1.6.0"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.0"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+        testImplementation "org.junit.platform:junit-platform-runner:$junitPlatformVersion"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
     }
 
     groovydoc.classpath += configurations.documentation
