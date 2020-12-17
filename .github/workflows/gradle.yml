@@ -8,6 +8,11 @@ on:
     branches:
       - master
       - '[7-9]+.[1-9]+.x'
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Snapshot information (e.g. New Core Snapshot Tue Dec 15 00:07:18 UTC 2020 f212f54)'
+        required: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,8 +23,12 @@ jobs:
     env:
       WORKSPACE: ${{ github.workspace }}
       GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
-      RUN_TESTS_ONLY: false
     steps:
+      - name: Print Dispatch Information
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          DISPATCH_INFORMATION: ${{ github.event.inputs.message }}
+        run: echo $DISPATCH_INFORMATION
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
@@ -49,7 +58,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           report_paths: '**/build/test-results/test/TEST-*.xml'
       - name: Publish to repo.grails.org
-        if: success() && github.event_name == 'push' && matrix.java == '8' && env.RUN_TESTS_ONLY == false
+        if: success() && github.event_name == 'push' && matrix.java == '8'
         env:
           SECRING_FILE: ${{ secrets.SECRING_FILE }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
@@ -62,7 +71,7 @@ jobs:
           echo "Publishing Documentation..."
           ./gradlew docs:docs
       - name: Determine docs target repository
-        if: success() && github.event_name == 'push' && matrix.java == '8' && env.RUN_TESTS_ONLY == false
+        if: success() && github.event_name == 'push' && matrix.java == '8'
         uses: haya14busa/action-cond@v1
         id: docs_target
         with:
@@ -70,7 +79,7 @@ jobs:
           if_true: "grails/grails-data-mapping"
           if_false: ${{ github.repository }}
       - name: Publish to Github Pages
-        if: success() && github.event_name == 'push' && matrix.java == '8' && env.RUN_TESTS_ONLY == false
+        if: success() && github.event_name == 'push' && matrix.java == '8'
         uses: micronaut-projects/github-pages-deploy-action@master
         env:
           TARGET_REPOSITORY: ${{ steps.docs_target.outputs.value }}
