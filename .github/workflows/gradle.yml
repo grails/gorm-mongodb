@@ -8,6 +8,11 @@ on:
     branches:
       - master
       - '[7-9]+.[1-9]+.x'
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Snapshot information (e.g. New Core Snapshot Tue Dec 15 00:07:18 UTC 2020 f212f54)'
+        required: true
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,6 +25,11 @@ jobs:
       GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
       RUN_TESTS_ONLY: false
     steps:
+      - name: Print Dispatch Information
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          DISPATCH_INFORMATION: ${{ github.event.inputs.message }}
+        run: echo $DISPATCH_INFORMATION
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
