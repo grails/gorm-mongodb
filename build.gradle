@@ -45,12 +45,14 @@ subprojects { project ->
         }
     }
 
+    ext['h2.version'] = h2Version
     ext['gorm.version'] = datastoreVersion
+    ext['junit-jupiter.version'] = junitJupiterVersion
+    ext['spock.version'] = spockVersion
 
     if (project.name.startsWith("examples")) {
 
         apply plugin: 'groovy'
-        ext['h2.version'] = h2Version
 
         if(project.name.contains('grails3')) {
 
@@ -73,10 +75,10 @@ subprojects { project ->
             resolutionStrategy.eachDependency { DependencyResolveDetails details ->
                 if (details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
                     details.useVersion(groovyVersion)
-                } else if (details.requested.group == 'org.springframework') {
-                    details.useVersion(springVersion)
                 } else if (details.requested.group == 'org.mongodb' && details.requested.module.name != 'mongodb-driver-rx') {
                     details.useVersion(mongodbDriverVersion)
+                } else if (details.requested.group == 'org.springframework') {
+                    details.useVersion(springVersion)
                 } else if (details.requested.group == "org.springframework.boot") {
                     details.useVersion(springBootVersion)
                 }
