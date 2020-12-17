@@ -1,3 +1,6 @@
+![Java CI](https://github.com/grails/gorm-mongodb/workflows/Java%20CI/badge.svg?branch=master)
+![Release](https://github.com/grails/gorm-mongodb/workflows/Release/badge.svg?branch=master)
+
 # GORM for MongoDB
 
 This project implements [GORM](http://gorm.grails.org/latest/) for the MongoDB Document Database.
@@ -9,7 +12,6 @@ For more information see the following links:
 * [Documentation](http://gorm.grails.org/latest/mongodb/manual)
 * [API](http://gorm.grails.org/latest/mongodb/api)
 * [Grails Plugin](https://grails.org/plugins.html#plugin/mongodb)
-* [![Build Status](https://travis-ci.org/grails/gorm-mongodb.svg?branch=master)](https://travis-ci.org/grails/gorm-mongodb)
 
 For the current development version see the following links:
 
