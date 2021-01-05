@@ -371,7 +371,7 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
                 for(o in v) {
                     def embeddedUpdate = encodeUpdate(o, createEntityAccess(o), EncoderContext.builder().build(), true)
                     def embeddedSets = embeddedUpdate.get(MONGO_SET_OPERATOR)
-                    if(embeddedSets) {
+                    if(embeddedSets != null) {
 
                         def map = (Map) embeddedSets
                         for (key in map.keySet()) {
@@ -442,7 +442,7 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
 
         def embeddedUpdate = encodeUpdate(v)
         def embeddedSets = embeddedUpdate.get(MONGO_SET_OPERATOR)
-        if(embeddedSets) {
+        if(embeddedSets != null) {
 
             def map = (Map) embeddedSets
             for (key in map.keySet()) {
