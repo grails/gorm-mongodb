@@ -52,6 +52,9 @@ jobs:
           (set -x ./gradlew compileGroovy --no-daemon)
           (set -x ./gradlew compileTestGroovy --no-daemon)
           (set -x ./gradlew check --refresh-dependencies -no-daemon -x gorm-mongodb-spring-boot:test)
+      - name: Compile and Run Tests
+        if: matrix.java == '8'
+        run: |
           (set -x ./gradlew gorm-mongodb-spring-boot:test --refresh-dependencies -no-daemon)
       - name: Publish Test Report
         uses: scacap/action-surefire-report@v1
