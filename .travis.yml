@@ -1,12 +1,22 @@
-sudo: false
 cache:
   directories:
-  - "$HOME/.gradle"
-  - "$HOME/.m2/repository"
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+branches:
+  only:
+    - 6.0.x
 jdk:
-- oraclejdk8
+- openjdk8
 services:
   - mongodb
+addons:
+  chrome: stable
+  firefox: latest
+  apt:
+    sources:
+      - mongodb-3.0-precise
+    packages:
+      - mongodb-org-server
 env:
   global:
   - TERM=dumb
@@ -28,4 +38,3 @@ env:
   - secure: ZPNZHy5pBQi7JmQbYrkLvKxOHsKq8sk0YrYoc3eULeMntlyZW6rMHOcAlCyh6LRHgrxuihD8+4O43s2V5Er2SQC8MHADPHuSYfHjDD/FuJCO/nJ8aDzcw5u9ksv+35Kdmelx7M3f8KPMYo9YBuw/6txl0QqcvTSJH2D5jS5Mkd8RIVKkbNcHwJI0s9J6NEBetnikry5J188TRLpB0PK6g5Rml0VBVPmXKNkqMDTBfw/y+xKBTz13zatKiQfb17cnZkBj4xN5xL7dNzMc6Hy3GBb4cxT3cuzN9jZIapnA4xI7pCJgzvWno19j3VXM9RRPUFNWMbKugRxlF9WLcJSgXIvPrXenLQU51zt5hGSWpokFneV+BXBv0eHz4QT3PRa9LUovleAVZ6JVMA6QYet8dPVyVm632sk8rHiTuc/uZxlx2LoY16F5xtGQpKBkMp5yjHavVXZ/u61qc7C/aU4UranrkdWWAzG5mAayvCiCKEIx+81Ums5nxnqbiZ4Ly4zD4rj2OUDF23z/lvYg/ocxvhSeRHRncViTJvWfZ9wmVdda2MhYs1VAKZ61ZiqmE6qPxzHGOpQilXwtEHRF/sQaexl9PlGdXCakGwtTof+a7B6KpK1UtcXfWod0scb3I4EAcKFmrfnz+9O7kdRCgfKk/iQ8glHYcZU7y81+TMnJmuc=
   - secure: n45JFpqs4eCggJScBXPy9DYRyVvaXVsEUONC3GV4/WIlyrd5MNYkEye5ZzADaHXSUCMNEVUjd2ykoGbMm4O4yUnmQUKylc9qhfM3uFu9O23jxH18giXdK5BOm/kYoEf/dQxN6asWazw07bMGFqt2ktJlJxE1OM4s4gXA4i72sfnAExVIEr9mdu407tf+Ofux11uBX3S+9XbbbmVsihhyRKKWy1JnAI6YyNDGvrvKm/zP2xJCUe88qP4jVQtwFceBdyHRFMOOPcLQpJ/jLcKAeQ85xuXEJPNz1BaxLhml1N2JReliHtKAtX8g0/E1b4/hv0U27TG0rUT0S/5M5j+7m4Nj9d8DK6W+mTHQReZSUb3ki9IA2aepOglFIQ8GIifpO99+J69ron3B72w3xX0doOcyCp7zY6WzBH+gmHtxuqrIoRFJylJskIXxpCuixtBvHWsMYeKNHsqaJSIda3rtJMZ9C3CWKJrA8ca/cG1e8mZ2mMgvokG9GZHvv8Vy1WLO6s3+JD0SMGoX/y5AHpMhbgG0fY0peJdG7SATQfRmFh6SwqjPkcVOfTCT0YfoXjHkbZRYpa77n+6a5wPeVKo+xeZJlwUU4u0QnwBWDZG/ouhBHpzlw+9opY3jwGCgubIeG52prEXKlhKgn3RhBriObZDCnf/1RiNjEDwznFyVynM=
 script: "./travis-build.sh"
-install: false
