@@ -8,6 +8,7 @@ import grails.gorm.CriteriaBuilder
 import grails.gorm.DetachedCriteria
 import grails.gorm.tests.GormDatastoreSpec
 import org.grails.datastore.mapping.mongo.MongoCodecSession
+import spock.lang.Ignore
 import spock.lang.IgnoreIf
 
 /**
@@ -17,6 +18,7 @@ import spock.lang.IgnoreIf
 @IgnoreIf({System.getenv('TRAVIS')})
 class ReadConcernArgumentSpec extends GormDatastoreSpec {
 
+    @Ignore("Read concerns is enabled by default on Mongo 3.6")
     void "Test that read concern work on criteria queries"() {
         when:"A criteria query is created with a hint"
         CriteriaBuilder c = grails.gorm.tests.Person.createCriteria()
@@ -38,6 +40,7 @@ class ReadConcernArgumentSpec extends GormDatastoreSpec {
         exception2.message.contains('Query failed with error code 148')
     }
 
+    @Ignore("Read concerns is enabled by default on Mongo 3.6")
     void "Test that hints work on detached criteria queries"() {
         when:"A criteria query is created with a hint"
         DetachedCriteria<grails.gorm.tests.Person> detachedCriteria = new DetachedCriteria<>(grails.gorm.tests.Person)
