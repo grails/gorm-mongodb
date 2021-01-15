@@ -11,7 +11,7 @@ include 'docs'
 
 // plugins
 include "boot-plugin"
-include 'grails2-plugin'
+//include 'grails2-plugin'
 include 'grails-plugin'
 include 'rx-plugin'
 
