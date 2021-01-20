@@ -155,6 +155,12 @@ subprojects { project ->
         }
     }
 
+    configurations.create('documentation') {
+        attributes {
+            attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
+        }
+    }
+
     if(isPluginProject) {
         group "org.grails.plugins"
         version( rootProject.version - '.RELEASE' )
@@ -212,10 +218,6 @@ subprojects { project ->
                 details.useVersion(springBootVersion)
             }
         }
-    }
-
-    configurations {
-        documentation
     }
 
     dependencies {
