@@ -41,17 +41,6 @@ It means you have an older version of the MongoDB Java driver on your classpath 
 compile "org.mongodb:mongodb-driver:{mongoDriverVersion}"
 ----
 
-=== Setup within Grails 2.x
-
-For Grails 2.x you need to modify `BuildConfig.groovy`:
-
-[source,groovy,subs="attributes"]
-----
-plugins {
-    compile ':mongodb:{pluginVersion}'
-}
-----
-
 === Configuring MongoDB
 
 With that done you need to set up a running MongoDB server. Refer to the https://docs.mongodb.com/getting-started/shell/[MongoDB Documentation] for an explanation on how to startup a MongoDB instance. Once installed, starting MongoDB is typically a matter of executing the following command:
