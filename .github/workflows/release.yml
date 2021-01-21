@@ -65,6 +65,7 @@ jobs:
           DOC_FOLDER: gh-pages
           COMMIT_EMAIL: behlp@objectcomputing.com
           COMMIT_NAME: Puneet Behl
+          VERSION: ${{ steps.release_version.outputs.release_version }}
       - name: Create Message for the Maven Central Sync
         if: success()
         id: maven_sync_message
