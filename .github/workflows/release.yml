@@ -66,21 +66,6 @@ jobs:
           COMMIT_EMAIL: behlp@objectcomputing.com
           COMMIT_NAME: Puneet Behl
           VERSION: ${{ steps.release_version.outputs.release_version }}
-      - name: Create Message for the Maven Central Sync
-        if: success()
-        id: maven_sync_message
-        run: |
-          echo ::set-output name=value::{\"release_version\":\"$RELEASE_VERSION\"}
-        env:
-          RELEASE_VERSION: ${{ steps.release_version.outputs.release_version }}
-      - name: Invoke the Maven Central Sync workflow
-        if: success()
-        uses: benc-uk/workflow-dispatch@v1.1
-        with:
-          workflow: Maven Central Sync
-          ref: master
-          token: ${{ secrets.GH_TOKEN }}
-          inputs: ${{ steps.maven_sync_message.outputs.value }}
       - name: Run post-release
         if: success()
         uses: micronaut-projects/github-actions/post-release@master
