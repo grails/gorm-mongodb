@@ -5,17 +5,16 @@ import static groovyx.net.http.ContentType.JSON
 buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
+        maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.5"
         classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
-        // classpath "io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.5.3"
-        // classpath "io.github.groovylang.groovydoc:groovydoc-gradle-plugin:1.0.1"
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.6.1'
         classpath "gradle.plugin.com.energizedwork.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
         classpath "org.grails.plugins:views-gradle:2.0.2"
+        classpath "io.github.gradle-nexus:publish-plugin:1.0.0"
     }
 }
 
@@ -28,10 +27,33 @@ ext {
     isTravisBuild = System.getenv().get("TRAVIS") == 'true'
     hibernatePluginVersion = '7.0.4'
     isCiBuild = project.hasProperty("isCiBuild")
-    isBuildSnapshot = project.version.endsWith("BUILD-SNAPSHOT")
+    isBuildSnapshot = project.version.endsWith("-SNAPSHOT")
+    isReleaseVersion = !isBuildSnapshot
     servletApiVersion = "4.0.1"
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
     nexusPassword = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
+}
+
+ext."signing.keyId" = project.hasProperty("signing.keyId") ? project.getProperty('signing.keyId') : System.getenv('SIGNING_KEY_ID')
+ext."signing.password" = project.hasProperty("signing.password") ? project.getProperty('signing.password') : System.getenv('SIGNING_PASSWORD')
+ext."signing.secretKeyRingFile" = project.hasProperty("signing.secretKeyRingFile") ? project.getProperty('signing.secretKeyRingFile') : "${System.properties['user.home']}${File.separator}.gnupg${File.separator}secring.gpg"
+
+if (isReleaseVersion) {
+    apply plugin: 'maven-publish'
+    apply plugin: "io.github.gradle-nexus.publish-plugin"
+
+    nexusPublishing {
+        repositories {
+            sonatype {
+                def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
+                def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
+                def ossStagingProfileId = System.getenv("SONATYPE_STAGING_PROFILE_ID") ?: project.hasProperty("sonatypeOssStagingProfileId") ? project.sonatypeOssStagingProfileId : ''
+                username = ossUser
+                password = ossPass
+                stagingProfileId = ossStagingProfileId
+            }
+        }
+    }
 }
 
 
@@ -156,8 +178,7 @@ subprojects { project ->
     }
 
     apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.bintray'
-    //apply plugin: "io.github.groovylang.groovydoc"
+    apply plugin: 'signing'
 
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
@@ -205,27 +226,19 @@ subprojects { project ->
 
     publishing {
 
-        repositories {
-            maven {
-                credentials {
-                    def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
-                    def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
-                    username = u
-                    password = p
-                }
-                if (isGrails3PluginProject) {
-                    if(isBuildSnapshot) {
-                        url  "https://repo.grails.org/grails/plugins3-snapshots-local"
+        if (isBuildSnapshot) {
+            repositories {
+                maven {
+                    credentials {
+                        def u = System.getenv("ARTIFACTORY_USERNAME") ?: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : ''
+                        def p = System.getenv("ARTIFACTORY_PASSWORD") ?: project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : ''
+                        username = u
+                        password = p
                     }
-                    else {
-                        url  "https://repo.grails.org/grails/plugins3-releases-local"
-                    }                    
-                } else {
-                    if(isBuildSnapshot) {
-                        url  "https://repo.grails.org/grails/libs-snapshots-local"
-                    }
-                    else {
-                        url  "https://repo.grails.org/grails/libs-releases-local"
+                    if (isGrails3PluginProject) {
+                        url "https://repo.grails.org/grails/plugins3-snapshots-local"
+                    } else {
+                        url "https://repo.grails.org/grails/libs-snapshots-local"
                     }
                 }
             }
@@ -255,91 +268,22 @@ subprojects { project ->
                 }
             }
         }
-    }   
+    }
 
-    bintray {
-
-        def u = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
-        def p = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
-
-        user = u
-        key = p
-        publications = ['maven']
-        publish = true
-        dryRun = false
-        pkg {
-            if(isGrails3PluginProject) {
-                repo = 'plugins'
-            }
-            else {
-                repo = 'grails-core'
-            }
-            userOrg = 'grails'
-            name = projectInfo.projectArtifactId
-            desc = projectInfo.projectDescription
-            websiteUrl = projectInfo.projectURL
-            issueTrackerUrl = projectInfo.projectIssueTrackerUrl
-            vcsUrl = projectInfo.projectVcsUrl
-            licenses = ['Apache-2.0']
-            publicDownloadNumbers = true
-            version {
-                name = project.version
-                gpg {
-                    sign = true
-                    passphrase = System.getenv("SIGNING_PASSPHRASE") ?: project.hasProperty("signingPassphrase") ? project.signingPassphrase : ''
-                }
-                mavenCentralSync {
-                    sync = false
-                    def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
-                    def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
-                    user = ossUser
-                    password = ossPass
-                }
-
-            }
+    afterEvaluate {
+        signing {
+            required { isReleaseVersion && gradle.taskGraph.hasTask("publish") }
+            sign publishing.publications.maven
         }
     }
 
-    if (!isGrails3PluginProject) {
-        def bintrayUser = System.getenv("BINTRAY_USER") ?: project.hasProperty("bintrayUser") ? project.bintrayUser : ''
-        def bintrayKey = System.getenv("BINTRAY_KEY") ?: project.hasProperty("bintrayKey") ? project.bintrayKey : ''
-        def ossUser = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
-        def ossPass = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
+    tasks.withType(Sign) {
+        onlyIf { isReleaseVersion }
+    }
 
-        task synchronizeWithMavenCentral() {
-            description = "Syncs with Maven Central/Sonatype"
-            doLast {
-                println """
-Synchronizing with Maven central. This may take a few minutes ...
-If this fails, log on to http://oss.sonatype.org/ using the centralUser credentials
-and progress through process manually -> Close -> Publish ... under staging repositories
-"""
-                try {
-                    try {
-                        def mavenClent = new RESTClient("https://repo.maven.apache.org/maven2/")
-                        mavenClent.get(path:"${project.group.replace('.','/')}/$project.name/$project.version/$project.name-${project.version}.jar")
-                    } catch(groovyx.net.http.HttpResponseException e) {
-                        // doesn't exist.. try sync
-                        def client = new RESTClient('https://api.bintray.com/maven_central_sync/grails/grails-core/')
-                        client.headers['Authorization'] = 'Basic ' + "$bintrayUser:$bintrayKey".getBytes('iso-8859-1').encodeBase64()
-                        def body = /{}/
-                        def resp = client.post(
-                                path: "$bintray.pkg.name/versions/$project.version",
-                                body: body,
-                                requestContentType: JSON
-                        )
-                        assert resp.status == 200
-                        println resp.data.status
-                        println resp.data.messages.join('\n')
-                    }
-                } catch (groovyx.net.http.HttpResponseException e) {
-                    println "Error: $e"
-                    println "Message: $e.message"
-                    println "Body: $e.response.data"
-                    throw e
-                }
-            }
-        }
+    //do not generate extra load on Nexus with new staging repository if signing fails
+    tasks.withType(io.github.gradlenexus.publishplugin.InitializeNexusStagingRepository).configureEach {
+        shouldRunAfter(tasks.withType(Sign))
     }
 }
 
