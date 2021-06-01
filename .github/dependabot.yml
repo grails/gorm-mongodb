@@ -1,0 +1,17 @@
+version: 2
+updates:
+- package-ecosystem: gradle
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  target-branch: 7.0.x
+  ignore:
+  - dependency-name: org.apache.tomcat:tomcat-jdbc
+    versions:
+    - 10.0.0
+    - 10.0.2
+    - 10.0.4
+  - dependency-name: org.fusesource.jansi:jansi
+    versions:
+    - 2.2.0
