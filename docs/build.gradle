@@ -37,6 +37,7 @@ dependencies {
     documentation "org.fusesource.jansi:jansi:$jansiVersion"
     documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
     documentation "com.github.javaparser:javaparser-core:$javaParserCoreVersion"
+    documentation "org.codehaus.groovy:groovy-all:$groovyVersion"
     for(p in coreProjects) {
         documentation "org.grails:grails-datastore-$p:$datastoreVersion"
     }

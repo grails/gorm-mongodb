@@ -313,7 +313,7 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
                         if (proxyFactory.isInitialized(value)) {
                             def dirtyCheckable = (DirtyCheckable) value
                             if (dirtyCheckable.hasChanged()) {
-                                if (!isUpdate || association.isOwningSide() || association.doesCascade(CascadeType.PERSIST)) {
+                                if (association.isOwningSide() || association.doesCascade(CascadeType.PERSIST)) {
                                     mongoCodecSession.persist(value)
                                 }
                             }
