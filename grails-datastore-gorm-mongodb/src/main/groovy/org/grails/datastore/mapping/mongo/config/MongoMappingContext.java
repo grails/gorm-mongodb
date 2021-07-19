@@ -375,16 +375,23 @@ public class MongoMappingContext extends DocumentMappingContext {
 
     class DocumentEmbeddedPersistentEntity extends EmbeddedPersistentEntity {
 
-        private DocumentCollectionMapping classMapping ;
+        private DocumentCollectionMapping classMapping;
+
         public DocumentEmbeddedPersistentEntity(Class type, MappingContext ctx) {
             super(type, ctx);
             classMapping = new DocumentCollectionMapping(this, ctx);
         }
 
         @Override
+        public boolean isIdentityName(String propertyName) {
+            return false;
+        }
+
+        @Override
         public ClassMapping getMapping() {
             return classMapping;
         }
+
         public class DocumentCollectionMapping extends AbstractClassMapping<Collection> {
             private Collection mappedForm;
 
