@@ -9,7 +9,6 @@ buildscript {
     }
     dependencies {
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
-        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.6.1'
         classpath "gradle.plugin.com.energizedwork.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
@@ -201,11 +200,6 @@ subprojects { project ->
         apply plugin: "org.grails.grails-plugin"
     } else {
         apply plugin:"groovy"
-        apply plugin: 'com.bmuschko.nexus'
-
-        modifyPom {
-            delegate.project pomInfo
-        }
     }
 
     apply plugin: "java-library"
@@ -274,6 +268,27 @@ subprojects { project ->
             }
         }
     }
+
+    Task sourcesJar = project.tasks.findByName("sourcesJar")
+    if (!sourcesJar) {
+        sourcesJar = tasks.create("sourcesJar", Jar) {
+            classifier = 'sources'
+            group = BasePlugin.BUILD_GROUP
+            description = 'Assembles a jar archive containing the main sources of this project.'
+            from project.sourceSets.main.allSource
+        }
+    }
+
+    Task javadocJar = project.tasks.findByName("javadocJar")
+    if (!javadocJar) {
+        javadocJar = tasks.create("javadocJar", Jar) {
+            classifier = 'javadoc'
+            group = BasePlugin.BUILD_GROUP
+            description = 'Assembles a jar archive containing the generated Javadoc API documentation of this project.'
+            from project.plugins.hasPlugin(GroovyPlugin) ? project.tasks.getByName(GroovyPlugin.GROOVYDOC_TASK_NAME) : project.tasks.getByName(JavaPlugin.JAVADOC_TASK_NAME)
+        }
+    }
+    tasks.findByName("assemble").finalizedBy(sourcesJar, javadocJar)
 
     publishing {
 
