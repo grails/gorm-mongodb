@@ -16,7 +16,7 @@ apply plugin: 'org.asciidoctor.convert'
 
 dependencies {
     documentation "org.codehaus.groovy:groovy-all:$groovyVersion"
-    documentation 'org.fusesource.jansi:jansi:2.3.2'
+    documentation 'org.fusesource.jansi:jansi:2.3.3'
     for(p in coreProjects) {
         documentation "org.grails:grails-datastore-$p:$datastoreVersion"
     }
