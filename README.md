@@ -1,5 +1,5 @@
-![Java CI](https://github.com/grails/gorm-mongodb/workflows/Java%20CI/badge.svg?branch=master)
-![Release](https://github.com/grails/gorm-mongodb/workflows/Release/badge.svg?branch=master)
+![Java CI](https://github.com/grails/gorm-mongodb/workflows/Java%20CI/badge.svg?branch=7.0.x)
+![Release](https://github.com/grails/gorm-mongodb/workflows/Release/badge.svg?branch=7.0.x)
 
 # GORM for MongoDB
 
