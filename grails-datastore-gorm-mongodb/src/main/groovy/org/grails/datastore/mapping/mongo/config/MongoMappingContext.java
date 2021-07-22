@@ -162,10 +162,6 @@ public class MongoMappingContext extends DocumentMappingContext {
 
         Iterable<Codec> codecList = ConfigurationUtils.findServices(codecClasses, Codec.class);
         List<Codec<?>> codecs = new ArrayList<>();
-        for (Codec codec : codecList) {
-            codecs.add(codec);
-        }
-
         codecs.add(new InstantCodec());
         codecs.add(new LocalDateCodec());
         codecs.add(new LocalDateTimeCodec());
@@ -174,6 +170,10 @@ public class MongoMappingContext extends DocumentMappingContext {
         codecs.add(new OffsetTimeCodec());
         codecs.add(new PeriodCodec());
         codecs.add(new ZonedDateTimeCodec());
+
+        for (Codec codec : codecList) {
+            codecs.add(codec);
+        }
 
         if(mongoConnectionSourceSettings.getCodecRegistry() != null) {
             this.codecRegistry = CodecRegistries.fromRegistries(
