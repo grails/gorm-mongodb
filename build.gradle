@@ -252,12 +252,12 @@ subprojects { project ->
 
         documentation "org.fusesource.jansi:jansi:$jansiVersion"
         documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
-        documentation 'info.picocli:picocli:4.4.0'
+        documentation 'info.picocli:picocli:4.6.1'
         documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
 
         testImplementation "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
         testImplementation "org.spockframework:spock-core:$spockVersion", { transitive = false }
-        testImplementation "org.junit.jupiter:junit-jupiter-api:5.6.0"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.2"
         testImplementation "org.junit.platform:junit-platform-runner:1.7.2"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.6.0"
     }
