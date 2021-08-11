@@ -16,6 +16,21 @@
     },
     {
       "matchPackageNames": [
+        "org.grails:grails-datastore-core",
+        "org.grails:grails-datastore-web",
+        "org.grails:grails-datastore-aync",
+        "org.grails:grails-datastore-gorm",
+        "org.grails:grails-datastore-gorm-support",
+        "org.grails:grails-datastore-gorm-async",
+        "org.grails:grails-datastore-gorm-rx",
+        "org.grails:grails-datastore-gorm-test",
+        "org.grails:grails-datastore-gorm-tck",
+        "org.grails:grails-datastore-gorm-validation"
+      ],
+      "groupName": "gorm-datastore monorepo"
+    },
+    {
+      "matchPackageNames": [
         "org.grails:grails-bom",
         "org.grails:grails-bootstrap",
         "org.grails:grails-codecs",
