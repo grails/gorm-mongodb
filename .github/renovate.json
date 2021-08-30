@@ -16,6 +16,14 @@
     },
     {
       "matchPackageNames": [
+        "io.netty:netty-transport",
+        "io.netty:netty-handler",
+        "io.netty:netty-codec"
+       ],
+      "groupName": "netty monorepo"
+    },
+    {
+      "matchPackageNames": [
         "org.grails:grails-datastore-core",
         "org.grails:grails-datastore-web",
         "org.grails:grails-datastore-aync",
