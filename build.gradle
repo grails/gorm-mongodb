@@ -34,8 +34,8 @@ ext {
     nexusPassword = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
 }
 
-ext."signing.keyId" = project.hasProperty("signing.keyId") ? project.getProperty('signing.keyId') : System.getenv('SIGNING_KEY_ID')
-ext."signing.password" = project.hasProperty("signing.password") ? project.getProperty('signing.password') : System.getenv('SIGNING_PASSWORD')
+ext."signing.keyId" = project.hasProperty("signing.keyId") ? project.getProperty('signing.keyId') : System.getenv('SIGNING_KEY')
+ext."signing.password" = project.hasProperty("signing.password") ? project.getProperty('signing.password') : System.getenv('SIGNING_PASSPHRASE')
 ext."signing.secretKeyRingFile" = project.hasProperty("signing.secretKeyRingFile") ? project.getProperty('signing.secretKeyRingFile') : "${System.properties['user.home']}${File.separator}.gnupg${File.separator}secring.gpg"
 
 if (isReleaseVersion) {
@@ -79,7 +79,7 @@ subprojects { project ->
         configurations.all {
             resolutionStrategy.eachDependency { DependencyResolveDetails details ->
                 if(details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
-                    details.useVersion(groovyVersion)   
+                    details.useVersion(groovyVersion)
                 }
                 if(details.requested.group == 'org.springframework') {
                     details.useVersion(springVersion)
@@ -88,7 +88,7 @@ subprojects { project ->
                     details.useVersion(mongodbDriverVersion)
                 }
             }
-        } 
+        }
 
         boolean usesGeb = project.name.contains('grails3-hibernate5-mongodb') || project.name.contains('grails3-mongodb') || project.name.contains('grails3-mongodb-database-per-tenant')|| project.name.contains('grails3-rxmongodb')
 
@@ -164,7 +164,7 @@ subprojects { project ->
 
     if(project.name == 'docs') {
         return
-    }       
+    }
 
     if(isGrails3PluginProject) {
         apply plugin: "org.grails.grails-plugin"
@@ -307,7 +307,7 @@ class PublishingConvention {
         if(name.startsWith('rx') && name.endsWith('-plugin')) {
             name = 'rx-mongodb'
             projectName = 'RxGORM for MongoDB'
-        }        
+        }
         projectArtifactId = name
     }
 }
