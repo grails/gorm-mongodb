@@ -15,6 +15,12 @@
       "groupName": "groovy monorepo"
     },
     {
+      "matchPackagePatterns": [
+        "^org\\.junit\\.jupiter"
+      ],
+      "groupName": "junit-jupiter monorepo"
+    },
+    {
       "matchPackageNames": [
         "io.netty:netty-transport",
         "io.netty:netty-handler",
