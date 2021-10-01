@@ -132,7 +132,7 @@ class MongoDbDataStoreSpringInitializer extends AbstractDatastoreInitializer {
 
             loadDataServices(secondaryDatastore ? "mongo" : null)
                     .each {serviceName, serviceClass->
-                        "$serviceName"(DatastoreServiceMethodInvokingFactoryBean) {
+                        "$serviceName"(DatastoreServiceMethodInvokingFactoryBean, serviceClass) {
                             targetObject = ref("mongoDatastore")
                             targetMethod = 'getService'
                             arguments = [serviceClass]
