@@ -28,7 +28,7 @@ class Person {
 }
 ----
 
-You can use MongoDB http://docs.mongodb.org/manual/reference/operator/meta/hint/[Query Hints] by passing the `hint` argument to any dynamic finder:
+You can use MongoDB https://docs.mongodb.org/manual/reference/operator/meta/hint/[Query Hints] by passing the `hint` argument to any dynamic finder:
 
 [source,groovy]
 ----
@@ -48,7 +48,7 @@ Person.withCriteria {
 ==== Compound Indices
 
 
-MongoDB supports the notion of http://docs.mongodb.org/manual/core/index-compound/[compound keys]. GORM for MongoDB enables this feature at the mapping level using the `compoundIndex` mapping:
+MongoDB supports the notion of https://docs.mongodb.org/manual/core/index-compound/[compound keys]. GORM for MongoDB enables this feature at the mapping level using the `compoundIndex` mapping:
 
 [source,groovy]
 ----
@@ -75,4 +75,4 @@ static mapping = {
 }
 ----
 
-In the above example I define an index on an embedded attribtue of the document. In fact what arguments you pass to the `index` method get passed to the underlying MongoDB http://api.mongodb.org/java/2.12/com/mongodb/DBCollection.html#createIndex(com.mongodb.DBObject,%20com.mongodb.DBObject)[createIndex] method.
+In the above example I define an index on an embedded attribtue of the document. In fact what arguments you pass to the `index` method get passed to the underlying MongoDB https://api.mongodb.org/java/2.12/com/mongodb/DBCollection.html#createIndex(com.mongodb.DBObject,%20com.mongodb.DBObject)[createIndex] method.

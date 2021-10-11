@@ -1,6 +1,6 @@
 ===== Purpose
 
-Returns the MongoDB http://api.mongodb.com/java/current/com/mongodb/async/client/MongoCollection.html[collection] used for the current domain class
+Returns the MongoDB https://api.mongodb.com/java/current/com/mongodb/async/client/MongoCollection.html[collection] used for the current domain class
 
 ===== Examples
 
@@ -11,4 +11,4 @@ def bookBson = Book.collection.find().first()
 
 ===== Description
 
-The `collection` property allows access to the underlying MongoDB http://api.mongodb.com/java/current/com/mongodb/async/client/MongoCollection.html[MongoCollection] object, thus allowing direct access to the low-level MongoDB driver.
+The `collection` property allows access to the underlying MongoDB https://api.mongodb.com/java/current/com/mongodb/async/client/MongoCollection.html[MongoCollection] object, thus allowing direct access to the low-level MongoDB driver.

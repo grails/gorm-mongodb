@@ -1,6 +1,6 @@
 ===== Purpose
 
-Executes a MongoDB http://docs.mongodb.org/manual/reference/operator/query/text/#op._S_text[$text] search query and returns the number of hits.
+Executes a MongoDB https://docs.mongodb.org/manual/reference/operator/query/text/#op._S_text[$text] search query and returns the number of hits.
 
 ===== Examples
 

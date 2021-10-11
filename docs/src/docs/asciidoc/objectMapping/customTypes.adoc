@@ -2,7 +2,7 @@ GORM for MongoDB will persist all common known Java types like String, Integer, 
 
 ==== Custom Codecs
 
-GORM for MongoDB is built ontop of MongoDB's BSON encoding framework. This means it is possible to implement custom http://mongodb.github.io/mongo-java-driver/3.2/bson/codecs[Codecs] for encoding and decoding values to and from BSON.
+GORM for MongoDB is built ontop of MongoDB's BSON encoding framework. This means it is possible to implement custom https://mongodb.github.io/mongo-java-driver/3.2/bson/codecs[Codecs] for encoding and decoding values to and from BSON.
 
 For example consider the following simple Groovy class:
 

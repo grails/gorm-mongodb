@@ -33,12 +33,12 @@ grails {
 }
 ----
 
-Available options and their descriptions are defined in the http://api.mongodb.org/java/current/com/mongodb/MongoClientOptions.html[MongoClientOptions] javadoc.
+Available options and their descriptions are defined in the https://api.mongodb.org/java/current/com/mongodb/MongoClientOptions.html[MongoClientOptions] javadoc.
 
 ==== MongoDB Connection Strings
 
 
-Since 2.0, you can also use MongoDB http://docs.mongodb.org/manual/reference/connection-string/[connection strings] to configure the connection:
+Since 2.0, you can also use MongoDB https://docs.mongodb.org/manual/reference/connection-string/[connection strings] to configure the connection:
 
 [source,groovy]
 ----
