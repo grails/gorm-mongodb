@@ -60,7 +60,7 @@ asciidoctor {
                 'icons'         : 'font',
                 'reproducible'  : '',
                 'version'       : project.version,
-                'pluginVersion' : project.version - '.RELEASE',
+                'pluginVersion' : project.version,
                 'mongoDriverVersion': mongodbDriverVersion,
                 'sourcedir'     : "${project.rootDir}"
 }
