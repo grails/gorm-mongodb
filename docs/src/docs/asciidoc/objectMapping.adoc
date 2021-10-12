@@ -13,7 +13,7 @@ class Person {
 }
 ----
 
-This will map onto a MongoDB http://api.mongodb.org/java/current/com/mongodb/client/MongoCollection.html[Collection] called "person".
+This will map onto a MongoDB https://api.mongodb.org/java/current/com/mongodb/client/MongoCollection.html[Collection] called "person".
 
 
 ==== Embedded Documents
@@ -108,7 +108,7 @@ class Person {
 }
 ----
 
-If you are using the mapping engine, for non-embedded associations by default GORM for MongoDB will map links between documents using MongoDB http://docs.mongodb.org/manual/reference/database-references/[database references] also known as `DBRefs`.
+If you are using the mapping engine, for non-embedded associations by default GORM for MongoDB will map links between documents using MongoDB https://docs.mongodb.org/manual/reference/database-references/[database references] also known as `DBRefs`.
 
 If you prefer not to use DBRefs then you tell GORM to use direct links by using the `reference:false` mapping:
 

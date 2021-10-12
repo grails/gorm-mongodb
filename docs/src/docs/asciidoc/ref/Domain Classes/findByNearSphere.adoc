@@ -1,6 +1,6 @@
 ===== Purpose
 
-Executes a MongoDB http://docs.mongodb.org/manual/reference/operator/query/nearSphere/[$nearSphere] query
+Executes a MongoDB https://docs.mongodb.org/manual/reference/operator/query/nearSphere/[$nearSphere] query
 
 ===== Examples
 
@@ -21,4 +21,4 @@ Restaurant.withCriteria {
 
 Specifies a point for which a geospatial query returns the closest documents first. The query sorts the documents from nearest to farthest. MongoDB calculates distances for $nearSphere using spherical geometry.
 
-See the documentation for the http://docs.mongodb.org/manual/reference/operator/query/nearSphere/[$nearSphere] query operator.
+See the documentation for the https://docs.mongodb.org/manual/reference/operator/query/nearSphere/[$nearSphere] query operator.

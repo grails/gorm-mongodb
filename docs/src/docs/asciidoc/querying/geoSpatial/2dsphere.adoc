@@ -2,9 +2,9 @@
 ==== Using a 2dsphere Index
 
 
-MongoDB's http://docs.mongodb.org/manual/core/2dsphere/[2dsphere indexes] support queries that calculate geometries on an earth-like sphere.
+MongoDB's https://docs.mongodb.org/manual/core/2dsphere/[2dsphere indexes] support queries that calculate geometries on an earth-like sphere.
 
-Although you can use coordinate pairs in a 2dsphere index, they are considered legacy by the MongoDB documentation and it is recommended you store data using http://geojson.org/geojson-spec.html#id2[GeoJSON Point] types.
+Although you can use coordinate pairs in a 2dsphere index, they are considered legacy by the MongoDB documentation and it is recommended you store data using https://geojson.org/geojson-spec.html#id2[GeoJSON Point] types.
 
 WARNING: MongoDB legacy coordinate pairs are in latitude / longitude order, whilst GeoJSON points are stored in longitude / latitude order!
 
@@ -24,7 +24,7 @@ class Restaurant {
 }
 ----
 
-The `Point` type gets persisted as a http://geojson.org/geojson-spec.html#id2[GeoJSON Point]. A `Point` can be constructed from coordinates represented in longitude and latitude (the inverse of 2d index location coordinates!). Example:
+The `Point` type gets persisted as a https://geojson.org/geojson-spec.html#id2[GeoJSON Point]. A `Point` can be constructed from coordinates represented in longitude and latitude (the inverse of 2d index location coordinates!). Example:
 
 [source,groovy]
 ----
@@ -57,7 +57,7 @@ Restaurant.findByLocationGeoWithin( Sphere.valueOf( [[50, 50], 0.06]) )
 Restaurant.findByLocationNear( Point.valueOf( 40, 40 ) )
 ----
 
-NOTE: Note that a `Sphere` differs from a `Circle` in that the radius is specified in http://docs.mongodb.org/manual/tutorial/calculate-distances-using-spherical-geometry-with-2d-geospatial-indexes/[radians].
+NOTE: Note that a `Sphere` differs from a `Circle` in that the radius is specified in https://docs.mongodb.org/manual/tutorial/calculate-distances-using-spherical-geometry-with-2d-geospatial-indexes/[radians].
 There is a special `Distance` class that can help with radian calculation.
 
 
@@ -71,6 +71,6 @@ In addition to being able to pass any `Shape` to geospacial query methods you ca
 def results = Restaurant.findAllByLocationNear( [$geometry: [type:'Point', coordinates: [1,7]], $maxDistance:30000] )
 ----
 
-In the above example the native query parameters are simply passed to the http://docs.mongodb.org/manual/reference/operator/query/near/#op._S_near[$near query]
+In the above example the native query parameters are simply passed to the https://docs.mongodb.org/manual/reference/operator/query/near/#op._S_near[$near query]
 
 

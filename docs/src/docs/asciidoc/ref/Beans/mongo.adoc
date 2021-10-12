@@ -1,6 +1,6 @@
 ===== Purpose
 
-Provides access to the native http://api.mongodb.com/java/current/com/mongodb/async/client/MongoClient.html[MongoClient] instance.
+Provides access to the native https://api.mongodb.com/java/current/com/mongodb/async/client/MongoClient.html[MongoClient] instance.
 
 ===== Examples
 
@@ -21,4 +21,4 @@ class FooController {
 
 ===== Description
 
-See the API for the http://api.mongodb.org/java/current/[Mongo Java Driver] for API usage info.
+See the API for the https://api.mongodb.org/java/current/[Mongo Java Driver] for API usage info.
