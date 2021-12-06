@@ -19,7 +19,7 @@ dependencies {
     testImplementation "org.grails:grails-datastore-gorm-support:$datastoreVersion", {
         exclude group: "org.grails", module:"grails-datastore-gorm-hibernate-core"
     }
-    testRuntimeOnly 'org.glassfish.web:el-impl:2.2.1-b05'
+    testRuntimeOnly 'org.glassfish.web:el-impl:2.2.1'
     testRuntimeOnly "org.springframework:spring-aop:$springVersion"
 }
 
