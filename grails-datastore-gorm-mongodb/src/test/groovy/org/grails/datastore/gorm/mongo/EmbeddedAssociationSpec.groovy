@@ -32,7 +32,6 @@ class EmbeddedAssociationSpec extends GormDatastoreSpec {
             i.name == "Bob"
     }
 
-    @IgnoreIf({System.getenv('TRAVIS')})
     void "Test query with projection an embedded instance"() {
 
         given:"A domain with an embedded association"

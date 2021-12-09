@@ -23,7 +23,7 @@ group "org.grails"
 version project.projectVersion
 
 ext {
-    isTravisBuild = System.getenv().get("TRAVIS") == 'true'
+    isCI = System.getenv().get("CI") as Boolean
     hibernatePluginVersion = project.hibernatePluginVersion
     isCiBuild = project.hasProperty("isCiBuild")
     isBuildSnapshot = project.version.endsWith("-SNAPSHOT")

@@ -31,8 +31,6 @@ class BatchUpdateDeleteSpec extends GormDatastoreSpec {
             Plant.count() == 4
     }
 
-    // Ignore on Travis infrastructure which doesn't support MongoDB 26
-    @IgnoreIf({ System.getenv("TRAVIS")})
     void "Test that batch update works"() {
         when:"Some test data"
             createTestData()

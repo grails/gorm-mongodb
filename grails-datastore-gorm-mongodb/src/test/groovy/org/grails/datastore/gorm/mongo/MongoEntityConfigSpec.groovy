@@ -15,7 +15,6 @@ import spock.lang.*
 
 class MongoEntityConfigSpec extends GormDatastoreSpec{
 
-    @IgnoreIf( { System.getenv('TRAVIS_BRANCH') != null } )
     def "Test custom collection config"() {
         given:
             session.mappingContext.addPersistentEntity MyMongoEntity

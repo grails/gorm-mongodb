@@ -6,7 +6,6 @@ import grails.gorm.tests.GormDatastoreSpec
 import grails.mongodb.MongoEntity
 import spock.lang.*
 
-@IgnoreIf( { System.getenv('TRAVIS_BRANCH') != null } )
 class MongoGormEnhancerSpec extends GormDatastoreSpec{
 
     def "Test is MongoEntity"() {

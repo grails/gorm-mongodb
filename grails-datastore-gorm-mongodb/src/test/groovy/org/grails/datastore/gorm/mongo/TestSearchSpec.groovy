@@ -9,8 +9,6 @@ import spock.lang.*
 /**
  * Created by graemerocher on 14/04/14.
  */
-// TODO: Remove IgnoreIf when travis supports MongoDB 2.6
-@IgnoreIf( { System.getenv('TRAVIS_BRANCH') != null } )
 class TestSearchSpec extends GormDatastoreSpec{
 
     void "Test simple text search"() {

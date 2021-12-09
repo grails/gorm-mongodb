@@ -13,7 +13,6 @@ import spock.lang.IgnoreIf
  */
 class BigDecimalSpec extends GormDatastoreSpec {
 
-    @IgnoreIf( { System.getenv('TRAVIS') } )
     void "test save and retrieve big decimal value"() {
         when:"A big decimal is saved"
         def val = new BigDecimal("1.0")

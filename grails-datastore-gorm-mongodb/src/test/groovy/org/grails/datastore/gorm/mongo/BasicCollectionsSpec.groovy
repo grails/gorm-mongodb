@@ -55,7 +55,6 @@ class BasicCollectionsSpec extends GormDatastoreSpec{
         ]
     }
 
-    @IgnoreIf({System.getenv('TRAVIS')})
     void "Test that a map of BigDecimal works."() {
         when:"A payRate map is persisted"
         def p = new Linguist(name:"Bob")

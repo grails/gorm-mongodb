@@ -14,8 +14,6 @@ import spock.lang.IgnoreIf
 /**
  * Created by graemerocher on 03/02/2017.
  */
-// These tests require MongoDB 3.4+ to run, Travis only has MongoDB 3.0 support atm
-@IgnoreIf({System.getenv('TRAVIS')})
 class ReadConcernArgumentSpec extends GormDatastoreSpec {
 
     @Ignore
