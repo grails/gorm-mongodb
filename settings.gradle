@@ -1,3 +1,19 @@
+plugins {
+    id "com.gradle.enterprise" version "3.7.2"
+    id 'com.gradle.common-custom-user-data-gradle-plugin' version '1.6.1'
+}
+
+gradleEnterprise {
+    server = 'https://ge.grails.org'
+    buildScan {
+        publishAlways()
+        publishIfAuthenticated()
+        uploadInBackground = System.getenv("CI") == null
+        capture {
+            taskInputFiles = true
+        }
+    }
+}
 
 // core
 include "grails-datastore-gorm-bson"
