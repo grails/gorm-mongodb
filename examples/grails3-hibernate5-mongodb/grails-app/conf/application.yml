@@ -12,6 +12,8 @@ spring:
     groovy:
         template:
             check-template-location: false
+    main:
+        allow-circular-references: true
 
 ---
 grails:

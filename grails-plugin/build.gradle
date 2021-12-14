@@ -56,3 +56,5 @@ dependencies {
         exclude group:'javax.transaction', module:'jta'
     }
 }
+
+springBoot.mainClass.set(Application.class.name)
