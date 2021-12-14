@@ -171,17 +171,10 @@ subprojects { project ->
         }
     }
 
-    configurations.all {
-        resolutionStrategy {
-            cacheDynamicVersionsFor 0, 'hours'
-            cacheChangingModulesFor 0, 'hours'
-        }
-    }
+    apply plugin: 'groovy'
 
-    configurations.create('documentation') {
-        attributes {
-            attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage, Usage.JAVA_RUNTIME))
-        }
+    configurations {
+        documentation.extendsFrom(compileClasspath)
     }
 
     if(isPluginProject) {
@@ -257,7 +250,7 @@ subprojects { project ->
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.2"
     }
 
-    groovydoc.classpath += configurations.documentation
+    groovydoc.classpath = configurations.documentation
 
     configurations {
         all {

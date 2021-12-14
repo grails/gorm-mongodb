@@ -9,9 +9,11 @@ info:
         version: '@info.app.version@'
         grailsVersion: '@info.app.grailsVersion@'
 spring:
-    groovy:
+  groovy:
         template:
             check-template-location: false
+  main:
+    allow-circular-references: true
 
 ---
 grails:

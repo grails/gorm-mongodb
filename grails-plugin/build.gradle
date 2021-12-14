@@ -24,17 +24,12 @@ configurations.all {
 dependencies {
     compileOnly "org.grails:grails-core"
     compileOnly "org.grails:grails-bootstrap"
-    compileOnly "org.grails:grails-test-mixins:3.3.0"
-    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
 
     compileOnly "org.spockframework:spock-core:$spockVersion", {
         exclude group: "junit", module: "junit-dep"
         exclude group: 'org.codehaus.groovy', module: 'groovy-all'
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }
-
-    // compileOnly "org.grails.plugins:converters:$grails3Version"
-    // compile "org.grails:grails-web-common:$grails3Version"
 
     api "org.grails:grails-datastore-web:$datastoreVersion"
     api "org.grails:grails-datastore-gorm-support:$datastoreVersion", {
@@ -61,3 +56,5 @@ dependencies {
         exclude group:'javax.transaction', module:'jta'
     }
 }
+
+springBoot.mainClass.set(Application.class.name)

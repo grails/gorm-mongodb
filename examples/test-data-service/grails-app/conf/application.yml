@@ -18,6 +18,7 @@ spring:
         unique-names: true
     main:
         banner-mode: "off"
+        allow-circular-references: true
     groovy:
         template:
             check-template-location: false
