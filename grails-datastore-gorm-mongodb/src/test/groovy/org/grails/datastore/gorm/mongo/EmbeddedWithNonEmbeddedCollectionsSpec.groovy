@@ -43,9 +43,9 @@ class EmbeddedWithNonEmbeddedCollectionsSpec extends GormDatastoreSpec{
         shipDbo.crew.sailors.size() == 2
         shipDbo.crew.sailors == [fred.id, joe.id]
         shipDbo.crew.reserves.size() == 2
-        shipDbo.crew.reserves[0] instanceof DBRef
-        shipDbo.crew.reserves[0].id == Sailor.findByName('Tristan').id
-        shipDbo.crew.reserves[0].collectionName == 'sailor'
+        shipDbo.crew.reserves[0] instanceof Map
+        shipDbo.crew.reserves[0].$id == Sailor.findByName('Tristan').id
+        shipDbo.crew.reserves[0].$ref == 'sailor'
 
         when:"The domain model is queried"
         session.clear()
