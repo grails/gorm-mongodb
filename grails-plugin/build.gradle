@@ -24,7 +24,6 @@ configurations.all {
 dependencies {
     compileOnly "org.grails:grails-core"
     compileOnly "org.grails:grails-bootstrap"
-
     compileOnly "org.spockframework:spock-core:$spockVersion", {
         exclude group: "junit", module: "junit-dep"
         exclude group: 'org.codehaus.groovy', module: 'groovy-all'
@@ -57,4 +56,6 @@ dependencies {
     }
 }
 
-springBoot.mainClass.set(Application.class.name)
+springBoot {
+    mainClass  = "grails.plugins.mongodb.Application"
+}
