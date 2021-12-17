@@ -266,7 +266,7 @@ subprojects { project ->
     Task sourcesJar = project.tasks.findByName("sourcesJar")
     if (!sourcesJar) {
         sourcesJar = tasks.create("sourcesJar", Jar) {
-            classifier = 'sources'
+            archiveClassifier.set('sources')
             group = BasePlugin.BUILD_GROUP
             description = 'Assembles a jar archive containing the main sources of this project.'
             from project.sourceSets.main.allSource
@@ -276,7 +276,7 @@ subprojects { project ->
     Task javadocJar = project.tasks.findByName("javadocJar")
     if (!javadocJar) {
         javadocJar = tasks.create("javadocJar", Jar) {
-            classifier = 'javadoc'
+            archiveClassifier.set('javadoc')
             group = BasePlugin.BUILD_GROUP
             description = 'Assembles a jar archive containing the generated Javadoc API documentation of this project.'
             from project.plugins.hasPlugin(GroovyPlugin) ? project.tasks.getByName(GroovyPlugin.GROOVYDOC_TASK_NAME) : project.tasks.getByName(JavaPlugin.JAVADOC_TASK_NAME)
