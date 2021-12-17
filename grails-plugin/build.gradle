@@ -61,3 +61,7 @@ dependencies {
         exclude group:'javax.transaction', module:'jta'
     }
 }
+
+springBoot {
+    mainClass  = "grails.plugins.mongodb.Application"
+}
