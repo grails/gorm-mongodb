@@ -1,5 +1,5 @@
 = GORM for MongoDB
-Graeme Rocher, Burt Beckwith
+Graeme Rocher, Burt Beckwith, Puneet Behl
 :imagesdir: ./images
 :source-highlighter: coderay
 
