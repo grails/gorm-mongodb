@@ -11,8 +11,8 @@ buildscript {
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
         classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.6.1'
-        classpath "gradle.plugin.com.github.erdi.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
-        classpath "org.grails.plugins:views-gradle:2.1.2"
+        classpath "gradle.plugin.com.energizedwork.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
+        classpath "org.grails.plugins:views-gradle:2.2.0"
         classpath "io.github.gradle-nexus:publish-plugin:1.1.0"
     }
 }
@@ -241,7 +241,7 @@ subprojects { project ->
 
         documentation "org.fusesource.jansi:jansi:$jansiVersion"
         documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
-        documentation 'info.picocli:picocli:4.6.2'
+        documentation 'info.picocli:picocli:4.6.3'
         documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
 
         testImplementation "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
