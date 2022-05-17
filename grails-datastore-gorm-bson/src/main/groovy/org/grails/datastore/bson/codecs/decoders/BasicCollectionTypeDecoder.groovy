@@ -1,5 +1,6 @@
 package org.grails.datastore.bson.codecs.decoders
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.bson.BsonReader
 import org.bson.codecs.Codec
@@ -19,6 +20,7 @@ import org.grails.datastore.mapping.model.types.Basic
 @CompileStatic
 class BasicCollectionTypeDecoder implements PropertyDecoder<Basic> {
 
+    @CompileDynamic
     @Override
     void decode(BsonReader reader, Basic property, EntityAccess entityAccess, DecoderContext decoderContext, CodecRegistry codecRegistry) {
         CustomTypeMarshaller marshaller = property.customTypeMarshaller

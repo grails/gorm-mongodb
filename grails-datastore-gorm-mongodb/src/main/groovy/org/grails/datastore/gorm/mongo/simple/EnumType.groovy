@@ -155,6 +155,7 @@ class EnumType extends AbstractMappingAwareCustomTypeMarshaller<Object, Document
         value.id
     }
 
+    @CompileDynamic
     EnumType() {
         super(Enum)
     }
