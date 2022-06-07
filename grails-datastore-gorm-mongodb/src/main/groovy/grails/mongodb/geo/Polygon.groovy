@@ -45,7 +45,7 @@ class Polygon extends Shape implements GeoJSON{
         Assert.notNull(z, "Point z is required")
         Assert.notNull(others, "Point others is required")
 
-        def list = []
+        List<Point> list = []
         list.addAll Arrays.asList(x, y, z)
         list.addAll others
         this.points = [list]

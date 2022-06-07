@@ -216,7 +216,7 @@ class EnumType extends AbstractMappingAwareCustomTypeMarshaller<Object, Document
         for(String key in nativeQuery.keySet()) {
             def value = nativeQuery.get(key)
             if (value instanceof Collection) {
-                value.each { Document queryObject ->
+                ((Collection<Document>) value).each { Document queryObject ->
                     if (queryObject.isEmpty()) {
                         // Recursive call the same method.
                         putValueToProperPlace(property, queryKey, criterion, queryObject)
