@@ -37,6 +37,7 @@ import org.grails.datastore.gorm.schemaless.DynamicAttributes
 import org.grails.datastore.mapping.collection.PersistentList
 import org.grails.datastore.mapping.collection.PersistentSet
 import org.grails.datastore.mapping.collection.PersistentSortedSet
+import org.grails.datastore.mapping.config.Property
 import org.grails.datastore.mapping.core.AbstractDatastore
 import org.grails.datastore.mapping.core.DatastoreException
 import org.grails.datastore.mapping.core.Session
@@ -48,6 +49,7 @@ import org.grails.datastore.mapping.engine.internal.MappingUtils
 import org.grails.datastore.mapping.model.EmbeddedPersistentEntity
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
+import org.grails.datastore.mapping.model.PropertyMapping
 import org.grails.datastore.mapping.model.config.GormProperties
 import org.grails.datastore.mapping.model.types.*
 import org.grails.datastore.mapping.mongo.MongoCodecSession
@@ -176,7 +178,7 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
 
 
                         def id = query.singleResult()
-                        boolean lazy = association.mapping.mappedForm.fetchStrategy == FetchType.LAZY
+                        boolean lazy = ((Property) association.mapping.mappedForm).fetchStrategy == FetchType.LAZY
                         access.setPropertyNoConversion(
                                 association.name,
                                 lazy ? mongoSession.proxy(associatedClass, (Serializable) id) : mongoSession.retrieve(associatedClass, (Serializable) id)
