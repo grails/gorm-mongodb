@@ -18,7 +18,7 @@ dependencies {
 
     runtime "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
     runtime "com.h2database:h2"
-    runtime 'org.apache.tomcat:tomcat-jdbc:9.0.36'
+    runtime 'org.apache.tomcat:tomcat-jdbc:10.1.6'
 
     runtime "org.grails.plugins:scaffolding:$scaffolingVersion"
     runtime "org.grails.plugins:fields:$fieldsVersion"
