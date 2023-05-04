@@ -84,7 +84,7 @@ task fetchSource {
         ant.mkdir dir: checkOutDir
 
         println "Downloading GORM source code."
-        def tag = System.getenv('TRAVIS_TAG')
+        def tag = System.getenv('TAGGED_VERSION')
         if (tag) {
             ant.get src: "https://github.com/grails/grails-data-mapping/archive/${tag}.zip", dest: zipFile, verbose: true
         } else {
