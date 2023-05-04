@@ -201,8 +201,8 @@ subprojects { project ->
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
+    sourceCompatibility = "1.11"
+    targetCompatibility = "1.11"
 
     configurations.all {
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
