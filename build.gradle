@@ -296,9 +296,9 @@ subprojects { project ->
                     }
 
                     scm {
-                        url = 'scm:git@github.com:grails/gorm-hibernate5.git'
-                        connection = 'scm:git@github.com:grails/gorm-hibernate5.git'
-                        developerConnection = 'scm:git@github.com:grails/gorm-hibernate5.git'
+                        url = 'scm:git@github.com:grails/gorm-mongodb.git'
+                        connection = 'scm:git@github.com:grails/gorm-mongodb.git'
+                        developerConnection = 'scm:git@github.com:grails/gorm-mongodb.git'
                     }
 
                     developers {
