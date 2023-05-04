@@ -1,6 +1,8 @@
 ext {
-    githubBranch = "master"
+    githubBranch = "8.0.x"
     checkOutDir = "build/checkout"
+    explicitGormSrc = System.getProperty("gorm.src") ?: (project.hasProperty('gorm.src') ? project.getProperty("gorm.src") : null)
+    gormSrc = explicitGormSrc ? file(explicitGormSrc).absolutePath : "$checkOutDir/gorm-src"
     zipFile = "build/source.zip"
 
     coreProjects = [
@@ -12,11 +14,15 @@ ext {
 
 version rootProject.version
 
-apply plugin: 'org.asciidoctor.convert'
 apply plugin: 'groovy'
+apply plugin: 'org.asciidoctor.jvm.convert'
 
 configurations {
-    documentation
+    documentation {
+        attributes {
+            attribute(Bundling.BUNDLING_ATTRIBUTE, (Bundling) objects.named(Bundling, 'external'))
+        }
+    }
 }
 
 configurations.all {
@@ -37,7 +43,8 @@ dependencies {
     documentation "org.fusesource.jansi:jansi:$jansiVersion"
     documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
     documentation "com.github.javaparser:javaparser-core:$javaParserCoreVersion"
-    documentation "org.codehaus.groovy:groovy-all:$groovyVersion"
+    documentation "org.codehaus.groovy:groovy:$groovyVersion"
+    documentation "org.codehaus.groovy:groovy-templates:$groovyVersion"
     for(p in coreProjects) {
         documentation "org.grails:grails-datastore-$p:$datastoreVersion"
     }
@@ -65,11 +72,13 @@ asciidoctor {
                 'sourcedir'     : "${project.rootDir}"
 }
 
-asciidoctorj {
-    version = '1.5.4'
-}
-
 task fetchSource {
+
+    onlyIf {
+        println "GORM SRC=$explicitGormSrc"
+        return !explicitGormSrc
+    }
+
     doLast {
         ant.mkdir dir: project.buildDir
         ant.mkdir dir: checkOutDir
@@ -79,7 +88,7 @@ task fetchSource {
         if (tag) {
             ant.get src: "https://github.com/grails/grails-data-mapping/archive/${tag}.zip", dest: zipFile, verbose: true
         } else {
-            ant.get src: "http://github.com/grails/grails-data-mapping/zipball/${githubBranch}", dest: zipFile, verbose: true
+            ant.get src: "https://github.com/grails/grails-data-mapping/zipball/${githubBranch}", dest: zipFile, verbose: true
         }
 
         ant.unzip src: zipFile, dest: checkOutDir, {
@@ -124,6 +133,16 @@ tasks.withType(Groovydoc) {
     classpath += configurations.documentation
 }
 
+tasks.withType(org.gradle.api.tasks.javadoc.Groovydoc) {
+    configure {
+        access = GroovydocAccess.PRIVATE
+        processScripts = false
+        includeMainForScripts = false
+        includeAuthor = true
+        groovyClasspath = configurations.documentation
+    }
+}
+
 task copyResources(type:Copy) {
     from 'src/docs/resources'
     into "${project.buildDir}/docs"
@@ -132,8 +151,13 @@ task copyResources(type:Copy) {
 task docs(dependsOn:[asciidoctor, copyDocs, groovydoc, copyResources] + subprojects.findAll { project -> project.tasks.findByName('groovydoc')}
                 .collect { project -> project.tasks.groovydoc })
 
-//task assemble(type: Zip, dependsOn:docs) {
-//    from "${project.buildDir}/docs"
-//    baseName = "${project.name}-${project.version}"
-//    destinationDir = project.file("${project.buildDir}/distributions")
-//}
+task assembleDocsDist(type: Zip) {
+    dependsOn docs
+    from "${project.buildDir}/docs"
+    include '*'
+    include '*/**'
+    archiveFileName = "${project.name}-${project.version}.zip"
+    destinationDirectory = project.layout.buildDirectory.dir('distributions')
+}
+
+docs.finalizedBy assembleDocsDist
