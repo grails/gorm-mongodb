@@ -177,31 +177,22 @@ subprojects { project ->
 
     apply plugin: 'groovy'
 
-    configurations {
-        documentation {
-            attributes {
-                attribute(Bundling.BUNDLING_ATTRIBUTE, (Bundling) objects.named(Bundling, 'external'))
-            }
-        }
-    }
-
-    if(isPluginProject) {
+    if (isPluginProject) {
         group "org.grails.plugins"
-        version( rootProject.version )
-    }
-    else {
+        version(rootProject.version)
+    } else {
         group "org.grails"
         version rootProject.version
     }
 
-    if(project.name == 'docs') {
+    if (project.name == 'docs') {
         return
-    }       
+    }
 
-    if(isGrails3PluginProject) {
+    if (isGrails3PluginProject) {
         apply plugin: "org.grails.grails-plugin"
     } else {
-        apply plugin:"groovy"
+        apply plugin: "groovy"
     }
 
     apply plugin: "java-library"
@@ -210,6 +201,22 @@ subprojects { project ->
 
     sourceCompatibility = "1.11"
     targetCompatibility = "1.11"
+
+    java {
+        withJavadocJar()
+        withSourcesJar()
+    }
+
+    configurations {
+        all {
+            resolutionStrategy {
+                force "org.codehaus.groovy:groovy:$groovyVersion"
+                force "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
+                force "org.codehaus.groovy:groovy-xml:$groovyVersion"
+                force "org.codehaus.groovy:groovy-templates:$groovyVersion"
+            }
+        }
+    }
 
     configurations.all {
         resolutionStrategy.eachDependency { DependencyResolveDetails details ->
@@ -245,54 +252,12 @@ subprojects { project ->
 
         testImplementation "org.codehaus.groovy:groovy-json:$groovyVersion"
         testImplementation "org.codehaus.groovy:groovy-templates:$groovyVersion"
-
-        documentation "org.fusesource.jansi:jansi:$jansiVersion"
-        documentation "org.codehaus.groovy:groovy:$groovyVersion"
-        documentation "org.codehaus.groovy:groovy-templates:$groovyVersion"
-        documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
-        documentation 'info.picocli:picocli:4.6.3'
-        documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
-
         testImplementation "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
         testImplementation "org.spockframework:spock-core:$spockVersion", { transitive = false }
         testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.3"
         testImplementation "org.junit.platform:junit-platform-runner:1.9.1"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.9.3"
     }
-
-    groovydoc.classpath = configurations.documentation
-
-    configurations {
-        all {
-            resolutionStrategy {
-                force "org.codehaus.groovy:groovy:$groovyVersion"
-                force "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
-                force "org.codehaus.groovy:groovy-xml:$groovyVersion"
-                force "org.codehaus.groovy:groovy-templates:$groovyVersion"
-            }
-        }
-    }
-
-    Task sourcesJar = project.tasks.findByName("sourcesJar")
-    if (!sourcesJar) {
-        sourcesJar = tasks.create("sourcesJar", Jar) {
-            archiveClassifier.set('sources')
-            group = BasePlugin.BUILD_GROUP
-            description = 'Assembles a jar archive containing the main sources of this project.'
-            from project.sourceSets.main.allSource
-        }
-    }
-
-    Task javadocJar = project.tasks.findByName("javadocJar")
-    if (!javadocJar) {
-        javadocJar = tasks.create("javadocJar", Jar) {
-            archiveClassifier.set('javadoc')
-            group = BasePlugin.BUILD_GROUP
-            description = 'Assembles a jar archive containing the generated Javadoc API documentation of this project.'
-            from project.plugins.hasPlugin(GroovyPlugin) ? project.tasks.getByName(GroovyPlugin.GROOVYDOC_TASK_NAME) : project.tasks.getByName(JavaPlugin.JAVADOC_TASK_NAME)
-        }
-    }
-    tasks.findByName("assemble").finalizedBy(sourcesJar, javadocJar)
 
     publishing {
 
@@ -316,12 +281,39 @@ subprojects { project ->
 
         publications {
             maven(MavenPublication) {
+
+                pom {
+                    name = projectInfo.projectName
+                    description = projectInfo.projectDescription
+                    url = projectInfo.projectURL
+
+                    licenses {
+                        license {
+                            name = 'The Apache Software License, Version 2.0'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                            distribution = 'repo'
+                        }
+                    }
+
+                    scm {
+                        url = 'scm:git@github.com:grails/gorm-hibernate5.git'
+                        connection = 'scm:git@github.com:grails/gorm-hibernate5.git'
+                        developerConnection = 'scm:git@github.com:grails/gorm-hibernate5.git'
+                    }
+
+                    developers {
+                        developer {
+                            id = 'puneetbehl'
+                            name = 'Puneet Behl'
+                            email = 'behlp@objectcomputing.com'
+                        }
+                    }
+                }
+
                 artifactId projectInfo.projectArtifactId
                 from components.java
 
                 afterEvaluate {
-                    artifact source: sourcesJar, classifier: "sources"
-                    artifact source: javadocJar, classifier: "javadoc"
                     if (isGrails3PluginProject) {
                         artifact source:"${sourceSets.main.groovy.outputDir}/META-INF/grails-plugin.xml",
                                 classifier:"plugin",
@@ -333,8 +325,6 @@ subprojects { project ->
                     def xml = asNode()
                     def dependency = xml.dependencies.find { dep -> dep.artifactId == 'slf4j-simple' }
                     dependency?.optional = true
-                    xml.children().last() + pomInfo
-
                 }
             }
         }

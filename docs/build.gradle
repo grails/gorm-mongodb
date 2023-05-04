@@ -20,7 +20,7 @@ apply plugin: 'org.asciidoctor.jvm.convert'
 configurations {
     documentation {
         attributes {
-            attribute(Bundling.BUNDLING_ATTRIBUTE, (Bundling) objects.named(Bundling, 'external'))
+            attribute(Bundling.BUNDLING_ATTRIBUTE, (Bundling) (objects.named(Bundling, 'external')))
         }
     }
 }
@@ -41,10 +41,10 @@ configurations.all {
 
 dependencies {
     documentation "org.fusesource.jansi:jansi:$jansiVersion"
-    documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
-    documentation "com.github.javaparser:javaparser-core:$javaParserCoreVersion"
     documentation "org.codehaus.groovy:groovy:$groovyVersion"
     documentation "org.codehaus.groovy:groovy-templates:$groovyVersion"
+    documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
+    documentation "com.github.javaparser:javaparser-core:$javaParserCoreVersion"
     for(p in coreProjects) {
         documentation "org.grails:grails-datastore-$p:$datastoreVersion"
     }
@@ -74,6 +74,9 @@ asciidoctor {
 
 task fetchSource {
 
+    outputs.dir layout.buildDirectory.dir('checkout')
+    inputs.properties(branch: githubBranch)
+
     onlyIf {
         println "GORM SRC=$explicitGormSrc"
         return !explicitGormSrc
@@ -98,10 +101,6 @@ task fetchSource {
         println "GORM source code downloaded."
     }
 }
-
-fetchSource.inputs.properties(branch:githubBranch)
-fetchSource.outputs.dir checkOutDir
-
 
 task copyDocs(type: Copy, dependsOn:asciidoctor) {
     from "${project.buildDir}/asciidoc/html5"
@@ -130,7 +129,7 @@ tasks.withType(Groovydoc) {
         }
     }
     source = files
-    classpath += configurations.documentation
+    classpath = configurations.documentation
 }
 
 tasks.withType(org.gradle.api.tasks.javadoc.Groovydoc) {
@@ -139,7 +138,7 @@ tasks.withType(org.gradle.api.tasks.javadoc.Groovydoc) {
         processScripts = false
         includeMainForScripts = false
         includeAuthor = true
-        groovyClasspath = configurations.documentation
+        groovyClasspath += configurations.documentation
     }
 }
 
