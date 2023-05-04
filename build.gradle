@@ -126,6 +126,10 @@ subprojects { project ->
             }
         }
 
+        tasks.withType(Jar).configureEach {
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
+
         return
     }
 
