@@ -393,7 +393,8 @@ class MongoCodecEntityPersister extends ThirdPartyCacheEntityPersister<Object> {
                 Document result = dbCollection.findOneAndUpdate(new Document(MONGO_ID_FIELD, collectionName), new Document(INC_OPERATOR, new Document(NEXT_ID, 1L)), options)
                 // result should never be null and we shouldn't come back with an error ,but you never know. We should just retry if this happens...
                 if (result != null) {
-                    return result.getLong(NEXT_ID)
+                    final nextId = result.get(NEXT_ID, Number.class).longValue();
+                    return Long.valueOf(nextId);
                 } else {
                     attempts++
                     if (attempts > 3) {
