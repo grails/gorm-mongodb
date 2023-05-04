@@ -250,7 +250,7 @@ subprojects { project ->
         documentation "org.codehaus.groovy:groovy:$groovyVersion"
         documentation "org.codehaus.groovy:groovy-templates:$groovyVersion"
         documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
-        documentation 'info.picocli:picocli:4.6.3'
+        documentation 'info.picocli:picocli:4.7.3'
         documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
 
         testImplementation "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
