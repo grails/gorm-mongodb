@@ -179,7 +179,11 @@ subprojects { project ->
     apply plugin: 'groovy'
 
     configurations {
-        documentation.extendsFrom(compileClasspath)
+        documentation {
+            attributes {
+                attribute(Bundling.BUNDLING_ATTRIBUTE, (Bundling) objects.named(Bundling, 'external'))
+            }
+        }
     }
 
     if(isPluginProject) {
@@ -244,6 +248,8 @@ subprojects { project ->
         testImplementation "org.codehaus.groovy:groovy-templates:$groovyVersion"
 
         documentation "org.fusesource.jansi:jansi:$jansiVersion"
+        documentation "org.codehaus.groovy:groovy:$groovyVersion"
+        documentation "org.codehaus.groovy:groovy-templates:$groovyVersion"
         documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
         documentation 'info.picocli:picocli:4.6.3'
         documentation ("com.github.javaparser:javaparser-core:$javaParserCoreVersion")
