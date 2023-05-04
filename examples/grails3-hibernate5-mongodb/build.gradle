@@ -42,15 +42,24 @@ dependencies {
     testImplementation "org.seleniumhq.selenium:selenium-support:$seleniumVersion"
 }
 
-webdriverBinaries {
-    chromedriver "$chromeDriverVersion"
-    geckodriver "$geckodriverVersion"
-}
 tasks.withType(Test) {
     systemProperty "geb.env", System.getProperty('geb.env')
     systemProperty "geb.build.reportsDir", reporting.file("geb/integrationTest")
+    if (!System.getenv().containsKey('CI')) {
+        systemProperty 'webdriver.chrome.driver', System.getProperty('webdriver.chrome.driver')
+        systemProperty 'webdriver.gecko.driver', System.getProperty('webdriver.gecko.driver')
+    } else {
+        systemProperty 'webdriver.chrome.driver', "${System.getenv('CHROMEWEBDRIVER')}/chromedriver"
+        systemProperty 'webdriver.gecko.driver', "${System.getenv('GECKOWEBDRIVER')}/geckodriver"
+    }
 }
 
+webdriverBinaries {
+    if (!System.getenv().containsKey('CI')) {
+        chromedriver "$chromeDriverVersion"
+        geckodriver "$geckodriverVersion"
+    }
+}
 //compileGroovy.groovyOptions.forkOptions.jvmArgs = ['-Xdebug','-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005']
 
 
