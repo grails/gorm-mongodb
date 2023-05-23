@@ -78,7 +78,8 @@
         "org.grails:grails-web-databinding",
         "org.grails:grails-web-fileupload",
         "org.grails:grails-web-mvc",
-        "org.grails:grails-web-url-mappings"
+        "org.grails:grails-web-url-mappings",
+        "org.grails:grails-gradle-plugin"
       ],
       "groupName": "grails monorepo"
     }
