@@ -18,7 +18,7 @@ dependencies {
     implementation "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
     implementation "org.grails.plugins:views-json"
     implementation "org.grails.plugins:views-json-templates"
-    implementation 'org.grails.plugins:spring-security-core:4.0.3'
+    implementation 'org.grails.plugins:spring-security-core:5.3.0'
     implementation 'org.grails.plugins:spring-security-rest:3.0.1'
     profile "org.grails.profiles:rest-api"
     testImplementation "org.grails:grails-gorm-testing-support"
