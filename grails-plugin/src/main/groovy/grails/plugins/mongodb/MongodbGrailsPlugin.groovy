@@ -1,8 +1,5 @@
 package grails.plugins.mongodb
 
-import com.mongodb.BasicDBList
-import com.mongodb.BasicDBObject
-import com.mongodb.DBObject
 import grails.core.GrailsClass
 import grails.mongodb.bootstrap.MongoDbDataStoreSpringInitializer
 import grails.plugins.GrailsPlugin
@@ -10,30 +7,30 @@ import grails.plugins.Plugin
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import org.grails.core.artefact.DomainClassArtefactHandler
+import org.grails.datastore.gorm.plugin.support.ConfigSupport
 import org.grails.datastore.mapping.mongo.MongoDatastore
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.env.PropertyResolver
 import org.springframework.transaction.PlatformTransactionManager
-import org.grails.datastore.gorm.plugin.support.*
 
 class MongodbGrailsPlugin extends Plugin {
     def license = "Apache 2.0 License"
-    def organization = [name: "Grails", url: "http://grails.org/"]
+    def organization = [name: "Grails", url: "https://grails.org/"]
     def developers = [
-        [name: "Graeme Rocher", email: "graeme@grails.org"]]
-    def issueManagement = [system: "Github", url: "https://github.com/grails/grails-data-mapping"]
-    def scm = [url: "https://github.com/grails/grails-data-mapping"]
+        [name: "Puneet Behl", email: "behlp@objectcomputing.com"]]
+    def issueManagement = [system: "Github", url: "https://github.com/grails/gorm-mongodb"]
+    def scm = [url: "https://github.com/grails/gorm-mongodb"]
 
-    def grailsVersion = "3.0.0 > *"
+    def grailsVersion = "6.0.0 > *"
     def observe = ['services', 'domainClass']
     def loadAfter = ['domainClass', 'hibernate', 'hibernate4', 'services']
-    def author = "Graeme Rocher"
-    def authorEmail = "graeme@grails.org"
-    def title = "MongoDB GORM"
-    def description = 'A plugin that integrates the MongoDB document datastore into Grails, providing a GORM API onto it'
+    def author = "Puneet Behl"
+    def authorEmail = "behlp@objectcomputing.com"
+    def title = "GORM MongoDB"
+    def description = 'A plugin that integrates the MongoDB document datastore into the Grails framework, providing a GORM API onto it'
 
-    def documentation = "http://grails.github.io/grails-data-mapping/latest/mongodb/"
+    def documentation = "https://gorm.grails.org/latest/mongodb/manual/"
 
     @Override
     @CompileStatic
