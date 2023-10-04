@@ -17,6 +17,9 @@ jobs:
     env:
       WORKSPACE: ${{ github.workspace }}
       GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
+    strategy:
+      matrix:
+        mongodb-version: ['4.4', '5.0', '6.0' ]
     steps:
       - name: Print Dispatch Information
         if: github.event_name == 'workflow_dispatch'
@@ -32,7 +35,7 @@ jobs:
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@v1.10.0
         with:
-          mongodb-version: '4.4.25'
+          mongodb-version: ${{ matrix.mongodb-version }}
       - name: Run Tests
         if: github.event_name == 'pull_request'
         id: tests
