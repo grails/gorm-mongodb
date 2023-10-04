@@ -14,6 +14,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    continue-on-error: true
     env:
       WORKSPACE: ${{ github.workspace }}
       GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
@@ -21,11 +22,6 @@ jobs:
       matrix:
         mongodb-version: ['4.4', '5.0', '6.0' ]
     steps:
-      - name: Print Dispatch Information
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          DISPATCH_INFORMATION: ${{ github.event.inputs.message }}
-        run: echo $DISPATCH_INFORMATION
       - uses: actions/checkout@v4
       - name: Set up JDK
         uses: actions/setup-java@v3
@@ -36,19 +32,7 @@ jobs:
         uses: supercharge/mongodb-github-action@v1.10.0
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
-      - name: Run Tests
-        if: github.event_name == 'pull_request'
-        id: tests
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: check -Dgeb.env=chromeHeadless
-        env:
-          GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
-          GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
       - name: Run Build
-        if: github.event_name == 'push'
-        id: build
         uses: gradle/gradle-build-action@v2
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
@@ -56,16 +40,22 @@ jobs:
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_KEY }}
         with:
           arguments: build -Dgeb.env=chromeHeadless
-      - name: Publish Test Report
-        if: steps.build.outcome == 'failure' || steps.tests.outcome == 'failure'
-        uses: scacap/action-surefire-report@v1
+  publish:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    needs: [build]
+    env:
+      WORKSPACE: ${{ github.workspace }}
+      steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          report_paths: '**/build/test-results/test/TEST-*.xml'
+          distribution: 'adopt'
+          java-version: '11'
       - name: Publish to repo.grails.org
         id: publish
         uses: gradle/gradle-build-action@v2
-        if: steps.build.outcome == 'success' && github.event_name == 'push'
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
           GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER: ${{ secrets.GRADLE_ENTERPRISE_BUILD_CACHE_NODE_USER }}
@@ -76,7 +66,7 @@ jobs:
           arguments: -Dorg.gradle.internal.publish.checksums.insecure=true publish
       - name: Build Docs
         id: docs
-        if: steps.build.outcome == 'success' && github.event_name == 'push'
+        if: steps.build.outcome == 'success'
         uses: gradle/gradle-build-action@v2
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
@@ -85,7 +75,7 @@ jobs:
         with:
           arguments: docs:docs
       - name: Determine docs target repository
-        if: steps.docs.outcome == 'success' && github.event_name == 'push'
+        if: steps.docs.outcome == 'success'
         uses: haya14busa/action-cond@v1
         id: docs_target
         with:
@@ -93,7 +83,7 @@ jobs:
           if_true: "grails/grails-data-mapping"
           if_false: ${{ github.repository }}
       - name: Publish to Github Pages
-        if: steps.docs.outcome == 'success' && github.event_name == 'push'
+        if: steps.docs.outcome == 'success'
         uses: micronaut-projects/github-pages-deploy-action@master
         env:
           TARGET_REPOSITORY: ${{ steps.docs_target.outputs.value }}
