@@ -1,11 +1,17 @@
 package functional.tests
 
 import grails.test.mongodb.MongoSpec
+import org.testcontainers.containers.MongoDBContainer
+import org.testcontainers.utility.DockerImageName
+import spock.lang.Shared
 
 /**
  * Created by graemerocher on 17/10/16.
  */
 class PersonSpec extends MongoSpec implements EmbeddedMongoClient {
+
+    @Shared
+    final MongoDBContainer mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:latest"))
 
     void "Test codecs work for custom properties"() {
         when:"An an instance with a custom codec is saved"

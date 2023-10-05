@@ -24,13 +24,14 @@ dependencies {
 
     testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion"
     testImplementation "org.grails:grails-web-testing-support:$testingSupportVersion"
-    testImplementation "de.bwaldvogel:mongo-java-server:$mongoJavaServerVersion"
+    testImplementation "org.testcontainers:mongodb:1.19.0"
     testImplementation "io.netty:netty-transport:4.1.72.Final"
     testImplementation "io.netty:netty-codec:4.1.72.Final"
     testImplementation "io.netty:netty-handler:4.1.72.Final"
     testImplementation "org.grails.plugins:geb", {
         exclude group: 'org.gebish', module: 'geb-spock'
     }
+    implementation "com.github.erdi:webdriver-binaries-gradle-plugin:3.2"
     testImplementation "org.gebish:geb-spock:$gebVersion"
 
     testRuntimeOnly "org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion"
