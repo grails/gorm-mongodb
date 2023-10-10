@@ -1,5 +1,5 @@
 ext {
-    githubBranch = "8.0.x"
+    datastoreGithubBranch = "8.0.x"
     checkOutDir = "build/checkout"
     explicitGormSrc = System.getProperty("gorm.src") ?: (project.hasProperty('gorm.src') ? project.getProperty("gorm.src") : null)
     gormSrc = explicitGormSrc ? file(explicitGormSrc).absolutePath : "$checkOutDir/gorm-src"
@@ -75,7 +75,7 @@ asciidoctor {
 task fetchSource {
 
     outputs.dir layout.buildDirectory.dir('checkout')
-    inputs.properties(branch: githubBranch)
+    inputs.properties(branch: datastoreGithubBranch)
 
     onlyIf {
         println "GORM SRC=$explicitGormSrc"
@@ -88,22 +88,27 @@ task fetchSource {
 
         println "Downloading GORM source code."
         if (isReleaseVersion) {
-            ant.get src: "https://github.com/grails/grails-data-mapping/archive/v${datastoreVersion}.zip", dest: zipFile, verbose: true
+            ant.get src: "https://github.com/grails/grails-data-mapping/archive/refs/tags/v${datastoreVersion}.zip", dest: zipFile, verbose: true
         } else {
-            ant.get src: "https://github.com/grails/grails-data-mapping/zipball/${githubBranch}", dest: zipFile, verbose: true
+            ant.get src: "https://github.com/grails/grails-data-mapping/archive/refs/heads/${datastoreGithubBranch}.zip", dest: zipFile, verbose: true
         }
-
         ant.unzip src: zipFile, dest: checkOutDir, {
             mapper type: "regexp", from: "(grails-\\S*?/)(.*)", to: "gorm-src/\\2"
         }
-
         println "GORM source code downloaded."
     }
 }
 
 task copyDocs(type: Copy, dependsOn:asciidoctor) {
-    from "${project.buildDir}/asciidoc/html5"
-    into "${project.buildDir}/docs/manual"
+    mustRunAfter('asciidoctor', 'groovydoc')
+    finalizedBy "cleanAsciidoc"
+    from project(":docs").layout.buildDirectory.dir("docs/asciidoc")
+    into project(":docs").layout.buildDirectory.dir("docs/manual")
+}
+
+task cleanAsciidoc(type: Delete, dependsOn: copyDocs) {
+    mustRunAfter "copyDocs"
+    delete project(":docs").layout.buildDirectory.dir("docs/asciidoc")
 }
 
 tasks.withType(Groovydoc) {
@@ -146,11 +151,11 @@ task copyResources(type:Copy) {
     into "${project.buildDir}/docs"
 }
 
-task docs(dependsOn:[asciidoctor, copyDocs, groovydoc, copyResources] + subprojects.findAll { project -> project.tasks.findByName('groovydoc')}
+task docs(dependsOn:[asciidoctor, copyDocs, cleanAsciidoc, groovydoc, copyResources] + subprojects.findAll { project -> project.tasks.findByName('groovydoc')}
                 .collect { project -> project.tasks.groovydoc })
 
 task assembleDocsDist(type: Zip) {
-    dependsOn docs
+    dependsOn docs, copyDocs
     from "${project.buildDir}/docs"
     include '*'
     include '*/**'
