@@ -70,6 +70,8 @@ asciidoctor {
                 'pluginVersion' : project.version,
                 'mongoDriverVersion': mongodbDriverVersion,
                 'sourcedir'     : "${project.rootDir}"
+
+    baseDirFollowsSourceDir()
 }
 
 task fetchSource {
