@@ -7,7 +7,7 @@ Graeme Rocher, Burt Beckwith, Puneet Behl
 [[introduction]]
 == Introduction
 
-include::{includedir}/introduction.adoc[]
+include::introduction.adoc[]
 
 [[compatibility]]
 === Compatibility with GORM for Hibernate
