@@ -19,6 +19,7 @@ import com.mongodb.ReadConcern;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoIterable;
 import grails.mongodb.geo.*;
 import groovy.lang.Closure;
 import org.bson.BsonDocument;
@@ -426,13 +427,15 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
             }
             final Object dbObject;
             if (criteria.isEmpty()) {
-                    dbObject = collection
-                            .find(createQueryObject(entity))
-                            .limit(1)
-                            .first();
+                FindIterable<Document> cursor = collection
+                        .find(createQueryObject(entity));
+
+                dbObject = ((FindIterable<Document>) setHint(cursor)).limit(1)
+                        .first();
             } else {
-                dbObject = collection.find(getMongoQuery())
-                        .limit(1)
+                FindIterable<Document> cursor = collection.find(getMongoQuery());
+
+                dbObject = ((FindIterable<Document>) setHint(cursor)).limit(1)
                         .first();
             }
             if(dbObject == null) {
@@ -474,6 +477,7 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
 
 
         AggregateIterable<Document> aggregatedResults = collection.aggregate(aggregationPipeline);
+        aggregatedResults = (AggregateIterable<Document>) setHint(aggregatedResults);
         final MongoCursor<Document> aggregateCursor = aggregatedResults.iterator();
 
         if (singleResult && aggregateCursor.hasNext()) {
@@ -518,17 +522,34 @@ public class MongoQuery extends BsonQuery implements QueryArgumentsAware {
             cursor = executeQueryAndApplyPagination(collection, query);
         }
 
+        cursor = (FindIterable<Document>) setHint(cursor);
+
+        return cursor.iterator();
+    }
+
+    private MongoIterable<Document> setHint(MongoIterable<Document> cursor) {
+        MongoIterable<Document> result = cursor;
+
         if (queryArguments != null) {
             if (queryArguments.containsKey(HINT_ARGUMENT)) {
                 Object hint = queryArguments.get(HINT_ARGUMENT);
                 if (hint instanceof Map) {
-                    cursor = cursor.hint(new Document((Map<String, Object>) hint));
+                    if (cursor instanceof FindIterable) {
+                        result = ((FindIterable) cursor).hint(new Document((Map<String, Object>) hint));
+                    } else if (cursor instanceof AggregateIterable) {
+                        result = ((AggregateIterable) cursor).hint(new Document((Map<String, Object>) hint));
+                    }
                 } else {
-                    cursor = cursor.hintString(hint.toString());
+                    if (cursor instanceof FindIterable) {
+                        result = ((FindIterable) cursor).hintString(hint.toString());
+                    } else if (cursor instanceof AggregateIterable) {
+                        result = ((AggregateIterable) cursor).hintString(hint.toString());
+                    }
                 }
             }
         }
-        return cursor.iterator();
+
+        return result;
     }
 
     protected FindIterable<Document> executeQueryAndApplyPagination(com.mongodb.client.MongoCollection<Document> collection, Document query) {
