@@ -436,7 +436,7 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
             v.markDirty()
         }
 
-        def embeddedUpdate = encodeUpdate(v)
+        def embeddedUpdate = encodeUpdate(v, createEntityAccess(v), DEFAULT_ENCODER_CONTEXT, true)
         def embeddedSets = embeddedUpdate.get(MONGO_SET_OPERATOR)
         if(embeddedSets != null) {
 
