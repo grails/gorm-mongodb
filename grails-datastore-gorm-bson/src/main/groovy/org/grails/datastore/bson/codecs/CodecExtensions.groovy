@@ -65,7 +65,7 @@ import java.util.regex.Pattern
 class CodecExtensions implements CodecProvider {
     private static final Map<Class, Codec> ADDITIONAL_CODECS = [:]
     private static final Map<Class<? extends BsonValue>, List<Converter>> BSON_VALUE_CONVERTERS = new LinkedHashMap<Class<? extends BsonValue>, List<Converter>>().withDefault { Class<? extends BsonValue> cls ->
-        new ArrayList<Converter>()
+        new ArrayList<Converter>() as List<Converter>
     }
     private static final Map<BsonType, Codec<?>> BSON_TYPE_CODECS = [
             (BsonType.ARRAY) : new ListCodec(),
