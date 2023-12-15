@@ -1,0 +1,108 @@
+{
+    "drivers": [
+        {
+        	"name": "chromedriver",
+        	"platform": "windows",
+        	"bit": "32",
+        	"version": "120.0.6099.71",
+        	"url": "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/120.0.6099.71/win32/chromedriver-win32.zip",
+        	"fileMatchInside": ".*chromedriver.exe$"
+        },
+        {
+        	"name": "chromedriver",
+        	"platform": "windows",
+        	"bit": "64",
+        	"version": "120.0.6099.71",
+        	"url": "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/120.0.6099.71/win64/chromedriver-win64.zip",
+        	"fileMatchInside": ".*chromedriver.exe$"
+        },
+        {
+        	"name": "chromedriver",
+        	"platform": "mac",
+        	"bit": "64",
+        	"arch": "amd64",
+        	"version": "120.0.6099.71",
+        	"url": "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/120.0.6099.71/mac-x64/chromedriver-mac-x64.zip",
+        	"fileMatchInside": ".*chromedriver$"
+        },
+        {
+        	"name": "chromedriver",
+        	"platform": "mac",
+        	"bit": "64",
+        	"arch": "aarch64",
+        	"version": "120.0.6099.71",
+        	"url": "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/120.0.6099.71/mac-arm64/chromedriver-mac-arm64.zip",
+        	"fileMatchInside": ".*chromedriver$"
+        },
+        {
+        	"name": "chromedriver",
+        	"platform": "linux",
+        	"bit": "64",
+        	"version": "120.0.6099.71",
+        	"url": "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/120.0.6099.71/linux64/chromedriver-linux64.zip",
+        	"fileMatchInside": ".*chromedriver$"
+        },
+        {
+            "name": "geckodriver",
+            "platform": "windows",
+            "bit": "64",
+            "arch": "amd64",
+            "version": "0.33.0",
+            "url": "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-win64.zip"
+        },
+        {
+            "name": "geckodriver",
+            "platform": "windows",
+            "bit": "64",
+            "arch": "aarch64",
+            "version": "0.33.0",
+            "url": "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-win-aarch64.zip"
+        },
+        {
+            "name": "geckodriver",
+            "platform": "windows",
+            "bit": "32",
+            "version": "0.33.0",
+            "url": "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-win32.zip"
+        },
+        {
+            "name": "geckodriver",
+            "platform": "linux",
+            "bit": "64",
+            "arch": "amd64",
+            "version": "0.33.0",
+            "url": "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz"
+        },
+        {
+            "name": "geckodriver",
+            "platform": "linux",
+            "bit": "64",
+            "arch": "aarch64",
+            "version": "0.33.0",
+            "url": "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux-aarch64.tar.gz"
+        },
+        {
+            "name": "geckodriver",
+            "platform": "linux",
+            "bit": "32",
+            "version": "0.33.0",
+            "url": "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux32.tar.gz"
+        },
+        {
+            "name": "geckodriver",
+            "platform": "mac",
+            "bit": "64",
+            "arch": "amd64",
+            "version": "0.33.0",
+            "url": "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-macos.tar.gz"
+        },
+        {
+            "name": "geckodriver",
+            "platform": "mac",
+            "bit": "64",
+            "arch": "aarch64",
+            "version": "0.33.0",
+            "url": "https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-macos-aarch64.tar.gz"
+        }
+    ]
+}

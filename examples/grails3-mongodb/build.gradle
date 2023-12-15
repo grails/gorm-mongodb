@@ -42,6 +42,8 @@ dependencies {
 webdriverBinaries {
     chromedriver "$chromeDriverVersion"
     geckodriver "$geckodriverVersion"
+    // Temporary workaround. See: https://github.com/webdriverextensions/webdriverextensions-maven-plugin-repository/pull/116
+    driverUrlsConfiguration = resources.text.fromFile('../../webdriver-repository.json')
 }
 
 tasks.withType(Test) {
