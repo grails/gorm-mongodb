@@ -11,7 +11,7 @@ buildscript {
         classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
         classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
         classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.6.1'
-        classpath "gradle.plugin.com.energizedwork.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
+        classpath "com.github.erdi:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
         classpath "org.grails.plugins:views-gradle:2.3.2"
         classpath "io.github.gradle-nexus:publish-plugin:1.3.0"
     }
@@ -87,7 +87,7 @@ subprojects { project ->
         boolean usesGeb = project.name.contains('grails3-hibernate5-mongodb') || project.name.contains('grails3-mongodb') || project.name.contains('grails3-mongodb-database-per-tenant')|| project.name.contains('grails3-rxmongodb')
 
         if (usesGeb) {
-            apply plugin:"com.energizedwork.webdriver-binaries"
+            apply plugin:"com.github.erdi.webdriver-binaries"
         }
 
         if (project.name == "examples-test-data-service") {
