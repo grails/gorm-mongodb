@@ -33,7 +33,7 @@ jobs:
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
       - name: Run Build
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
         with:
@@ -53,7 +53,7 @@ jobs:
         java-version: '11'
     - name: Publish to repo.grails.org
       id: publish
-      uses: gradle/gradle-build-action@v2
+      uses: gradle/gradle-build-action@v3
       env:
         GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
         ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -63,7 +63,7 @@ jobs:
     - name: Build Docs
       id: docs
       if: steps.build.outcome == 'success'
-      uses: gradle/gradle-build-action@v2
+      uses: gradle/gradle-build-action@v3
       env:
         GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
       with:
