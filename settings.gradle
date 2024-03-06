@@ -13,6 +13,7 @@ gradleEnterprise {
             taskInputFiles = true
         }
     }
+
 }
 
 buildCache {
@@ -21,8 +22,8 @@ buildCache {
         def isAuthenticated = System.getenv('GRADLE_ENTERPRISE_ACCESS_KEY')
         push = System.getenv('CI') == 'true' && isAuthenticated
         enabled = true
-    }}
-
+    }
+}
 
 // core
 include "grails-datastore-gorm-bson"
