@@ -79,7 +79,7 @@ autolabeler:
 categories:
   - title: '🚀 Features'
     labels:
-      - 'feat'
+      - 'feature'
       - "type: enhancement"
       - "type: new feature"
       - "type: major"
