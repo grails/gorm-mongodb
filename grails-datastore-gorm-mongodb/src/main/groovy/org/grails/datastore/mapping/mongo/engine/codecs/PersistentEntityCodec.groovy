@@ -360,11 +360,11 @@ class PersistentEntityCodec extends BsonPersistentEntityCodec {
         return MongoConstants.MONGO_CLASS_FIELD
     }
 
-    protected void encodeEmbeddedCollectionUpdate(EntityAccess parentAccess, BsonDocument sets, Document unsets, Association association, v) {
+    protected void encodeEmbeddedCollectionUpdate(EntityAccess parentAccess, BsonDocument sets, Document unsets, Association association, Object v) {
         if(v instanceof Collection) {
             if((v instanceof DirtyCheckableCollection) && !((DirtyCheckableCollection)v).hasChangedSize()) {
                 int i = 0
-                for(o in v) {
+                for(o in (v as Collection)) {
                     def embeddedUpdate = encodeUpdate(o, createEntityAccess(o), EncoderContext.builder().build(), true)
                     def embeddedSets = embeddedUpdate.get(MONGO_SET_OPERATOR)
                     if(embeddedSets != null) {
