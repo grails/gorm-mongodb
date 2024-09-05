@@ -5,12 +5,9 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: ['11']
     env:
-      GIT_USER_NAME: puneetbehl
-      GIT_USER_EMAIL: behlp@objectcomputing.com
+      GIT_USER_NAME: 'grails-build'
+      GIT_USER_EMAIL: 'grails-build@users.noreply.github.com'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,8 +17,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-version: ${{ matrix.java }}
+          distribution: temurin
+          java-version: '17'
       - name: Set the current release version
         id: release_version
         run: echo ::set-output name=release_version::${GITHUB_REF:11}
@@ -65,8 +62,8 @@ jobs:
           FOLDER: docs/build/docs
           DOC_SUB_FOLDER: mongodb
           DOC_FOLDER: gh-pages
-          COMMIT_EMAIL: behlp@objectcomputing.com
-          COMMIT_NAME: Puneet Behl
+          COMMIT_EMAIL: 'grails-build@users.noreply.github.com'
+          COMMIT_NAME: 'grails-build'
           VERSION: ${{ steps.release_version.outputs.release_version }}
       - name: Run post-release
         if: success()

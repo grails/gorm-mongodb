@@ -5,7 +5,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-autoconfigure"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-tomcat"
-    implementation "javax.servlet:javax.servlet-api:$servletApiVersion"
+    implementation "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
     implementation "org.grails:grails-core:$grailsVersion"
     implementation "org.grails:grails-dependencies:$grailsVersion", {
         exclude module:'grails-datastore-simple'
@@ -16,17 +16,17 @@ dependencies {
 
     runtimeOnly "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
     runtimeOnly "com.h2database:h2"
-    runtimeOnly "org.grails.plugins:scaffolding:$scaffolingVersion"
-    runtimeOnly "org.grails.plugins:fields:$fieldsVersion"
+    runtimeOnly "org.grails.plugins:scaffolding:$scaffoldingVersion"
+    runtimeOnly "io.github.gpc:fields:$fieldsVersion"
 
     testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion"
     testImplementation "org.grails:grails-web-testing-support:$testingSupportVersion"
-    testImplementation "io.netty:netty-transport:4.1.72.Final"
-    testImplementation "io.netty:netty-codec:4.1.72.Final"
-    testImplementation "io.netty:netty-handler:4.1.72.Final"
-    testImplementation "org.testcontainers:mongodb:1.19.0"
+    testImplementation "io.netty:netty-transport:$nettyVersion"
+    testImplementation "io.netty:netty-codec:$nettyVersion"
+    testImplementation "io.netty:netty-handler:$nettyVersion"
+    testImplementation "org.testcontainers:mongodb:$testcontainersMongodbVersion"
 
-    testImplementation "org.grails.plugins:geb", {
+    testImplementation("org.grails.plugins:geb:$gebPluginVersion") {
         exclude group: 'org.gebish', module: 'geb-spock'
     }
     testImplementation "org.gebish:geb-spock:$gebVersion"

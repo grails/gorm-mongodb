@@ -57,7 +57,7 @@ import org.grails.datastore.mapping.transactions.Transaction
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 
-import javax.persistence.FlushModeType
+import jakarta.persistence.FlushModeType
 import java.util.concurrent.ConcurrentHashMap
 /**
  * A MongoDB session for codec mapping style

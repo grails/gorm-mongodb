@@ -3,24 +3,25 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-autoconfigure"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-tomcat"
-    implementation "javax.servlet:javax.servlet-api:$servletApiVersion"
+    implementation "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
     implementation "org.grails:grails-core:$grailsVersion"
     implementation "org.grails:grails-dependencies:$grailsVersion", {
         exclude module:'grails-datastore-simple'
     }
     implementation "org.grails:grails-web-boot:$grailsVersion"
     implementation project(":grails-plugin")
+    implementation("org.ysb33r.gradle:grolifant50:2.0.2")
 
     runtimeOnly "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
-    runtimeOnly "com.h2database:h2"
+    runtimeOnly "com.h2database:h2:$h2Version"
 
     implementation "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
-    runtimeOnly "org.grails.plugins:scaffolding:$scaffolingVersion"
-    runtimeOnly "org.grails.plugins:fields:$fieldsVersion"
+    runtimeOnly "org.grails.plugins:scaffolding:$scaffoldingVersion"
+    runtimeOnly "io.github.gpc:fields:$fieldsVersion"
 
     testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion"
     testImplementation "org.grails:grails-web-testing-support:$testingSupportVersion"
-    testImplementation("org.grails.plugins:geb") {
+    testImplementation("org.grails.plugins:geb:$gebPluginVersion") {
         exclude group: 'org.gebish', module: 'geb-spock'
     }
     testImplementation "org.gebish:geb-spock:$gebVersion"
@@ -31,6 +32,15 @@ dependencies {
     testImplementation "org.seleniumhq.selenium:selenium-remote-driver:$seleniumVersion"
     testImplementation "org.seleniumhq.selenium:selenium-api:$seleniumVersion"
     testImplementation "org.seleniumhq.selenium:selenium-support:$seleniumVersion"
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if ((details.requested.group == 'org.codehaus.groovy')) {
+            details.useTarget(group: 'org.apache.groovy', name: details.requested.name, version: "$groovyVersion")
+            details.because "The dependency coordinates are changed in Apache Groovy 4, plus ensure version"
+        }
+    }
 }
 
 tasks.withType(Test) {

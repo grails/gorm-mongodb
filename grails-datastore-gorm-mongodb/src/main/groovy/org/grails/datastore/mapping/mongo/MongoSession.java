@@ -41,7 +41,7 @@ import org.grails.datastore.mapping.transactions.Transaction;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import javax.persistence.FlushModeType;
+import jakarta.persistence.FlushModeType;
 import java.io.Serializable;
 import java.util.*;
 

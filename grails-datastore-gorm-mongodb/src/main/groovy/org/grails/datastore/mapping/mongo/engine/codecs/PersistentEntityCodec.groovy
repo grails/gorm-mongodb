@@ -60,7 +60,7 @@ import org.grails.datastore.mapping.mongo.engine.MongoCodecEntityPersister
 import org.grails.datastore.mapping.query.Query
 import org.grails.datastore.mapping.reflect.FieldEntityAccess
 
-import javax.persistence.FetchType
+import jakarta.persistence.FetchType
 /**
  * A MongoDB codec for persisting {@link PersistentEntity} instances
  *

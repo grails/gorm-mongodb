@@ -6,7 +6,7 @@ import grails.gorm.tests.GormDatastoreSpec
 import grails.persistence.Entity
 import grails.testing.services.ServiceUnitTest
 
-import javax.persistence.Embeddable
+import jakarta.persistence.Embeddable
 
 class EmbeddedWhereClauseSpec extends GormDatastoreSpec {
 

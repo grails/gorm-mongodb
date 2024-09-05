@@ -1,7 +1,9 @@
+apply plugin: 'java'
+
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-logging"
     implementation "org.springframework.boot:spring-boot-autoconfigure"
-    implementation "org.grails:grails-core"
+    implementation "org.grails:grails-core:$grailsVersion"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-tomcat"
     implementation ("org.grails:grails-dependencies") {
@@ -21,6 +23,6 @@ dependencies {
     implementation 'org.grails.plugins:spring-security-core:4.0.3'
     implementation 'org.grails.plugins:spring-security-rest:3.0.1'
     profile "org.grails.profiles:rest-api"
-    testImplementation "org.grails:grails-gorm-testing-support"
+    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion"
     testImplementation "org.grails:grails-web-testing-support"
 }

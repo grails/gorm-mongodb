@@ -1,19 +1,24 @@
-import groovyx.net.http.RESTClient
-
-import static groovyx.net.http.ContentType.JSON
-
 buildscript {
     repositories {
         maven { url "https://repo.grails.org/grails/core" }
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath "org.codehaus.groovy.modules.http-builder:http-builder:0.7.2"
         classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
-        classpath 'org.asciidoctor:asciidoctor-gradle-jvm:4.0.2'
+        classpath "org.asciidoctor:asciidoctor-gradle-jvm:4.0.0"
         classpath "com.github.erdi:webdriver-binaries-gradle-plugin:3.2"
-        classpath "org.grails.plugins:views-gradle:3.2.3"
         classpath "io.github.gradle-nexus:publish-plugin:1.3.0"
+    }
+
+    configurations.configureEach {
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            // This is a workaround for dependencies exposing a different version of Groovy
+            // than the one used by Gradle. This causes issues with the Groovy compiler.
+            if (details.requested.group == 'org.apache.groovy' || details.requested.group == 'org.codehaus.groovy') {
+                details.useTarget(group: "org.codehaus.groovy", name: details.requested.name, version: GroovySystem.version)
+                details.because "Use Groovy 3.0.x library shipped with Gradle"
+            }
+        }
     }
 }
 
@@ -30,6 +35,8 @@ ext {
     servletApiVersion = "4.0.1"
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
     nexusPassword = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
+    isSnapshot = project.projectVersion.endsWith("-SNAPSHOT")
+    groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: project.groovyVersion
 }
 
 ext."signing.keyId" = project.hasProperty("signing.keyId") ? project.getProperty('signing.keyId') : System.getenv('SIGNING_KEY')
@@ -56,22 +63,45 @@ if (isReleaseVersion) {
 }
 
 
-subprojects { project ->
+allprojects {
 
-    ext {
-        groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: project.groovyVersion
-    }
+    ext.groovyVersion = System.getenv('CI_GROOVY_VERSION') ?: project.groovyVersion
 
     repositories {
         mavenLocal()
-        maven { url "https://repo.grails.org/grails/core" }
+        mavenCentral()
+        maven { url = 'https://repo.grails.org/grails/core' }
+        maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+        if(isSnapshot) {
+            maven { url = 'https://repo.grails.org/grails/libs-snapshots-local' }
+        }
         if(groovyVersion && groovyVersion.endsWith('-SNAPSHOT')) {
             maven {
-                name 'JFrog OSS snapshot repo'
-                url 'https://oss.jfrog.org/oss-snapshot-local/'
+                name = 'ASF Snapshot repo'
+                url = 'https://repository.apache.org/content/repositories/snapshots'
             }
         }
     }
+
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute(module("org.codehaus.groovy:groovy-bom:3.0.8")).using(module("org.apache.groovy:groovy-bom:$groovyVersion"))
+        }
+
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if ((details.requested.group == 'org.codehaus.groovy' || details.requested.group == 'org.apache.groovy') && details.requested.name != 'groovy-bom') {
+                details.useTarget(group: 'org.apache.groovy', name: details.requested.name, version: "$groovyVersion")
+                details.because "The dependency coordinates are changed in Apache Groovy 4, plus ensure version"
+            }
+
+            if (details.requested.group == "io.micronaut" && details.requested.name == "micronaut-inject-groovy") {
+                details.useVersion("4.6.1")
+            }
+        }
+    }
+}
+
+subprojects { Project subproject ->
 
     ext['h2.version'] = h2Version
     ext['gorm.version'] = datastoreVersion
@@ -98,12 +128,12 @@ subprojects { project ->
 
         if (project.name == "examples-test-data-service") {
             apply plugin:"org.grails.grails-web"
-            apply plugin:"org.grails.plugins.views-json"
+            //apply plugin:"org.grails.plugins.views-json"
         }
 
         configurations.all {
             resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-                if (details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
+                if(details.requested.group == 'org.apache.groovy' && details.requested.name.startsWith('groovy')) {
                     details.useVersion(groovyVersion)
                 } else if (details.requested.group == 'org.mongodb' && details.requested.module.name != 'mongodb-driver-rx') {
                     details.useVersion(mongodbDriverVersion)
@@ -116,11 +146,13 @@ subprojects { project ->
         }
 
         dependencies {
+            testImplementation "jakarta.annotation:jakarta.annotation-api:$jakartaAnnotationApiVersion"
+            testImplementation "io.micrometer:micrometer-core:latest.integration"
             testImplementation "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
-            testImplementation "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
+            testImplementation "org.apache.groovy:groovy-test-junit5:$groovyVersion"
             testImplementation "org.spockframework:spock-core:$spockVersion", { transitive = false }
             testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
-            testImplementation "org.junit.platform:junit-platform-runner:1.10.2"
+            testImplementation "org.junit.platform:junit-platform-runner:$junitJupiterPlatformVersion"
             testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
         }
 
@@ -206,10 +238,10 @@ subprojects { project ->
     apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
-    sourceCompatibility = "1.11"
-    targetCompatibility = "1.11"
-
     java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
         withJavadocJar()
         withSourcesJar()
     }
@@ -217,10 +249,10 @@ subprojects { project ->
     configurations {
         all {
             resolutionStrategy {
-                force "org.codehaus.groovy:groovy:$groovyVersion"
-                force "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
-                force "org.codehaus.groovy:groovy-xml:$groovyVersion"
-                force "org.codehaus.groovy:groovy-templates:$groovyVersion"
+                force "org.apache.groovy:groovy:$groovyVersion"
+                force "org.apache.groovy:groovy-dateutil:$groovyVersion"
+                force "org.apache.groovy:groovy-xml:$groovyVersion"
+                force "org.apache.groovy:groovy-templates:$groovyVersion"
             }
         }
     }
@@ -254,16 +286,16 @@ subprojects { project ->
     }
 
     dependencies {
-        api "org.codehaus.groovy:groovy:$groovyVersion"
-        api "org.codehaus.groovy:groovy-templates:$groovyVersion"
+        api "org.apache.groovy:groovy:$groovyVersion"
+        api "org.apache.groovy:groovy-templates:$groovyVersion"
 
-        testImplementation "org.codehaus.groovy:groovy-json:$groovyVersion"
-        testImplementation "org.codehaus.groovy:groovy-templates:$groovyVersion"
-        testImplementation "org.codehaus.groovy:groovy-test-junit5:$groovyVersion"
+        testImplementation "org.apache.groovy:groovy-json:$groovyVersion"
+        testImplementation "org.apache.groovy:groovy-templates:$groovyVersion"
+        testImplementation "org.apache.groovy:groovy-test-junit5:$groovyVersion"
         testImplementation "org.spockframework:spock-core:$spockVersion", { transitive = false }
-        testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
-        testImplementation "org.junit.platform:junit-platform-runner:1.10.2"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
+        testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+        testImplementation "org.junit.platform:junit-platform-runner:$junitJupiterPlatformVersion"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
     }
 
     publishing {
@@ -322,7 +354,7 @@ subprojects { project ->
 
                 afterEvaluate {
                     if (isGrails3PluginProject) {
-                        artifact source:"${sourceSets.main.groovy.outputDir}/META-INF/grails-plugin.xml",
+                        artifact source:"${sourceSets.main.groovy.getClassesDirectory().get().getAsFile()}/META-INF/grails-plugin.xml",
                                 classifier:"plugin",
                                 extension:'xml'
                     }
