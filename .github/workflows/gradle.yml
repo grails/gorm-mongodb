@@ -20,7 +20,7 @@ jobs:
       GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
     strategy:
       matrix:
-        mongodb-version: ['4.4', '5.0', '6.0' ]
+        mongodb-version: ['4.4', '5.0', '6.0', '7.0.14' ]
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
