@@ -34,15 +34,6 @@ dependencies {
     testImplementation "org.seleniumhq.selenium:selenium-support:$seleniumVersion"
 }
 
-configurations.all {
-    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if ((details.requested.group == 'org.codehaus.groovy')) {
-            details.useTarget(group: 'org.apache.groovy', name: details.requested.name, version: "$groovyVersion")
-            details.because "The dependency coordinates are changed in Apache Groovy 4, plus ensure version"
-        }
-    }
-}
-
 tasks.withType(Test) {
     systemProperty "geb.env", System.getProperty('geb.env')
     systemProperty "geb.build.reportsDir", reporting.file("geb/integrationTest")

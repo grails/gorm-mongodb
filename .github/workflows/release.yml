@@ -62,8 +62,8 @@ jobs:
           FOLDER: docs/build/docs
           DOC_SUB_FOLDER: mongodb
           DOC_FOLDER: gh-pages
-          COMMIT_EMAIL: 'grails-build@users.noreply.github.com'
-          COMMIT_NAME: 'grails-build'
+          COMMIT_EMAIL: ${{ env.GIT_USER_EMAIL }}
+          COMMIT_NAME: ${{ env.GIT_USER_NAME }}
           VERSION: ${{ steps.release_version.outputs.release_version }}
       - name: Run post-release
         if: success()
