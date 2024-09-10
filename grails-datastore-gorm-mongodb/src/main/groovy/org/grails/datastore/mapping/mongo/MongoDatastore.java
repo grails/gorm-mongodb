@@ -575,10 +575,14 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     /**
      * The message source used for validation messages
      *
-     * @param messageSource The message sources
+     * @param messageSource The message source
      */
     @Autowired(required = false)
     public void setMessageSource(PluginAwareResourceBundleMessageSource messageSource) {
+        setMessageSource((MessageSource) messageSource);
+    }
+
+    public void setMessageSource(MessageSource messageSource) {
         if(messageSource != null) {
             configureValidatorRegistry(connectionSources.getDefaultConnectionSource().getSettings(), (MongoMappingContext) mappingContext, messageSource);
         }
