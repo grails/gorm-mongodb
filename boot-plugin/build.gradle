@@ -1,10 +1,10 @@
 dependencies {
-    compileOnly "org.springframework.boot:spring-boot-cli:$springBootVersion", {
-        exclude group:'org.codehaus.groovy', module:'groovy'
+    compileOnly "org.grails:grails-shell:$grailsShellVersion", {
+        exclude group:'org.apache.groovy', module:'groovy'
     }
 
     api "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
-    api "org.codehaus.groovy:groovy:$groovyVersion"
+    api "org.apache.groovy:groovy:$groovyVersion"
     api project(":grails-datastore-gorm-mongodb"), {
         exclude group:'org.grails', module:'grails-datastore-gorm-plugin-support'
     }
@@ -12,7 +12,7 @@ dependencies {
         exclude group:'org.grails', module:'grails-datastore-gorm-mongodb'
     }
     api "org.springframework:spring-tx:$springVersion"
-    testImplementation "org.springframework.boot:spring-boot-cli:$springBootVersion", {
-        exclude group:'org.codehaus.groovy', module:'groovy'
+    testImplementation "org.grails:grails-shell:$grailsShellVersion", {
+        exclude group:'org.apache.groovy', module:'groovy'
     }
 }

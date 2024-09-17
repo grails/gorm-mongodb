@@ -1,7 +1,20 @@
+buildscript {
+    repositories {
+        maven { url "https://repo.grails.org/grails/core" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath "org.grails.plugins:views-gradle:$grailsViewsVersion"
+    }
+}
+
+apply plugin: "java"
+
 dependencies {
+    profile "org.grails.profiles:rest-api"
     implementation "org.springframework.boot:spring-boot-starter-logging"
     implementation "org.springframework.boot:spring-boot-autoconfigure"
-    implementation "org.grails:grails-core"
+    implementation "org.grails:grails-core:$grailsVersion"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-tomcat"
     implementation ("org.grails:grails-dependencies") {
@@ -16,11 +29,10 @@ dependencies {
     implementation "org.grails.plugins:events"
     implementation project(":grails-plugin")
     implementation "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
-    implementation "org.grails.plugins:views-json"
-    implementation "org.grails.plugins:views-json-templates"
+    implementation "org.grails.plugins:views-json:$grailsViewsVersion"
+    implementation "org.grails.plugins:views-json-templates:$grailsViewsVersion"
     implementation 'org.grails.plugins:spring-security-core:4.0.3'
     implementation 'org.grails.plugins:spring-security-rest:3.0.1'
-    profile "org.grails.profiles:rest-api"
-    testImplementation "org.grails:grails-gorm-testing-support"
+    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion"
     testImplementation "org.grails:grails-web-testing-support"
 }

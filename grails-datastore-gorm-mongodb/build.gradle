@@ -6,15 +6,16 @@ dependencies {
     api "org.grails:grails-datastore-gorm:$datastoreVersion"
     api project(":grails-datastore-gorm-bson")
 
+    implementation "org.grails:grails-core:$grailsVersion"
     implementation "com.github.ben-manes.caffeine:caffeine:$caffeineVersion"
 
     compileOnly "org.grails:grails-datastore-gorm-support:$datastoreVersion", {
         exclude group:'org.grails', module:'grails-datastore-gorm-hibernate-core'
     }
-    compileOnly "javax.servlet:javax.servlet-api:$servletApiVersion"
+    compileOnly "jakarta.servlet:jakarta.servlet-api:$servletApiVersion"
     
     testImplementation "org.grails:grails-datastore-gorm-tck:$datastoreVersion"
-    testImplementation "org.grails:grails-gorm-testing-support:3.2.2"
+    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion"
     testImplementation "org.hibernate:hibernate-validator:$hibernateValidatorVersion"
     testImplementation "org.grails:grails-datastore-gorm-support:$datastoreVersion", {
         exclude group: "org.grails", module:"grails-datastore-gorm-hibernate-core"

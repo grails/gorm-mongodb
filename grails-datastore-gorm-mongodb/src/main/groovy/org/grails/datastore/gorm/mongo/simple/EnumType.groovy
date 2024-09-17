@@ -34,7 +34,7 @@ import org.grails.datastore.mapping.query.Query.Equals
 import org.grails.datastore.mapping.query.Query.In
 import org.grails.datastore.mapping.query.Query.NotEquals
 
-import javax.persistence.EnumType as JEnumType
+import jakarta.persistence.EnumType as JEnumType
 import java.lang.reflect.Array
 /**
  * A custom type for persisting Enum which have an id field in domain classes.

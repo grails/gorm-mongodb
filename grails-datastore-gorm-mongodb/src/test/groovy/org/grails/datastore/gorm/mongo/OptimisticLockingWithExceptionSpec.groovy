@@ -5,7 +5,7 @@ import grails.persistence.Entity
 import org.grails.datastore.mapping.core.OptimisticLockingException
 import spock.lang.Issue
 
-import javax.persistence.FlushModeType
+import jakarta.persistence.FlushModeType
 
 /**
  * @author Graeme Rocher

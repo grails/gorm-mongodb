@@ -27,7 +27,7 @@ configurations {
 
 configurations.all {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if (details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
+        if (details.requested.group == 'org.apache.groovy' && details.requested.name.startsWith('groovy')) {
             details.useVersion(groovyVersion)
         } else if (details.requested.group == 'org.springframework') {
             details.useVersion(springVersion)
@@ -41,9 +41,9 @@ configurations.all {
 
 dependencies {
     documentation "org.fusesource.jansi:jansi:$jansiVersion"
-    documentation "org.codehaus.groovy:groovy:$groovyVersion"
-    documentation "org.codehaus.groovy:groovy-templates:$groovyVersion"
-    documentation "org.codehaus.groovy:groovy-dateutil:$groovyVersion"
+    documentation "org.apache.groovy:groovy:$groovyVersion"
+    documentation "org.apache.groovy:groovy-templates:$groovyVersion"
+    documentation "org.apache.groovy:groovy-dateutil:$groovyVersion"
     documentation "com.github.javaparser:javaparser-core:$javaParserCoreVersion"
     for(p in coreProjects) {
         documentation "org.grails:grails-datastore-$p:$datastoreVersion"
@@ -102,7 +102,7 @@ task fetchSource {
 }
 
 task copyDocs(type: Copy, dependsOn:asciidoctor) {
-    mustRunAfter('asciidoctor', 'groovydoc')
+    mustRunAfter('asciidoctor', 'groovydoc', 'copyResources')
     finalizedBy "cleanAsciidoc"
     from project(":docs").layout.buildDirectory.dir("docs/asciidoc")
     into project(":docs").layout.buildDirectory.dir("docs/manual")
@@ -150,7 +150,7 @@ tasks.withType(org.gradle.api.tasks.javadoc.Groovydoc) {
 
 task copyResources(type:Copy) {
     from 'src/docs/resources'
-    into "${project.buildDir}/docs"
+    into "${project.layout.buildDirectory.get()}/docs"
 }
 
 task docs(dependsOn:[asciidoctor, copyDocs, cleanAsciidoc, groovydoc, copyResources] + subprojects.findAll { project -> project.tasks.findByName('groovydoc')}
@@ -158,7 +158,7 @@ task docs(dependsOn:[asciidoctor, copyDocs, cleanAsciidoc, groovydoc, copyResour
 
 task assembleDocsDist(type: Zip) {
     dependsOn docs, copyDocs
-    from "${project.buildDir}/docs"
+    from "${project.layout.buildDirectory.get()}/docs"
     include '*'
     include '*/**'
     archiveFileName = "${project.name}-${project.version}.zip"

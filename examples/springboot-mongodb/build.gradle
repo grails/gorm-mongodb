@@ -22,7 +22,7 @@ dependencies {
 
 configurations.all {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if(details.requested.group == 'javax.validation' && details.requested.name.equals('validation-api')) {
+        if(details.requested.group == 'jakarta.validation' && details.requested.name.equals('validation-api')) {
             details.useVersion("2.0.1.Final")
         }
     }

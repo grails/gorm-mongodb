@@ -21,6 +21,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.IndexOptions;
 import grails.gorm.multitenancy.Tenants;
+import grails.util.GrailsMessageSourceUtils;
 import groovy.lang.Closure;
 import org.bson.Document;
 import org.bson.codecs.Codec;
@@ -65,14 +66,17 @@ import org.grails.datastore.mapping.multitenancy.exceptions.TenantNotFoundExcept
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager;
 import org.grails.datastore.mapping.transactions.TransactionCapableDatastore;
 import org.grails.datastore.mapping.validation.ValidatorRegistry;
+import org.grails.spring.context.support.PluginAwareResourceBundleMessageSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.context.support.StaticMessageSource;
 import org.springframework.core.env.PropertyResolver;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import javax.annotation.PreDestroy;
-import javax.persistence.FlushModeType;
+import jakarta.annotation.PreDestroy;
+import jakarta.persistence.FlushModeType;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
@@ -574,9 +578,13 @@ public class MongoDatastore extends AbstractDatastore implements MappingContext.
     /**
      * The message source used for validation messages
      *
-     * @param messageSource The message source
+     * @param messageSources The message source
      */
     @Autowired(required = false)
+    public void setMessageSource(List<MessageSource> messageSources) {
+        setMessageSource(GrailsMessageSourceUtils.findPreferredMessageSource(messageSources));
+    }
+
     public void setMessageSource(MessageSource messageSource) {
         if(messageSource != null) {
             configureValidatorRegistry(connectionSources.getDefaultConnectionSource().getSettings(), (MongoMappingContext) mappingContext, messageSource);

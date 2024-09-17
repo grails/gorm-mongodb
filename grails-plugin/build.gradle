@@ -1,6 +1,3 @@
-sourceCompatibility = 1.11
-targetCompatibility = 1.11
-
 dependencyManagement {
     imports {
         mavenBom "org.grails:grails-bom:$pluginGrailsVersion"
@@ -14,7 +11,7 @@ configurations.all {
             !details.requested.name.contains('mongodb') &&
             !details.requested.name.contains('bson')) {
             details.useVersion(datastoreVersion)
-        } else if(details.requested.group == 'org.codehaus.groovy' && details.requested.name.startsWith('groovy')) {
+        } else if(details.requested.group == 'org.apache.groovy' && details.requested.name.startsWith('groovy')) {
             details.useVersion(groovyVersion)   
         } else if(details.requested.group == 'org.springframework') {
             details.useVersion(springVersion)
@@ -22,11 +19,10 @@ configurations.all {
     }
 }
 dependencies {
-    compileOnly "org.grails:grails-core"
-    compileOnly "org.grails:grails-bootstrap"
+    compileOnly "org.grails:grails-core:$grailsVersion"
+    compileOnly "org.grails:grails-bootstrap:$grailsVersion"
     compileOnly "org.spockframework:spock-core:$spockVersion", {
         exclude group: "junit", module: "junit-dep"
-        exclude group: 'org.codehaus.groovy', module: 'groovy-all'
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }
 
@@ -37,9 +33,8 @@ dependencies {
         exclude group:'org.springframework', module:'spring-beans'
         exclude group:'org.springframework', module:'spring-tx'
         exclude group:'org.grails', module:'grails-bootstrap'
-        exclude group:'org.codehaus.groovy', module:'groovy-all'
         exclude group:'org.grails', module:'grails-core'
-        exclude group:'javax.transaction', module:'jta'
+        exclude group:'jakarta.transaction', module:'jta'
     }
     api project(":grails-datastore-gorm-mongodb-ext"), {
         exclude group:'org.grails', module:'grails-datastore-gorm-mongodb'
@@ -50,9 +45,8 @@ dependencies {
         exclude group:'org.springframework', module:'spring-beans'
         exclude group:'org.springframework', module:'spring-tx'
         exclude group:'org.grails', module:'grails-bootstrap'
-        exclude group:'org.codehaus.groovy', module:'groovy-all'
         exclude group:'org.grails', module:'grails-core'
-        exclude group:'javax.transaction', module:'jta'
+        exclude group:'jakarta.transaction', module:'jta'
     }
 }
 

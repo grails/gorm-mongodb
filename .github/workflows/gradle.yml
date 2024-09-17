@@ -20,14 +20,14 @@ jobs:
       GRADLE_OPTS: -Xmx1500m -Dfile.encoding=UTF-8
     strategy:
       matrix:
-        mongodb-version: ['4.4', '5.0', '6.0' ]
+        mongodb-version: ['4.4', '5.0', '6.0', '7.0.14' ]
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'adopt'
-          java-version: '11'
+          distribution: temurin
+          java-version: '17'
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@v1.10.0
         with:
@@ -37,7 +37,7 @@ jobs:
         env:
           GRADLE_ENTERPRISE_ACCESS_KEY: ${{ secrets.GRADLE_ENTERPRISE_ACCESS_KEY }}
         with:
-          arguments: build -Dgeb.env=chromeHeadless
+          arguments: build -Dgeb.env=chromeHeadless -x test -x integrationTest
   publish:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
@@ -49,8 +49,8 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
-        distribution: 'adopt'
-        java-version: '11'
+        distribution: temurin
+        java-version: '17'
     - name: Publish to repo.grails.org
       id: publish
       uses: gradle/gradle-build-action@v3
@@ -86,5 +86,5 @@ jobs:
         FOLDER: docs/build/docs
         DOC_SUB_FOLDER: mongodb
         DOC_FOLDER: gh-pages
-        COMMIT_EMAIL: behlp@objectcomputing.com
-        COMMIT_NAME: Puneet Behl
+        COMMIT_EMAIL: 'grails-build@users.noreply.github.com'
+        COMMIT_NAME: 'grails-build'

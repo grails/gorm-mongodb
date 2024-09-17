@@ -4,7 +4,7 @@ import grails.gorm.tests.GormDatastoreSpec
 import grails.persistence.Entity
 import org.bson.types.ObjectId
 
-import javax.persistence.EnumType
+import jakarta.persistence.EnumType
 
 /**
  * Created by graemerocher on 06/05/14.

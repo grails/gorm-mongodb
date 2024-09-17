@@ -52,7 +52,7 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.CannotAcquireLockException
 import org.springframework.dao.DataIntegrityViolationException
 
-import javax.persistence.CascadeType
+import jakarta.persistence.CascadeType
 
 /**
  * An {@org.grails.datastore.mapping.engine.EntityPersister} that uses the MongoDB 3.0 {@link org.bson.codecs.configuration.CodecRegistry} infrastructure
