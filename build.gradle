@@ -83,7 +83,15 @@ allprojects {
                 details.useVersion(micronautVersion)
             }
         }
+
+        resolutionStrategy.dependencySubstitution {
+
+            //update fields plugin used by scaffolding
+            substitute(module("org.grails.plugins:fields:3.0.0.RC1")).using(module("io.github.gpc:fields:5.0.3"))
+        }
     }
+
+
 }
 
 subprojects { Project subproject ->
