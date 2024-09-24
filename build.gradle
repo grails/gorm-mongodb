@@ -21,7 +21,6 @@ ext {
     isCiBuild = project.hasProperty("isCiBuild") || System.getenv().get("CI") as Boolean
     isBuildSnapshot = project.version.endsWith("-SNAPSHOT")
     isReleaseVersion = !isBuildSnapshot
-    servletApiVersion = "4.0.1"
     nexusUsername = System.getenv("SONATYPE_USERNAME") ?: project.hasProperty("sonatypeOssUsername") ? project.sonatypeOssUsername : ''
     nexusPassword = System.getenv("SONATYPE_PASSWORD") ?: project.hasProperty("sonatypeOssPassword") ? project.sonatypeOssPassword : ''
     isSnapshot = project.projectVersion.endsWith("-SNAPSHOT")
