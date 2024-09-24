@@ -20,18 +20,18 @@ dependencies {
     runtimeOnly "com.h2database:h2:$h2Version"
     runtimeOnly "org.apache.tomcat:tomcat-jdbc:$tomcatVersion"
     runtimeOnly "org.grails.plugins:scaffolding:$scaffoldingVersion"
-    runtimeOnly "io.github.gpc:fields:$fieldsVersion"
+    runtimeOnly "org.grails.plugins:fields:$fieldsVersion"
 
-    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion"
-    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersion"
-    testImplementation "org.testcontainers:mongodb:1.19.0"
-    testImplementation "io.netty:netty-transport:4.1.72.Final"
-    testImplementation "io.netty:netty-codec:4.1.72.Final"
-    testImplementation "io.netty:netty-handler:4.1.72.Final"
+    testImplementation "org.grails:grails-gorm-testing-support:$grailsTestingSupportVersion"
+    testImplementation "org.grails:grails-web-testing-support:$grailsTestingSupportVersion"
+    testImplementation "org.testcontainers:mongodb:$testcontainersMongodbVersion"
+    testImplementation "io.netty:netty-transport:$nettyVersion"
+    testImplementation "io.netty:netty-codec:$nettyVersion"
+    testImplementation "io.netty:netty-handler:$nettyVersion"
     testImplementation "org.grails.plugins:geb:$gebPluginVersion", {
         exclude group: 'org.gebish', module: 'geb-spock'
     }
-    implementation "com.github.erdi:webdriver-binaries-gradle-plugin:3.2"
+    implementation "com.github.erdi:webdriver-binaries-gradle-plugin:$webdriverBinariesPluginVersion"
     testImplementation("org.grails.plugins:geb:$gebPluginVersion") {
         exclude group: 'org.gebish', module: 'geb-spock'
     }

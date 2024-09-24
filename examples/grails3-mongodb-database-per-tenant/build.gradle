@@ -10,17 +10,17 @@ dependencies {
     }
     implementation "org.grails:grails-web-boot:$grailsVersion"
     implementation project(":grails-plugin")
-    implementation("org.ysb33r.gradle:grolifant50:2.0.2")
+    implementation("org.ysb33r.gradle:grolifant80:$grolifantVersion")
 
     runtimeOnly "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
     runtimeOnly "com.h2database:h2:$h2Version"
 
     implementation "org.mongodb:mongodb-driver-sync:$mongodbDriverVersion"
     runtimeOnly "org.grails.plugins:scaffolding:$scaffoldingVersion"
-    runtimeOnly "io.github.gpc:fields:$fieldsVersion"
+    runtimeOnly "org.grails.plugins:fields:$fieldsVersion"
 
-    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion"
-    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersion"
+    testImplementation "org.grails:grails-gorm-testing-support:$grailsTestingSupportVersion"
+    testImplementation "org.grails:grails-web-testing-support:$grailsTestingSupportVersion"
     testImplementation("org.grails.plugins:geb:$gebPluginVersion") {
         exclude group: 'org.gebish', module: 'geb-spock'
     }
