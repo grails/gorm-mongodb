@@ -17,10 +17,10 @@ dependencies {
     runtimeOnly "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
     runtimeOnly "com.h2database:h2"
     runtimeOnly "org.grails.plugins:scaffolding:$scaffoldingVersion"
-    runtimeOnly "io.github.gpc:fields:$fieldsVersion"
+    runtimeOnly "org.grails.plugins:fields:$fieldsVersion"
 
-    testImplementation "org.grails:grails-gorm-testing-support:$testingSupportVersion"
-    testImplementation "org.grails:grails-web-testing-support:$testingSupportVersion"
+    testImplementation "org.grails:grails-gorm-testing-support:$grailsTestingSupportVersion"
+    testImplementation "org.grails:grails-web-testing-support:$grailsTestingSupportVersion"
     testImplementation "io.netty:netty-transport:$nettyVersion"
     testImplementation "io.netty:netty-codec:$nettyVersion"
     testImplementation "io.netty:netty-handler:$nettyVersion"
