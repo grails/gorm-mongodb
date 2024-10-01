@@ -145,7 +145,7 @@ jobs:
             ~/.m2/repository
           key: cache-local-groovy-maven-${{ github.sha }}
       - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@v1.10.0
+        uses: supercharge/mongodb-github-action@1.11.0
         with:
           mongodb-version: 6.0
       - name: Set CI_GROOVY_VERSION for Grails
